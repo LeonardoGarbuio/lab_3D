@@ -1,0 +1,280 @@
+/* src/components/ui/PeriodicTable.css */
+
+.periodic-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.periodic-container {
+    background: rgba(15, 15, 25, 0.98);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 95vw;
+    max-height: 95vh;
+    overflow: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.periodic-container h2 {
+    margin: 0;
+    color: #4ecdc4;
+    font-size: 24px;
+    text-align: center;
+}
+
+.periodic-container .subtitle {
+    text-align: center;
+    color: #888;
+    margin: 8px 0 16px;
+    font-size: 14px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: white;
+}
+
+/* Filtros de categoria */
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.category-btn {
+    padding: 6px 12px;
+    border: 1px solid;
+    border-radius: 20px;
+    background: transparent;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    transform: scale(1.05);
+}
+
+/* Grid da tabela */
+.periodic-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.periodic-row {
+    display: flex;
+    gap: 2px;
+}
+
+.element-cell {
+    width: 48px;
+    height: 52px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.element-cell.empty {
+    background: transparent;
+    cursor: default;
+}
+
+.element-cell:not(.empty):hover {
+    transform: scale(1.3);
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.element-cell.filtered {
+    cursor: not-allowed;
+}
+
+.element-cell.clickable {
+    cursor: pointer;
+}
+
+.element-cell.clickable:hover {
+    transform: scale(1.4);
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.element-cell .atomic-number {
+    font-size: 8px;
+    opacity: 0.7;
+    position: absolute;
+    top: 2px;
+    left: 4px;
+}
+
+.element-cell .symbol {
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+}
+
+.element-cell .name {
+    font-size: 7px;
+    color: #333;
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 44px;
+}
+
+/* Info do elemento */
+.element-info {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 30, 0.98);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 12px;
+    min-width: 300px;
+    overflow: hidden;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    color: #000;
+}
+
+.info-header .big-symbol {
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.info-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.info-header .english-name {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.info-body {
+    padding: 16px;
+    color: white;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row span:first-child {
+    opacity: 0.6;
+    width: 40%;
+}
+
+.click-hint {
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(78, 205, 196, 0.2);
+    border-radius: 6px;
+    text-align: center;
+    color: #4ecdc4;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Responsivo */
+@media (max-width: 1200px) {
+    .element-cell {
+        width: 40px;
+        height: 44px;
+    }
+
+    .element-cell .symbol {
+        font-size: 14px;
+    }
+
+    .element-cell .name {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .element-cell {
+        width: 32px;
+        height: 36px;
+    }
+
+    .element-cell .symbol {
+        font-size: 12px;
+    }
+
+    .element-cell .atomic-number {
+        display: none;
+    }
+}

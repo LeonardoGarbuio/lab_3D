@@ -1,0 +1,200 @@
+/* src/components/ui/Notebook.css */
+
+.notebook-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.notebook-panel {
+    background: linear-gradient(135deg, rgba(20, 15, 10, 0.98), rgba(30, 25, 20, 0.98));
+    border: 2px solid rgba(139, 90, 43, 0.5);
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.notebook-panel h2 {
+    margin: 0 0 20px;
+    color: #d4a574;
+    text-align: center;
+}
+
+.notebook-panel .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Nova entrada */
+.new-entry {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.type-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.type-selector button {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #888;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+}
+
+.type-selector button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.type-selector button.active {
+    background: rgba(212, 165, 116, 0.2);
+    border-color: #d4a574;
+    color: #d4a574;
+}
+
+.new-entry textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 12px;
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+
+.new-entry textarea:focus {
+    outline: none;
+    border-color: #d4a574;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #d4a574, #b8864a);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Lista de entradas */
+.entries-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.empty-msg {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.entry {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.entry.observation {
+    border-left: 3px solid #3498db;
+}
+
+.entry.result {
+    border-left: 3px solid #2ecc71;
+}
+
+.entry.note {
+    border-left: 3px solid #f1c40f;
+}
+
+.entry-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.entry-type {
+    font-size: 16px;
+}
+
+.entry-time {
+    flex: 1;
+    font-size: 11px;
+    color: #666;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+    font-size: 12px;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+}
+
+.entry-content {
+    margin: 0;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Exportar */
+.export-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 6px;
+    color: #2ecc71;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    background: rgba(46, 204, 113, 0.3);
+}

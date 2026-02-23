@@ -1,0 +1,288 @@
+/* src/components/ui/ReagentPanel.css */
+
+.reagent-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.reagent-panel {
+    background: rgba(15, 15, 25, 0.98);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.reagent-panel h2 {
+    margin: 0;
+    color: #4ecdc4;
+    text-align: center;
+}
+
+.reagent-panel .subtitle {
+    text-align: center;
+    color: #888;
+    margin: 8px 0 20px;
+    font-size: 14px;
+}
+
+.reagent-panel .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.reagent-panel .close-btn:hover {
+    color: white;
+}
+
+/* Category tabs */
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.category-tab {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+
+.category-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.category-tab.active {
+    background: rgba(78, 205, 196, 0.2);
+    border-color: rgba(78, 205, 196, 0.5);
+    color: #4ecdc4;
+}
+
+/* Reagent grid */
+.reagent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.reagent-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.reagent-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+}
+
+.reagent-card.selected {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.1);
+}
+
+.reagent-color {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.reagent-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.reagent-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reagent-formula {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    font-family: monospace;
+}
+
+.reagent-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.mini-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.mini-tag.acid {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff8a8a;
+}
+
+.mini-tag.base {
+    background: rgba(78, 205, 196, 0.2);
+    color: #4ecdc4;
+}
+
+.mini-tag.danger {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.mini-tag.warning {
+    background: rgba(255, 193, 7, 0.2);
+}
+
+/* Amount controls */
+.amount-controls {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.amount-controls h4 {
+    margin: 0 0 12px;
+    color: #4ecdc4;
+    font-size: 14px;
+}
+
+.amount-slider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.amount-slider input[type="range"] {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.amount-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #4ecdc4;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.amount-value {
+    min-width: 70px;
+    text-align: right;
+    font-family: monospace;
+    color: #4ecdc4;
+    font-weight: bold;
+}
+
+.mass-info {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888;
+}
+
+.add-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+}
+
+.add-btn:disabled {
+    background: #444;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Reagent preview */
+.reagent-preview {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.reagent-preview h4 {
+    margin: 0 0 12px;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.reagent-preview table {
+    width: 100%;
+    font-size: 13px;
+}
+
+.reagent-preview td {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reagent-preview td:first-child {
+    color: #888;
+}
+
+.reagent-preview td:last-child {
+    text-align: right;
+    color: white;
+}

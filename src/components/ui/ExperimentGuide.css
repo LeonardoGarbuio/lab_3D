@@ -1,0 +1,487 @@
+﻿/* src/components/ui/ExperimentGuide.css */
+
+.experiment-guide {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 320px;
+    background: rgba(15, 15, 25, 0.95);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 500;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.experiment-guide.complete {
+    border-color: rgba(46, 204, 113, 0.5);
+}
+
+.guide-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.guide-header .exp-icon {
+    font-size: 28px;
+}
+
+.guide-header h3 {
+    margin: 0;
+    color: #4ecdc4;
+    font-size: 16px;
+    flex: 1;
+}
+
+.guide-header .step-counter {
+    font-size: 11px;
+    color: #888;
+}
+
+.quit-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.quit-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Progress bar */
+.progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ecdc4, #44a08d);
+    transition: width 0.3s ease;
+}
+
+/* Current instruction */
+.current-instruction {
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.instruction {
+    margin: 0;
+    color: white;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.hint {
+    margin: 8px 0 0;
+    color: #ffc107;
+    font-size: 12px;
+}
+
+/* Action indicator */
+.action-indicator {
+    background: rgba(78, 205, 196, 0.1);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #4ecdc4;
+    text-align: center;
+}
+
+.action-indicator strong {
+    color: white;
+}
+
+/* Steps list */
+.steps-list {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.step-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.step-item.current {
+    background: rgba(78, 205, 196, 0.15);
+}
+
+.step-item.completed .step-dot {
+    background: #2ecc71;
+}
+
+.step-dot {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.step-text {
+    font-size: 12px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.step-item.current .step-text {
+    color: white;
+}
+
+/* Navigation */
+.guide-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.guide-nav button {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+}
+
+.guide-nav button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.guide-nav button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.guide-nav button.primary {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border: none;
+    color: white;
+}
+
+.guide-nav button.primary:hover {
+    transform: translateY(-2px);
+}
+
+/* Result section */
+.result-section,
+.explanation-section {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.result-section h4,
+.explanation-section h4 {
+    margin: 0 0 8px;
+    color: #4ecdc4;
+    font-size: 13px;
+}
+
+.result-section p,
+.explanation-section p {
+    margin: 0;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Guide actions */
+.guide-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.guide-actions button {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #aaa;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.guide-actions button.primary {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border: none;
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VALIDAÇÃO E PONTUAÇÃO
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Pontuação atual */
+.current-score {
+    text-align: right;
+    font-size: 12px;
+    color: #ffc107;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+/* Instrução validada */
+.current-instruction.validated {
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.current-instruction.validated .step-number {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+/* Feedback de validação */
+.validation-feedback {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.validation-feedback.success {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+}
+
+.validation-feedback.error {
+    background: rgba(255, 107, 107, 0.15);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+}
+
+/* Step dot validado */
+.step-dot.valid {
+    background: #2ecc71 !important;
+}
+
+/* Botão pronto para avançar */
+.guide-nav button.primary.ready {
+    animation: pulseGreen 1s infinite;
+}
+
+@keyframes pulseGreen {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TELA DE CONCLUSÃO COM NOTA
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.score-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.grade-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.grade-emoji {
+    font-size: 36px;
+}
+
+.grade-letter {
+    font-size: 32px;
+    font-weight: bold;
+    color: #4ecdc4;
+}
+
+.score-details {
+    flex: 1;
+}
+
+.score-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.score-message {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* Resumo de validação */
+.validation-summary {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.validation-summary h4 {
+    margin: 0 0 10px;
+    color: #4ecdc4;
+    font-size: 13px;
+}
+
+.summary-list {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-icon {
+    font-size: 14px;
+}
+
+.summary-text {
+    flex: 1;
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.summary-attempts {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+}
+
+.summary-item.passed .summary-text {
+    color: #aaa;
+}
+
+.summary-item.failed .summary-text {
+    color: #ff6b6b;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE MOBILE PARA EXPERIMENT GUIDE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .experiment-guide {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 20px 20px 0 0;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .steps-list {
+        max-height: 100px;
+    }
+
+    .score-section {
+        flex-direction: column;
+        text-align: center;
+    }
+}

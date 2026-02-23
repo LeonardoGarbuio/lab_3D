@@ -1,0 +1,1071 @@
+/* src/components/ui/LabHUD.css */
+
+.lab-hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Só os painéis recebem cliques */
+/* PAINEL GENÉRICO */
+.hud-panel {
+    pointer-events: auto;
+    background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hud-panel h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4ecdc4;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hud-panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hud-panel li {
+    margin: 6px 0;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* TÍTULO */
+.hud-title {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+}
+
+.hud-title h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #4ecdc4;
+}
+
+.hud-title p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* Score bar */
+.score-bar {
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    color: #888;
+    margin-top: 6px;
+}
+
+.score-bar span {
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+/* Menu principal */
+.hud-menu {
+    position: absolute;
+    top: 85px;
+    left: 16px;
+    max-width: 180px;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.menu-grid button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 10px;
+}
+
+.menu-grid button:hover {
+    background: rgba(78, 205, 196, 0.1);
+    border-color: rgba(78, 205, 196, 0.3);
+    color: #4ecdc4;
+    transform: translateY(-2px);
+}
+
+.menu-grid button span {
+    font-size: 16px;
+}
+
+.controls-row {
+    display: flex;
+    gap: 6px;
+}
+
+.icon-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.icon-btn.active {
+    background: rgba(78, 205, 196, 0.15);
+    border-color: rgba(78, 205, 196, 0.3);
+}
+
+/* Substance row */
+.substance-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.substance-row .substance-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* INSTRUÇÕES */
+.hud-instructions {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    max-width: 220px;
+}
+
+/* Action grid */
+.action-grid {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.action-btn.reagent {
+    border-color: rgba(78, 205, 196, 0.3);
+}
+
+.action-btn.reagent:hover {
+    background: rgba(78, 205, 196, 0.15);
+}
+
+.action-btn.compound {
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.action-btn.compound:hover {
+    background: rgba(255, 193, 7, 0.15);
+}
+
+.action-btn.periodic {
+    border-color: rgba(144, 238, 144, 0.3);
+}
+
+.action-btn.periodic:hover {
+    background: rgba(144, 238, 144, 0.15);
+}
+
+.action-icon {
+    font-size: 16px;
+}
+
+.controls-info {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.controls-info p {
+    margin: 4px 0;
+}
+
+/* Empty container */
+.empty-container {
+    text-align: center;
+    padding: 12px 0;
+}
+
+.empty-hint {
+    font-size: 11px;
+    opacity: 0.5;
+    margin: 8px 0 0;
+}
+
+.broken-msg {
+    color: #ff6b6b;
+    text-align: center;
+    opacity: 0.8;
+}
+
+/* Object actions toolbar */
+.object-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.object-actions button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.object-actions button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.object-actions button.active {
+    background: rgba(78, 205, 196, 0.3);
+    border-color: #4ecdc4;
+    animation: pulse-btn 1s infinite;
+}
+
+@keyframes pulse-btn {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(78, 205, 196, 0.8);
+    }
+}
+
+.object-actions button.danger {
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+.object-actions button.danger:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+/* Temperature badge */
+.temp-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(255, 107, 107, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    color: #ff6b6b;
+    animation: pulse-temp 0.5s infinite;
+}
+
+@keyframes pulse-temp {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* OBJETO SELECIONADO */
+.hud-selected {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    min-width: 220px;
+}
+
+.selected-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.object-type {
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.substance-preview {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+
+.substance-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.substance-formula {
+    font-size: 12px;
+    opacity: 0.6;
+    font-family: 'Courier New', monospace;
+}
+
+.fill-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fill-level {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.fill-text {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.action-buttons button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(78, 205, 196, 0.2);
+    color: #4ecdc4;
+}
+
+.action-buttons button:hover {
+    background: rgba(78, 205, 196, 0.3);
+    transform: translateY(-1px);
+}
+
+.action-buttons button.danger {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.action-buttons button.danger:hover {
+    background: rgba(255, 107, 107, 0.3);
+}
+
+/* MODO DESPEJAR */
+.hud-pouring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    animation: pulse 1.5s infinite;
+    border-color: rgba(255, 107, 107, 0.5);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(255, 107, 107, 0.5);
+    }
+}
+
+.hud-pouring button {
+    margin-top: 12px;
+    padding: 8px 24px;
+    background: rgba(255, 107, 107, 0.2);
+    border: 1px solid rgba(255, 107, 107, 0.5);
+    color: #ff6b6b;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* FEEDBACK DE REAÇÃO */
+.hud-reaction {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.reaction-icon {
+    font-size: 24px;
+}
+
+.hud-reaction p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* PAINEL DE ANÁLISE */
+.hud-analysis {
+    position: absolute;
+    bottom: 230px;
+    right: 16px;
+    min-width: 280px;
+    max-width: 320px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.hud-analysis .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.hud-analysis .close-btn:hover {
+    color: white;
+}
+
+.analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.substance-color {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.analysis-header h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.analysis-header .formula {
+    font-size: 13px;
+    opacity: 0.6;
+    font-family: 'Courier New', monospace;
+}
+
+.analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.analysis-table td {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.analysis-table td:first-child {
+    opacity: 0.6;
+    width: 40%;
+}
+
+.analysis-table .acid {
+    color: #ff6b6b;
+}
+
+.analysis-table .base {
+    color: #4ecdc4;
+}
+
+.analysis-table .neutral {
+    color: #aaa;
+}
+
+.analysis-table .hot {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.analysis-table .formula-cell {
+    font-family: 'Courier New', monospace;
+    color: #4ecdc4;
+}
+
+/* Phase change styles */
+.analysis-table tr.reached td {
+    color: #fbbf24 !important;
+    font-weight: bold;
+}
+
+.analysis-table tr.phase-row td:last-child {
+    font-size: 14px;
+}
+
+.phase-changed {
+    color: #fbbf24;
+    font-size: 11px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+.tag.danger {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.tag.warning {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.tag.acid {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff8a8a;
+}
+
+.tag.base {
+    background: rgba(78, 205, 196, 0.15);
+    color: #4ecdc4;
+}
+
+.tag.safe {
+    background: rgba(144, 238, 144, 0.15);
+    color: #90ee90;
+}
+
+/* BOTÃO RESET */
+.hud-reset {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+}
+
+.hud-reset button {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hud-reset button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* NOVOS ESTILOS */
+
+/* Botão da tabela periódica */
+.periodic-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
+    border: 1px solid rgba(78, 205, 196, 0.4);
+    color: #4ecdc4;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.periodic-btn:hover {
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(78, 205, 196, 0.2));
+    transform: scale(1.02);
+}
+
+/* Info de mols */
+.mols-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+.empty-label {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+/* Log de reações */
+.hud-log {
+    position: absolute;
+    bottom: 80px;
+    left: 16px;
+    max-width: 300px;
+}
+
+.log-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.log-entry {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.log-equation {
+    display: block;
+    font-family: monospace;
+    color: #4ecdc4;
+}
+
+.log-type {
+    display: block;
+    opacity: 0.5;
+    text-transform: capitalize;
+    margin-top: 2px;
+}
+
+/* Tag oxidante */
+.tag.oxidizer {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+/* Loading screen */
+.loading-screen {
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-content h2 {
+    color: #4ecdc4;
+    margin: 16px 0 8px;
+}
+
+.loading-content p {
+    opacity: 0.6;
+    font-size: 14px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(78, 205, 196, 0.3);
+    border-top-color: #4ecdc4;
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-screen {
+    width: 100vw;
+    height: 100vh;
+    background: #0a0a0f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.error-screen h1 {
+    color: #ff6b6b;
+}
+
+.error-screen p {
+    opacity: 0.7;
+    max-width: 400px;
+}
+
+/* Container principal */
+.lab-container {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #0a0a12;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVIDADE MOBILE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* TABLETS (768px - 1024px) */
+@media (max-width: 1024px) {
+    .hud-title h1 {
+        font-size: 16px;
+    }
+
+    .hud-menu {
+        max-width: 150px;
+        padding: 10px;
+    }
+
+    .menu-grid button {
+        padding: 8px 4px;
+        font-size: 9px;
+    }
+
+    .hud-selected {
+        max-width: 200px;
+        padding: 10px;
+    }
+
+    .hud-analysis {
+        min-width: 240px;
+        max-width: 280px;
+        bottom: 180px;
+    }
+
+    .object-actions button {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+}
+
+/* CELULARES (até 768px) */
+@media (max-width: 768px) {
+    .hud-title {
+        top: 8px;
+        left: 8px;
+        padding: 8px 12px;
+    }
+
+    .hud-title h1 {
+        font-size: 14px;
+    }
+
+    .score-bar {
+        font-size: 8px;
+        gap: 6px;
+    }
+
+    /* Menu vira barra inferior */
+    .hud-menu {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        padding: 12px 16px;
+    }
+
+    .menu-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .menu-grid button {
+        padding: 10px 6px;
+        font-size: 10px;
+    }
+
+    .menu-grid button span {
+        font-size: 18px;
+    }
+
+    .controls-row {
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    /* Objeto selecionado - top direito compacto */
+    .hud-selected {
+        top: 8px;
+        right: 8px;
+        max-width: 180px;
+        padding: 8px;
+    }
+
+    .hud-selected h3 {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .mols-info {
+        font-size: 10px;
+        gap: 6px;
+    }
+
+    .object-actions {
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .object-actions button {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    /* Análise - modal centralizado */
+    .hud-analysis {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        bottom: auto;
+        right: auto;
+        min-width: 280px;
+        max-width: 90vw;
+        max-height: 70vh;
+        overflow-y: auto;
+        z-index: 200;
+    }
+
+    .analysis-table td {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Pouring - centralizado */
+    .hud-pouring {
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 100px;
+    }
+
+    /* Log - escondido em mobile */
+    .hud-log {
+        display: none;
+    }
+
+    /* Instruções - acima do menu */
+    .hud-instructions {
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 90%;
+        text-align: center;
+    }
+
+    .hud-instructions p {
+        font-size: 10px;
+    }
+
+    /* Reação - acima do menu */
+    .hud-reaction {
+        bottom: 130px;
+    }
+
+    .hud-reaction p {
+        font-size: 12px;
+    }
+}
+
+/* CELULARES PEQUENOS (até 480px) */
+@media (max-width: 480px) {
+    .hud-title h1 {
+        font-size: 12px;
+    }
+
+    .score-bar {
+        display: none;
+    }
+
+    .menu-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+
+    .menu-grid button {
+        padding: 8px 4px;
+        font-size: 8px;
+    }
+
+    .menu-grid button span {
+        font-size: 16px;
+    }
+
+    .hud-selected {
+        max-width: 150px;
+    }
+
+    .hud-selected h3 {
+        font-size: 11px;
+    }
+
+    .object-actions button {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
+
+    .hud-analysis {
+        min-width: 90vw;
+        max-width: 95vw;
+        padding: 12px;
+    }
+}
+
+/* ORIENTAÇÃO PAISAGEM EM MOBILE */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hud-menu {
+        position: fixed;
+        top: 8px;
+        bottom: auto;
+        left: auto;
+        right: 8px;
+        max-width: 60px;
+        border-radius: 12px;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .menu-grid button {
+        padding: 6px;
+    }
+
+    .controls-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .hud-selected {
+        top: 8px;
+        left: 8px;
+        right: auto;
+        max-width: 160px;
+    }
+
+    .hud-analysis {
+        max-height: 80vh;
+    }
+}
+
+/* TOUCH IMPROVEMENTS */
+@media (pointer: coarse) {
+
+    .menu-grid button,
+    .object-actions button,
+    .icon-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .hud-panel {
+        padding: 12px;
+    }
+}

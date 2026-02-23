@@ -1,0 +1,226 @@
+/* src/components/ui/ExperimentPanel.css */
+
+.experiment-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.experiment-panel {
+    background: linear-gradient(135deg, rgba(15, 15, 25, 0.98), rgba(25, 25, 40, 0.98));
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 20px;
+    padding: 28px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+}
+
+.experiment-panel h2 {
+    margin: 0;
+    color: #4ecdc4;
+    text-align: center;
+    font-size: 26px;
+}
+
+.experiment-panel .subtitle {
+    text-align: center;
+    color: #888;
+    margin: 8px 0 24px;
+}
+
+.experiment-panel .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Filtros */
+.category-filters {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-btn.active {
+    background: rgba(78, 205, 196, 0.2);
+    border-color: #4ecdc4;
+    color: #4ecdc4;
+}
+
+/* Grid de experimentos */
+.experiments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.experiment-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    gap: 14px;
+}
+
+.experiment-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.experiment-card.selected {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.1);
+}
+
+.exp-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.exp-info h4 {
+    margin: 0 0 6px;
+    color: white;
+    font-size: 15px;
+}
+
+.exp-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.exp-meta {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.difficulty {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.difficulty.fácil {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.difficulty.médio {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+.difficulty.difícil {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.duration {
+    font-size: 11px;
+    color: #888;
+}
+
+/* Detalhes do experimento */
+.experiment-details {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+}
+
+.experiment-details h3 {
+    margin: 0 0 16px;
+    color: #4ecdc4;
+    font-size: 20px;
+}
+
+.detail-section {
+    margin-bottom: 16px;
+}
+
+.detail-section h4 {
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+
+.detail-section p {
+    margin: 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.detail-section ul,
+.detail-section ol {
+    margin: 0;
+    padding-left: 20px;
+    color: #ccc;
+    font-size: 13px;
+}
+
+.detail-section li {
+    margin: 4px 0;
+}
+
+.start-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 16px;
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(78, 205, 196, 0.4);
+}

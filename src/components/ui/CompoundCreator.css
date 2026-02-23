@@ -1,0 +1,364 @@
+/* src/components/ui/CompoundCreator.css */
+
+.creator-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.creator-panel {
+    background: rgba(15, 15, 25, 0.98);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.creator-panel h2 {
+    margin: 0;
+    color: #4ecdc4;
+    text-align: center;
+    font-size: 24px;
+}
+
+.creator-panel .subtitle {
+    text-align: center;
+    color: #888;
+    margin: 8px 0 20px;
+    font-size: 14px;
+}
+
+.creator-panel .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Formula display */
+.formula-display {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed rgba(78, 205, 196, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 80px;
+}
+
+.formula-elements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    min-height: 50px;
+    align-items: center;
+}
+
+.placeholder {
+    color: #555;
+    font-size: 14px;
+}
+
+.formula-item {
+    display: flex;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-radius: 8px;
+    position: relative;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.formula-symbol {
+    font-size: 24px;
+}
+
+.formula-count {
+    font-size: 14px;
+    margin-left: 2px;
+}
+
+.formula-item .remove-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.formula-item:hover .remove-btn {
+    opacity: 1;
+}
+
+.formula-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.formula-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4ecdc4;
+    font-family: monospace;
+}
+
+.molar-mass {
+    color: #888;
+    font-size: 14px;
+    align-self: center;
+}
+
+/* Element section */
+.element-section {
+    margin-bottom: 16px;
+}
+
+.element-section h4 {
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+}
+
+.quick-elements {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+.element-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.element-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.element-btn.active {
+    border-color: transparent;
+}
+
+.el-symbol {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.el-name {
+    font-size: 9px;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.el-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #4ecdc4;
+    color: #000;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Show more button */
+.show-more-btn {
+    width: 100%;
+    padding: 10px;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #888;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+}
+
+.show-more-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+/* All elements grid */
+.all-elements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.element-mini {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.element-mini:hover {
+    transform: scale(1.2);
+    z-index: 1;
+}
+
+/* Name input */
+.name-input {
+    margin-bottom: 16px;
+}
+
+.name-input h4 {
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+
+.name-input input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+}
+
+.name-input input:focus {
+    border-color: #4ecdc4;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.clear-btn {
+    flex: 1;
+    padding: 14px;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 10px;
+    color: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.create-btn {
+    flex: 2;
+    padding: 14px;
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.create-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+}
+
+.create-btn:disabled {
+    background: #444;
+    cursor: not-allowed;
+}
+
+/* Compound preview */
+.compound-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-color {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.preview-info {
+    flex: 1;
+}
+
+.preview-formula {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    color: #4ecdc4;
+    font-family: monospace;
+}
+
+.preview-name {
+    display: block;
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+}

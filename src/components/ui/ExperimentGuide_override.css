@@ -1,0 +1,10 @@
+﻿.experiment-guide {
+    position: fixed !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 280px;
+    max-height: 60vh;
+    overflow-y: auto;
+}

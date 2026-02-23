@@ -1,0 +1,95 @@
+/* src/components/ui/PHGraph.css */
+
+.ph-graph {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    background: rgba(15, 15, 25, 0.95);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 400;
+}
+
+.ph-graph.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.graph-title {
+    color: #4ecdc4;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.current-ph {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+}
+
+.graph-canvas {
+    border-radius: 8px;
+    display: block;
+}
+
+.ph-scale {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 10px;
+}
+
+.ph-scale .acid {
+    color: #ff6b6b;
+}
+
+.ph-scale .base {
+    color: #6b6bff;
+}
+
+.scale-bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right,
+            #ff0000,
+            #ff6600,
+            #ffcc00,
+            #00cc00,
+            #00ccff,
+            #0066ff,
+            #6600ff);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .ph-graph {
+        bottom: auto;
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+    }
+
+    .graph-canvas {
+        width: 100%;
+        height: auto;
+    }
+}

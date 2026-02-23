@@ -1,0 +1,378 @@
+/* src/components/ui/SafetyWarnings.css */
+/* Estilos para os avisos de segurança */
+
+.safety-warnings {
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.safety-warnings.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.safety-warnings.top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.safety-warnings.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.safety-warnings.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+/* Indicador pulsante */
+.safety-indicator {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+.safety-indicator-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    opacity: 0.4;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+}
+
+.safety-indicator-count {
+    color: #000;
+    font-weight: bold;
+    font-size: 18px;
+    z-index: 1;
+}
+
+/* Lista de avisos */
+.safety-warnings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+/* Card de aviso */
+.warning-card {
+    background: rgba(20, 20, 30, 0.95);
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+    transform: translateX(50px);
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.warning-card:hover {
+    transform: scale(1.02);
+}
+
+.warning-card.expanded {
+    transform: scale(1);
+}
+
+/* Níveis de aviso */
+.warning-card.level-critical {
+    animation: criticalPulse 1s infinite alternate;
+}
+
+@keyframes criticalPulse {
+    from {
+        box-shadow: 0 0 10px #ff0000;
+    }
+
+    to {
+        box-shadow: 0 0 30px #ff0000;
+    }
+}
+
+.warning-card.level-danger {
+    animation: dangerGlow 2s infinite alternate;
+}
+
+@keyframes dangerGlow {
+    from {
+        box-shadow: 0 0 5px #ff4400;
+    }
+
+    to {
+        box-shadow: 0 0 15px #ff4400;
+    }
+}
+
+/* Cabeçalho do aviso */
+.warning-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.warning-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.warning-title {
+    flex: 1;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.warning-level-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #000;
+}
+
+.warning-dismiss {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.warning-dismiss:hover {
+    color: #fff;
+}
+
+/* Conteúdo expandido */
+.warning-content {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.warning-message {
+    color: #ccc;
+    font-size: 13px;
+    margin: 0 0 10px;
+    line-height: 1.5;
+}
+
+.warning-action {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(255, 200, 0, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 3px solid #ffc800;
+}
+
+.action-icon {
+    font-size: 16px;
+}
+
+.action-text {
+    color: #ffc800;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Barra de timer */
+.warning-timer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ffff00, #ffa500);
+    border-radius: 0 0 6px 6px;
+    animation: timerShrink 30s linear forwards;
+}
+
+@keyframes timerShrink {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* Indicador de mais avisos */
+.safety-more-indicator {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    padding: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* PPE Indicator */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+.ppe-indicator {
+    background: rgba(20, 20, 30, 0.9);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.ppe-title {
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.ppe-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ppe-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.ppe-item.equipped {
+    background: rgba(0, 255, 0, 0.15);
+    border: 1px solid #00ff00;
+}
+
+.ppe-item.missing {
+    background: rgba(255, 68, 0, 0.15);
+    border: 1px solid #ff4400;
+    animation: missingPulse 2s infinite;
+}
+
+@keyframes missingPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.ppe-icon {
+    font-size: 20px;
+}
+
+.ppe-status {
+    font-weight: bold;
+}
+
+.ppe-item.equipped .ppe-status {
+    color: #00ff00;
+}
+
+.ppe-item.missing .ppe-status {
+    color: #ff4400;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* Safety Meter */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+.safety-meter {
+    background: rgba(20, 20, 30, 0.9);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px;
+    width: 200px;
+}
+
+.meter-label {
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.meter-bar {
+    display: flex;
+    gap: 4px;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #111;
+    padding: 2px;
+}
+
+.meter-segment {
+    flex: 1;
+    border-radius: 2px;
+    transition: background-color 0.3s;
+}
+
+.meter-segment.active {
+    box-shadow: 0 0 5px currentColor;
+}
+
+.meter-status {
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+.meter-message {
+    color: #888;
+    font-size: 11px;
+    text-align: center;
+    margin-top: 4px;
+}
