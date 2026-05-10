@@ -1,7 +1,7 @@
 // src/components/canvas/equipment/BunsenBurner.tsx
 // Bico de Bunsen com chama colorida realista
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useLabStore } from '../../../stores/useLabStore'
@@ -15,23 +15,26 @@ interface BunsenBurnerProps {
 
 export function BunsenBurner({ position, isLit = false, onToggle }: BunsenBurnerProps) {
     const [lit, setLit] = useState(isLit)
-    const [flameColor, setFlameColor] = useState('#ff6600')
+    const flameColorRef = useRef('#ff6600')
     const flameRef = useRef<THREE.Mesh>(null)
+    const flameMaterialRef = useRef<THREE.MeshStandardMaterial>(null)
     const timeRef = useRef(0)
 
     const selectedId = useLabStore(s => s.selectedId)
     const objects = useLabStore(s => s.objects)
 
     // Detectar substância próxima para teste de chama
-    const nearbyObject = objects.find(obj => {
-        if (!obj.formula || obj.isBroken) return false
-        const dx = obj.position[0] - position[0]
-        const dz = obj.position[2] - position[2]
-        const distance = Math.sqrt(dx * dx + dz * dz)
-        return distance < 0.5 // Menos de 0.5m de distância
-    })
+    const nearbyObject = useMemo(() => {
+        return objects.find(obj => {
+            if (!obj.formula || obj.isBroken) return false
+            const dx = obj.position[0] - position[0]
+            const dz = obj.position[2] - position[2]
+            const distance = Math.sqrt(dx * dx + dz * dz)
+            return distance < 0.5
+        })
+    }, [objects, position])
 
-    // Atualizar cor da chama baseado na substância
+    // Atualizar cor da chama baseado na substância (sem setState!)
     useFrame((_, delta) => {
         timeRef.current += delta
 
@@ -42,16 +45,21 @@ export function BunsenBurner({ position, isLit = false, onToggle }: BunsenBurner
             flameRef.current.scale.x = 1 - (flicker - 0.9) * 0.5
             flameRef.current.scale.z = 1 - (flicker - 0.9) * 0.5
 
-            // Se tem substância próxima com flameColor, usar essa cor
+            // Atualizar cor diretamente via ref (sem React re-render)
+            let targetColor = '#ff6600'
             if (nearbyObject?.formula) {
                 const substance = ALL_SUBSTANCES[nearbyObject.formula]
                 if (substance?.flameColor) {
-                    setFlameColor(substance.flameColor)
-                } else {
-                    setFlameColor('#ff6600') // Laranja padrão
+                    targetColor = substance.flameColor
                 }
-            } else {
-                setFlameColor('#ff6600')
+            }
+
+            if (flameColorRef.current !== targetColor) {
+                flameColorRef.current = targetColor
+                if (flameMaterialRef.current) {
+                    flameMaterialRef.current.color.set(targetColor)
+                    flameMaterialRef.current.emissive.set(targetColor)
+                }
             }
         }
     })
@@ -94,8 +102,9 @@ export function BunsenBurner({ position, isLit = false, onToggle }: BunsenBurner
                     <mesh ref={flameRef}>
                         <coneGeometry args={[0.05, 0.15, 8]} />
                         <meshStandardMaterial
-                            color={flameColor}
-                            emissive={flameColor}
+                            ref={flameMaterialRef}
+                            color={flameColorRef.current}
+                            emissive={flameColorRef.current}
                             emissiveIntensity={2}
                             transparent
                             opacity={0.8}
@@ -116,7 +125,7 @@ export function BunsenBurner({ position, isLit = false, onToggle }: BunsenBurner
 
                     {/* Luz pontual da chama */}
                     <pointLight
-                        color={flameColor}
+                        color={'#ff6600'}
                         intensity={2}
                         distance={1.5}
                         decay={2}

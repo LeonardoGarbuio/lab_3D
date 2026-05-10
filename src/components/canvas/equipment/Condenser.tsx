@@ -31,22 +31,20 @@ export default function Condenser({
 
     useFrame((state) => {
         if (waterRef.current && isActive) {
-            const mat = waterRef.current.material as THREE.MeshPhysicalMaterial
+            const mat = waterRef.current.material as THREE.meshStandardMaterial
             mat.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.1
         }
     })
 
     return (
-        <group ref={groupRef} position={position} rotation={rotation}>
+        <group ref={groupRef} position={position} rotation={rotation} raycast={null as any}>
             <mesh castShadow>
                 <cylinderGeometry args={[outerRadius, outerRadius, outerLength, 24, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.15}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -58,23 +56,21 @@ export default function Condenser({
                     rotation={[Math.PI / 2, 0, 0]}
                 >
                     <ringGeometry args={[innerRadius * 1.5, outerRadius, 24]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.25}
-                        transmission={0.9}
                     />
                 </mesh>
             ))}
 
             <mesh>
                 <cylinderGeometry args={[innerRadius, innerRadius, outerLength + 0.1 * scale, 16, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.15}
                     roughness={0.02}
-                    transmission={0.95}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -82,7 +78,7 @@ export default function Condenser({
             <group position={[outerRadius, -outerLength / 2 + 0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
                 <mesh>
                     <cylinderGeometry args={[0.01 * scale, 0.01 * scale, 0.04 * scale, 12]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.25} transmission={0.9} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.25} />
                 </mesh>
                 <mesh position={[0, 0.025, 0]}>
                     <cylinderGeometry args={[0.008 * scale, 0.012 * scale, 0.015 * scale, 8]} />
@@ -93,7 +89,7 @@ export default function Condenser({
             <group position={[outerRadius, outerLength / 2 - 0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
                 <mesh>
                     <cylinderGeometry args={[0.01 * scale, 0.01 * scale, 0.04 * scale, 12]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.25} transmission={0.9} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.25} />
                 </mesh>
                 <mesh position={[0, 0.025, 0]}>
                     <cylinderGeometry args={[0.008 * scale, 0.012 * scale, 0.015 * scale, 8]} />
@@ -104,7 +100,7 @@ export default function Condenser({
             {isActive && (
                 <mesh ref={waterRef}>
                     <cylinderGeometry args={[outerRadius * 0.9, outerRadius * 0.9, outerLength * 0.9, 24]} />
-                    <meshPhysicalMaterial color="#4da6ff" transparent opacity={0.4} roughness={0.1} transmission={0.5} />
+                    <meshStandardMaterial color="#4da6ff" transparent opacity={0.4} roughness={0.1} />
                 </mesh>
             )}
 
@@ -121,12 +117,12 @@ export default function Condenser({
 
             <mesh position={[0, outerLength / 2 + 0.04, 0]}>
                 <coneGeometry args={[innerRadius * 1.5, 0.05 * scale, 12]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.25} transmission={0.9} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.25} />
             </mesh>
 
             <mesh position={[0, -outerLength / 2 - 0.04, 0]}>
                 <coneGeometry args={[innerRadius, 0.05 * scale, 12]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.25} transmission={0.9} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.25} />
             </mesh>
 
             {isActive && (

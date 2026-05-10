@@ -82,13 +82,11 @@ export default function FumeHood({
                 castShadow
             >
                 <boxGeometry args={[width - 0.02, height * sashHeight, 0.008 * scale]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.15}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.3}
                 />
             </mesh>
 

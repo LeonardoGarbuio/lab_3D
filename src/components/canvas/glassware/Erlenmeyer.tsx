@@ -29,14 +29,12 @@ export default function Erlenmeyer({
             {/* Base cônica do Erlenmeyer */}
             <mesh castShadow>
                 <coneGeometry args={[baseRadius, bodyHeight, 32, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
                     roughness={0.02}
                     metalness={0}
-                    transmission={0.95}
-                    thickness={0.4}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -44,25 +42,22 @@ export default function Erlenmeyer({
             {/* Fundo plano */}
             <mesh position={[0, -bodyHeight / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[baseRadius, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0.02}
-                    transmission={0.9}
                 />
             </mesh>
 
             {/* Gargalo (pescoço) */}
             <mesh position={[0, bodyHeight / 2 + neckHeight / 2, 0]} castShadow>
                 <cylinderGeometry args={[neckRadius, neckRadius * 1.5, neckHeight, 16, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -71,12 +66,11 @@ export default function Erlenmeyer({
             {liquidLevel > 0 && (
                 <mesh position={[0, -bodyHeight / 2 + (bodyHeight * liquidLevel) / 2, 0]}>
                     <coneGeometry args={[baseRadius * liquidLevel * 0.9, bodyHeight * liquidLevel, 32]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={liquidColor}
                         transparent
                         opacity={0.7}
                         roughness={0.1}
-                        transmission={0.25}
                     />
                 </mesh>
             )}
@@ -84,7 +78,7 @@ export default function Erlenmeyer({
             {/* Borda do gargalo */}
             <mesh position={[0, bodyHeight / 2 + neckHeight, 0]}>
                 <torusGeometry args={[neckRadius, 0.01 * scale, 8, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.5}

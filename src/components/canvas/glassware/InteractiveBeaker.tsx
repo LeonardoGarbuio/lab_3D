@@ -149,11 +149,19 @@ export default function InteractiveBeaker({
         <group
             ref={groupRef}
             position={position}
-            onClick={handleClick}
-            onDoubleClick={handleDoubleClick}
-            onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
-            onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
         >
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                visible={false}
+                onClick={handleClick}
+                onDoubleClick={handleDoubleClick}
+                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+            >
+                <cylinderGeometry args={[glassRadius * 1.5, glassRadius * 1.5, glassHeight * 1.5, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
             {/* EFEITOS */}
             {activeEffect === 'bubbles' && <Bubbles position={[0, 0, 0]} color={effectColor} intensity={effectIntensity} active />}
             {activeEffect === 'boiling' && <Bubbles position={[0, 0, 0]} color="#ffffff" intensity={1.5} count={50} active />}
@@ -173,29 +181,29 @@ export default function InteractiveBeaker({
             </mesh>
 
             {/* Parede do béquer */}
-            <mesh castShadow receiveShadow>
-                <cylinderGeometry args={[glassRadius, glassRadius * 0.95, glassHeight, 32, 1, true]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={isHovered || isSelected ? 0.45 : 0.3} roughness={0.05} transmission={0.9} thickness={0.5} side={THREE.DoubleSide} />
+            <mesh>
+                <cylinderGeometry args={[glassRadius, glassRadius * 0.95, glassHeight, 16, 1, true]} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={isHovered || isSelected ? 0.35 : 0.22} roughness={0.05} side={THREE.DoubleSide} />
             </mesh>
 
             {/* Fundo */}
             <mesh position={[0, -glassHeight / 2 + wallThickness / 2, 0]}>
-                <cylinderGeometry args={[glassRadius * 0.95, glassRadius * 0.95, wallThickness, 32]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.4} transmission={0.8} />
+                <cylinderGeometry args={[glassRadius * 0.95, glassRadius * 0.95, wallThickness, 16]} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.3} />
             </mesh>
 
             {/* Líquido */}
             {fillLevel > 0 && (
                 <mesh ref={liquidRef} position={[0, -glassHeight / 2 + liquidHeight / 2 + wallThickness, 0]}>
-                    <cylinderGeometry args={[glassRadius * 0.9, glassRadius * 0.85, liquidHeight, 32]} />
-                    <meshPhysicalMaterial color={liquidColor} transparent opacity={0.8} roughness={0.1} transmission={0.3} />
+                    <cylinderGeometry args={[glassRadius * 0.9, glassRadius * 0.85, liquidHeight, 16]} />
+                    <meshStandardMaterial color={liquidColor} transparent opacity={0.75} />
                 </mesh>
             )}
 
             {/* Borda */}
             <mesh position={[0, glassHeight / 2 - 0.02, 0]}>
-                <torusGeometry args={[glassRadius, 0.02 * scale, 8, 32]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.5} />
+                <torusGeometry args={[glassRadius, 0.02 * scale, 6, 16]} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.4} />
             </mesh>
 
             {/* Indicador de pouring */}

@@ -113,12 +113,11 @@ export default function InteractiveFumeHood({
                 onClick={adjustSash}
             >
                 <boxGeometry args={[width - 0.02, height * localSash, 0.008 * scale]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={isHovered ? 0.3 : 0.2}
                     roughness={0.02}
-                    transmission={0.9}
                 />
             </mesh>
 

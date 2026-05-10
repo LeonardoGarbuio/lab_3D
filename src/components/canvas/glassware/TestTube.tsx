@@ -26,18 +26,16 @@ export default function TestTube({
     const liquidHeight = tubeHeight * liquidLevel * 0.7
 
     return (
-        <group ref={groupRef} position={position} rotation={rotation}>
+        <group ref={groupRef} position={position} rotation={rotation} raycast={null as any}>
             {/* Corpo do tubo (cilindro) */}
             <mesh castShadow>
                 <cylinderGeometry args={[tubeRadius, tubeRadius, tubeHeight * 0.8, 16, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
                     roughness={0.02}
                     metalness={0}
-                    transmission={0.95}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -45,13 +43,11 @@ export default function TestTube({
             {/* Fundo arredondado do tubo */}
             <mesh position={[0, -tubeHeight * 0.4, 0]} castShadow>
                 <sphereGeometry args={[tubeRadius, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.3}
                 />
             </mesh>
 
@@ -59,12 +55,11 @@ export default function TestTube({
             {liquidLevel > 0 && (
                 <mesh position={[0, -tubeHeight * 0.4 + liquidHeight / 2 + tubeRadius * 0.3, 0]}>
                     <cylinderGeometry args={[tubeRadius * 0.85, tubeRadius * 0.85, liquidHeight, 16]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={liquidColor}
                         transparent
                         opacity={0.75}
                         roughness={0.1}
-                        transmission={0.2}
                     />
                 </mesh>
             )}
@@ -72,7 +67,7 @@ export default function TestTube({
             {/* Borda superior do tubo */}
             <mesh position={[0, tubeHeight * 0.4, 0]}>
                 <torusGeometry args={[tubeRadius, 0.015 * scale, 8, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.4}

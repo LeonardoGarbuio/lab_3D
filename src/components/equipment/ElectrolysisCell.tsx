@@ -5,8 +5,8 @@ import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Text } from '@react-three/drei'
+import type { ElectrolysisState } from '../../systems/ElectrolysisSystem'
 import {
-    ElectrolysisState,
     createInitialElectrolysisState,
     updateElectrolysis,
     predictElectrolysisProducts,
@@ -32,6 +32,7 @@ interface Bubble {
     size: number
     speed: number
     electrode: 'cathode' | 'anode'
+    active: boolean
 }
 
 export function ElectrolysisCell({
@@ -48,9 +49,15 @@ export function ElectrolysisCell({
         initial.electrolyte = ELECTROLYTES[electrolyteId] || null
         return initial
     })
+    const mutableState = useRef<ElectrolysisState>(state)
+    const lastUiUpdate = useRef(0)
 
-    const [bubbles, setBubbles] = useState<Bubble[]>([])
-    const bubbleIdCounter = useRef(0)
+    // Otimização: Object pool para bolhas
+    const MAX_BUBBLES = 40
+    const bubblesData = useRef<Bubble[]>(Array.from({ length: MAX_BUBBLES }, (_, i) => ({
+        id: i, x: 0, y: 10, z: 0, size: 0.02, speed: 0, electrode: 'cathode', active: false
+    })))
+    const bubbleRefs = useRef<(THREE.Mesh | null)[]>([])
     const lastBubbleTime = useRef({ cathode: 0, anode: 0 })
 
     // Calcular produtos
@@ -65,65 +72,80 @@ export function ElectrolysisCell({
 
     // Atualizar estado
     useFrame((_, delta) => {
-        const newState = { ...state }
-        newState.voltage = voltage
-        newState.isRunning = isRunning
-        newState.electrolyte = ELECTROLYTES[electrolyteId] || null
+        const simState = mutableState.current
+        simState.voltage = voltage
+        simState.isRunning = isRunning
+        simState.electrolyte = ELECTROLYTES[electrolyteId] || null
 
-        if (newState.electrolyte && isRunning) {
-            const updatedState = updateElectrolysis(newState, delta)
-            setState(updatedState)
-            onStateChange?.(updatedState)
+        if (simState.electrolyte && isRunning) {
+            updateElectrolysis(simState, delta) // Mutate in place if possible, or reassign
+            
+            // Limit UI React renders to 10 FPS
+            const now = performance.now()
+            if (now - lastUiUpdate.current > 500) {
+                setState({ ...simState })
+                onStateChange?.({ ...simState })
+                lastUiUpdate.current = now
+            }
 
-            // Gerar bolhas
-            if (updatedState.current > 0) {
-                const now = performance.now()
-
-                // Cátodo (geralmente H2)
-                if (updatedState.cathode.bubbleRate > 0) {
-                    const cathodeBubbleInterval = 1000 / updatedState.cathode.bubbleRate
+            // Gerar bolhas diretamente na RAM (Object pooling)
+            if (simState.current > 0) {
+                if (simState.cathode.bubbleRate > 0) {
+                    const cathodeBubbleInterval = 1000 / simState.cathode.bubbleRate
                     if (now - lastBubbleTime.current.cathode > cathodeBubbleInterval) {
-                        createBubble('cathode')
+                        spawnBubble('cathode')
                         lastBubbleTime.current.cathode = now
                     }
                 }
 
-                // Ânodo (geralmente O2 - metade das bolhas do H2)
-                if (updatedState.anode.bubbleRate > 0) {
-                    const anodeBubbleInterval = 1000 / updatedState.anode.bubbleRate
+                if (simState.anode.bubbleRate > 0) {
+                    const anodeBubbleInterval = 1000 / simState.anode.bubbleRate
                     if (now - lastBubbleTime.current.anode > anodeBubbleInterval) {
-                        createBubble('anode')
+                        spawnBubble('anode')
                         lastBubbleTime.current.anode = now
                     }
                 }
             }
         }
 
-        // Atualizar bolhas existentes
-        setBubbles(prev => {
-            return prev
-                .map(bubble => ({
-                    ...bubble,
-                    y: bubble.y + bubble.speed * delta
-                }))
-                .filter(bubble => bubble.y < 0.8) // Remover ao sair do líquido
-        })
+        // Atualizar físicas diretas das bolhas
+        for (let i = 0; i < MAX_BUBBLES; i++) {
+            const b = bubblesData.current[i]
+            if (b.active) {
+                b.y += b.speed * delta
+                if (b.y > 0.8) {
+                    b.active = false
+                    b.y = 10 // Esconder fora da tela
+                }
+                const mesh = bubbleRefs.current[i]
+                if (mesh) {
+                    mesh.position.set(b.x, b.y, b.z)
+                }
+            }
+        }
     })
 
-    function createBubble(electrode: 'cathode' | 'anode') {
-        const x = electrode === 'cathode' ? -0.25 : 0.25
-        setBubbles(prev => [
-            ...prev,
-            {
-                id: bubbleIdCounter.current++,
-                x: x + (Math.random() - 0.5) * 0.1,
-                y: -0.3,
-                z: (Math.random() - 0.5) * 0.1,
-                size: 0.02 + Math.random() * 0.02,
-                speed: 0.3 + Math.random() * 0.2,
-                electrode
+    function spawnBubble(electrode: 'cathode' | 'anode') {
+        // Encontrar bolha inativa (Pool)
+        const bubbleIndex = bubblesData.current.findIndex(b => !b.active)
+        if (bubbleIndex !== -1) {
+            const b = bubblesData.current[bubbleIndex]
+            b.electrode = electrode
+            b.x = (electrode === 'cathode' ? -0.25 : 0.25) + (Math.random() - 0.5) * 0.1
+            b.y = -0.3
+            b.z = (Math.random() - 0.5) * 0.1
+            b.size = 0.02 + Math.random() * 0.02
+            b.speed = 0.3 + Math.random() * 0.2
+            b.active = true
+            
+            const mesh = bubbleRefs.current[bubbleIndex]
+            if (mesh) {
+                mesh.scale.setScalar(b.size / 0.02) // Normalizando escala visual
+                // Atualizar cor material hackish
+                const material = mesh.material as THREE.meshStandardMaterial
+                material.color.set(electrode === 'cathode' ? cathodeColor : anodeColor)
             }
-        ])
+        }
     }
 
     // Cor do eletrólito
@@ -137,13 +159,11 @@ export function ElectrolysisCell({
             {/* Recipiente de vidro */}
             <mesh>
                 <boxGeometry args={[1.2, 1.5, 0.8]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.15}
                     roughness={0}
-                    transmission={0.9}
-                    thickness={0.02}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -151,12 +171,11 @@ export function ElectrolysisCell({
             {/* Solução eletrolítica */}
             <mesh position={[0, -0.15, 0]}>
                 <boxGeometry args={[1.1, 1.1, 0.7]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color={electrolyteColor}
                     transparent
                     opacity={0.5}
                     roughness={0.1}
-                    transmission={0.6}
                 />
             </mesh>
 
@@ -240,19 +259,19 @@ export function ElectrolysisCell({
                 </Text>
             </group>
 
-            {/* Bolhas de gás */}
-            {bubbles.map(bubble => (
+            {/* Bolhas de gás (Object Pool estático no React) */}
+            {Array.from({ length: MAX_BUBBLES }).map((_, i) => (
                 <mesh
-                    key={bubble.id}
-                    position={[bubble.x, bubble.y, bubble.z]}
+                    key={i}
+                    ref={el => bubbleRefs.current[i] = el}
+                    position={[0, 10, 0]} // Escondido por padrão
                 >
-                    <sphereGeometry args={[bubble.size, 8, 8]} />
-                    <meshPhysicalMaterial
-                        color={bubble.electrode === 'cathode' ? cathodeColor : anodeColor}
+                    <sphereGeometry args={[0.02, 8, 8]} />
+                    <meshStandardMaterial
+                        color="#ffffff"
                         transparent
                         opacity={0.7}
                         roughness={0}
-                        transmission={0.3}
                     />
                 </mesh>
             ))}

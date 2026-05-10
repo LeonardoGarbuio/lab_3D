@@ -1,0 +1,300 @@
+/* src/components/ui/SolidStateSimulator.css */
+
+.ss-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 5, 10, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: ss-fade-in 0.4s ease-out;
+}
+
+@keyframes ss-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.ss-modal {
+    width: 90vw;
+    height: 85vh;
+    max-width: 1400px;
+    background: rgba(10, 15, 25, 0.95);
+    border: 1px solid rgba(0, 247, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0, 247, 255, 0.1);
+    animation: ss-slide-up 0.5s ease-out;
+}
+
+@keyframes ss-slide-up {
+    from { transform: translateY(20px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* TOPBAR */
+.ss-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ss-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ss-icon {
+    font-size: 1.8rem;
+}
+
+.ss-title h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #e0f0ff;
+    font-weight: 600;
+}
+
+.ss-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.ss-tab {
+    background: transparent;
+    border: none;
+    color: rgba(180, 200, 230, 0.6);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.ss-tab:hover {
+    color: #00f7ff;
+}
+
+.ss-tab.active {
+    color: #00f7ff;
+    border-bottom-color: #00f7ff;
+}
+
+.ss-close {
+    background: transparent;
+    border: none;
+    color: #ff6666;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.ss-close:hover {
+    transform: scale(1.2);
+}
+
+/* CONTENT */
+.ss-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* VIEWPORT */
+.ss-viewport {
+    flex: 1;
+    position: relative;
+    background: radial-gradient(circle at center, #0a101d 0%, #05080c 100%);
+}
+
+.ss-viewport canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.ss-glass-overlay {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    pointer-events: none;
+}
+
+.ss-info-badge {
+    background: rgba(10, 15, 25, 0.8);
+    border-left: 4px solid;
+    padding: 16px 20px;
+    border-radius: 4px 8px 8px 4px;
+    max-width: 400px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.3s;
+}
+
+.ss-info-badge h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    transition: color 0.3s;
+}
+
+.ss-info-badge p {
+    margin: 0;
+    color: #aabbcc;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.ss-example {
+    margin-top: 10px !important;
+    font-size: 0.85rem !important;
+    color: #8899aa !important;
+}
+
+/* SIDEBAR */
+.ss-sidebar {
+    width: 380px;
+    background: rgba(5, 10, 15, 0.8);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ss-sidebar h3 {
+    margin: 0 0 16px 0;
+    color: #e0f0ff;
+}
+
+.ss-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ss-btn {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #aabbcc;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.ss-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.ss-btn.active {
+    background: rgba(var(--accent), 0.1);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: inset 0 0 20px rgba(var(--accent), 0.1);
+}
+
+/* BAND DIAGRAM */
+.band-viewport {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.band-diagram-container {
+    width: 60%;
+    height: 70%;
+    position: relative;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px;
+}
+
+.band-diagram {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.band {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: all 0.5s ease-in-out;
+}
+
+.band span {
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+.conduction-band {
+    border: 2px dashed;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.valence-band {
+    border: 2px solid;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.band-gap {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px dashed rgba(255,255,255,0.3);
+    border-right: 1px dashed rgba(255,255,255,0.3);
+    transition: all 0.5s ease-in-out;
+}
+
+.gap-label {
+    background: rgba(0,0,0,0.8);
+    padding: 4px 12px;
+    border-radius: 12px;
+    color: #ffaa00;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.electrons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    opacity: 0.8;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px #4ecdc4;
+}
+
+.electrons.sparse {
+    opacity: 0.4;
+}

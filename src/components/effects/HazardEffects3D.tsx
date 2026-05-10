@@ -282,12 +282,11 @@ function GlassShatterEffect({ effect }: { effect: HazardEffect }) {
                     rotation={[fragment.rotation.x, fragment.rotation.y, fragment.rotation.z]}
                 >
                     <tetrahedronGeometry args={[fragment.size]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.4}
                         roughness={0}
-                        transmission={0.8}
                         metalness={0.1}
                     />
                 </mesh>
@@ -409,7 +408,14 @@ function SmokeEffect({ effect }: { effect: HazardEffect }) {
         // Movimento ascendente e expansivo
         smokeRef.current.children.forEach((child, i) => {
             child.position.y += delta * 0.1
-            const scale = child.scale.x + delta * 0.05
+            let scale = child.scale.x + delta * 0.05
+            
+            // Reset particles that have grown/moved too much
+            if (child.position.y > effect.radius * 2 || scale > 3) {
+                child.position.y = 0
+                scale = 1
+            }
+            
             child.scale.set(scale, scale, scale)
             child.rotation.y += delta * 0.2
         })

@@ -84,12 +84,14 @@ export default function InteractiveGraduatedCylinder({
         <group
             ref={groupRef}
             position={position}
-            onClick={handleClick}
-            onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
-            onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
         >
-            {/* HITBOX INVISÍVEL - área grande para facilitar clique */}
-            <mesh visible={false}>
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                visible={false}
+                onClick={handleClick}
+                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+            >
                 <cylinderGeometry args={[0.12 * scale, 0.12 * scale, height * 1.2, 16]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
@@ -109,13 +111,11 @@ export default function InteractiveGraduatedCylinder({
             {/* Tubo cilíndrico principal - MENOS TRANSPARENTE */}
             <mesh castShadow>
                 <cylinderGeometry args={[radius, radius, height, 32, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={isHovered || isSelected ? 0.5 : 0.35}
                     roughness={0.02}
-                    transmission={0.85}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -123,7 +123,7 @@ export default function InteractiveGraduatedCylinder({
             {/* Fundo do tubo */}
             <mesh position={[0, -height / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[radius - wallThickness, 32]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.4} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.4} />
             </mesh>
 
             {/* Líquido */}
@@ -136,7 +136,7 @@ export default function InteractiveGraduatedCylinder({
                             height * fillLevel,
                             32
                         ]} />
-                        <meshPhysicalMaterial
+                        <meshStandardMaterial
                             color={color}
                             transparent
                             opacity={0.8}
@@ -150,7 +150,7 @@ export default function InteractiveGraduatedCylinder({
                         rotation={[-Math.PI / 2, 0, 0]}
                     >
                         <circleGeometry args={[radius - wallThickness * 2, 32]} />
-                        <meshPhysicalMaterial color={color} transparent opacity={0.95} />
+                        <meshStandardMaterial color={color} transparent opacity={0.95} />
                     </mesh>
                 </>
             )}

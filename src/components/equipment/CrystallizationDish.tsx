@@ -59,6 +59,8 @@ export function CrystallizationDish({
         crystalsFormed: 0,
         crystallizationRate: 0
     })
+    const mutableState = useRef(state)
+    const lastUiUpdate = useRef(0)
 
     // Cristais formados
     const [crystals, setCrystals] = useState<CrystalInstance[]>([])
@@ -75,24 +77,26 @@ export function CrystallizationDish({
 
     // Atualização do sistema
     useFrame((_, delta) => {
+        const simState = mutableState.current
+        
         // Atualizar temperatura
-        let newTemp = state.temperature
+        let newTemp = simState.temperature
         if (isHeating) {
-            newTemp = Math.min(state.temperature + heatingRate * delta, 100)
+            newTemp = Math.min(simState.temperature + heatingRate * delta, 100)
         } else if (isCooling) {
-            newTemp = Math.max(state.temperature - heatingRate * delta, 0)
+            newTemp = Math.max(simState.temperature - heatingRate * delta, 0)
         } else {
             // Esfriamento natural para temperatura ambiente
-            if (state.temperature > 25) {
-                newTemp = state.temperature - delta * 0.5
-            } else if (state.temperature < 25) {
-                newTemp = state.temperature + delta * 0.2
+            if (simState.temperature > 25) {
+                newTemp = simState.temperature - delta * 0.5
+            } else if (simState.temperature < 25) {
+                newTemp = simState.temperature + delta * 0.2
             }
         }
 
         // Calcular saturação
         const solubility = getSolubilityForSubstance(newTemp, substance)
-        const saturation = state.concentration / solubility
+        const saturation = simState.concentration / solubility
         const isSaturated = saturation >= 1
         const isSupersaturated = saturation > 1.2
 
@@ -103,14 +107,14 @@ export function CrystallizationDish({
             crystallizationRate = (saturation - 1) * (substance.crystallizationSpeed ?? 0.3) * 10
         }
 
-        // Formar cristais
+        // Formar cristais (apenas novo mount, que não ocorre nos 60 fps)
         const now = performance.now()
-        if (crystallizationRate > 0 && now - lastCrystalTime.current > 1000 / crystallizationRate) {
+        if (crystallizationRate > 0 && crystals.length < 50 && now - lastCrystalTime.current > 1000 / crystallizationRate) {
             const newCrystal: CrystalInstance = {
                 id: crystalIdCounter.current++,
                 position: [
                     (Math.random() - 0.5) * 0.15,
-                    -0.02 + crystals.length * 0.01,
+                    -0.02 + Math.min(crystals.length, 50) * 0.01,
                     (Math.random() - 0.5) * 0.15
                 ],
                 rotation: [
@@ -127,32 +131,26 @@ export function CrystallizationDish({
             lastCrystalTime.current = now
         }
 
-        // Crescer cristais existentes
-        setCrystals(prev => prev.map(crystal => ({
-            ...crystal,
-            growthProgress: Math.min(crystal.growthProgress + delta * 0.1 * crystallizationRate, 1)
-        })))
-
         // Reduzir concentração conforme cristais se formam
         const concentrationReduction = crystallizationRate * delta * 5
         const newConcentration = Math.max(
-            state.concentration - concentrationReduction,
+            simState.concentration - concentrationReduction,
             solubility * 0.9 // Não fica abaixo da saturação
         )
 
-        const newState: CrystallizationState = {
-            ...state,
-            temperature: newTemp,
-            concentration: newConcentration,
-            saturation,
-            isSaturated,
-            isSupersaturated,
-            crystalsFormed: crystals.length,
-            crystallizationRate
-        }
+        simState.temperature = newTemp
+        simState.concentration = newConcentration
+        simState.saturation = saturation
+        simState.isSaturated = isSaturated
+        simState.isSupersaturated = isSupersaturated
+        simState.crystalsFormed = crystals.length
+        simState.crystallizationRate = crystallizationRate
 
-        setState(newState)
-        onStateChange?.(newState)
+        if (now - lastUiUpdate.current > 500) {
+            setState({ ...simState })
+            onStateChange?.({ ...simState })
+            lastUiUpdate.current = now
+        }
     })
 
     // Nível do líquido
@@ -163,20 +161,18 @@ export function CrystallizationDish({
             {/* Recipiente de cristalização (vidro de relógio grande) */}
             <mesh rotation={[0, 0, 0]}>
                 <cylinderGeometry args={[0.15, 0.12, 0.08, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0}
-                    transmission={0.9}
-                    thickness={0.01}
                 />
             </mesh>
 
             {/* Borda do recipiente */}
             <mesh position={[0, 0.04, 0]}>
                 <torusGeometry args={[0.15, 0.005, 8, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
@@ -187,12 +183,11 @@ export function CrystallizationDish({
             {/* Solução */}
             <mesh position={[0, -0.01, 0]}>
                 <cylinderGeometry args={[0.14, 0.11, liquidLevel, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color={solutionColor}
                     transparent
                     opacity={0.6}
                     roughness={0.1}
-                    transmission={0.3}
                 />
             </mesh>
 
@@ -204,7 +199,7 @@ export function CrystallizationDish({
                     position={crystal.position}
                     rotation={crystal.rotation}
                     scale={crystal.scale}
-                    growthProgress={crystal.growthProgress}
+                    growthRate={state.crystallizationRate || 0}
                     isGrowing={(state.crystallizationRate ?? 0) > 0}
                 />
             ))}
@@ -292,10 +287,10 @@ export function CrystallizationDish({
 function HeatingGlow() {
     const meshRef = useRef<THREE.Mesh>(null)
 
-    useFrame(() => {
+    useFrame((state) => {
         if (!meshRef.current) return
         const material = meshRef.current.material as THREE.MeshBasicMaterial
-        material.opacity = 0.3 + Math.sin(Date.now() * 0.01) * 0.1
+        material.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 10) * 0.1
     })
 
     return (

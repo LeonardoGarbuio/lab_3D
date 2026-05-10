@@ -107,12 +107,11 @@ export function Manometer({
             {/* Vidro protetor */}
             <mesh position={[0, 0, size * 0.2]} rotation={[Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[size * 0.88, 64]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.1}
                     roughness={0}
-                    transmission={0.9}
                 />
             </mesh>
 
@@ -160,7 +159,7 @@ export function Manometer({
                     THREE.MathUtils.degToRad(135 - ((maxPressure - dangerZone) / (maxPressure - minPressure)) * 270),
                     THREE.MathUtils.degToRad(((maxPressure - dangerZone) / (maxPressure - minPressure)) * 270)
                 ]} />
-                <meshBasicMaterial color="#ff000040" transparent side={THREE.DoubleSide} />
+                <meshBasicMaterial color="#ff0000" opacity={0.25} transparent side={THREE.DoubleSide} />
             </mesh>
 
             {/* Ponteiro */}
@@ -191,7 +190,6 @@ export function Manometer({
                         color={getPressureColor()}
                         anchorX="center"
                         anchorY="middle"
-                        font="monospace"
                     >
                         {displayValue.toFixed(2)} {unit}
                     </Text>

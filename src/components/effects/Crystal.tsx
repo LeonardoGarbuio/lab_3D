@@ -11,7 +11,7 @@ interface CrystalProps {
     position: [number, number, number]
     scale: number
     rotation: [number, number, number]
-    growthProgress: number
+    growthRate: number
     isGrowing: boolean
 }
 
@@ -20,22 +20,26 @@ export function Crystal({
     position,
     scale,
     rotation,
-    growthProgress,
+    growthRate,
     isGrowing
 }: CrystalProps) {
     const meshRef = useRef<THREE.Mesh>(null)
     const glowRef = useRef<THREE.Mesh>(null)
+    const growthProgressRef = useRef(0)
+    const timeRef = useRef(0)
 
     // Animação de crescimento
     useFrame((_, delta) => {
         if (!meshRef.current) return
+        timeRef.current += delta
 
         if (isGrowing) {
+            growthProgressRef.current = Math.min(growthProgressRef.current + delta * 0.1 * growthRate, 1)
             // Leve pulsação durante crescimento
-            const pulse = Math.sin(Date.now() * 0.005) * 0.02 + 1
-            meshRef.current.scale.setScalar(scale * growthProgress * pulse)
+            const pulse = Math.sin(timeRef.current * 5) * 0.02 + 1
+            meshRef.current.scale.setScalar(scale * growthProgressRef.current * pulse)
         } else {
-            meshRef.current.scale.setScalar(scale * growthProgress)
+            meshRef.current.scale.setScalar(scale * growthProgressRef.current)
         }
 
         // Rotação lenta
@@ -43,7 +47,7 @@ export function Crystal({
 
         // Glow pulsando
         if (glowRef.current) {
-            const glowIntensity = isGrowing ? 0.5 + Math.sin(Date.now() * 0.01) * 0.3 : 0.3
+            const glowIntensity = isGrowing ? 0.5 + Math.sin(timeRef.current * 10) * 0.3 : 0.3
                 ; (glowRef.current.material as THREE.MeshBasicMaterial).opacity = glowIntensity * type.transparency
         }
     })
@@ -81,7 +85,7 @@ export function Crystal({
             {/* Cristal principal */}
             <mesh ref={meshRef} castShadow>
                 {renderGeometry()}
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color={type.color}
                     transparent
                     opacity={0.8}
@@ -89,7 +93,6 @@ export function Crystal({
                     metalness={0.1}
                     clearcoat={1}
                     clearcoatRoughness={0.1}
-                    transmission={type.transparency}
                     ior={1.5}
                 />
             </mesh>

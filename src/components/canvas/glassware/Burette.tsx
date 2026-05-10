@@ -51,13 +51,11 @@ export default function Burette({
             {/* Tubo principal da bureta */}
             <mesh castShadow>
                 <cylinderGeometry args={[tubeRadius, tubeRadius, tubeHeight, 24, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -65,11 +63,10 @@ export default function Burette({
             {/* Topo fechado com reservatório */}
             <mesh position={[0, tubeHeight / 2 + 0.02, 0]}>
                 <sphereGeometry args={[tubeRadius * 1.5, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
-                    transmission={0.95}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -79,11 +76,10 @@ export default function Burette({
                 {/* Corpo de vidro */}
                 <mesh rotation={[Math.PI / 2, 0, 0]}>
                     <cylinderGeometry args={[0.02 * scale, 0.02 * scale, 0.05 * scale, 16]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.25}
-                        transmission={0.9}
                     />
                 </mesh>
 
@@ -106,11 +102,10 @@ export default function Burette({
             {/* Ponta de saída */}
             <mesh position={[0, -tubeHeight / 2 - 0.08, 0]}>
                 <coneGeometry args={[tubeRadius * 0.6, 0.04 * scale, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
-                    transmission={0.9}
                 />
             </mesh>
 
@@ -123,12 +118,11 @@ export default function Burette({
                         tubeHeight * liquidLevel,
                         24
                     ]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={liquidColor}
                         transparent
                         opacity={0.7}
                         roughness={0.1}
-                        transmission={0.3}
                     />
                 </mesh>
             )}
@@ -139,7 +133,7 @@ export default function Burette({
                     {[0, -0.03, -0.06].map((y, i) => (
                         <mesh key={i} position={[0, y, 0]}>
                             <sphereGeometry args={[0.004 * scale, 8, 8]} />
-                            <meshPhysicalMaterial
+                            <meshStandardMaterial
                                 color={liquidColor}
                                 transparent
                                 opacity={0.9}

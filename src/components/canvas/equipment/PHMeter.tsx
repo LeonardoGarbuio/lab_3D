@@ -64,7 +64,7 @@ export default function PHMeter({ position, ph = 7, scale = 1 }: PHMeterProps) {
             {/* Ponta da sonda (vidro) */}
             <mesh position={[0, -0.28, 0]}>
                 <sphereGeometry args={[0.015, 16, 16]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.6} transmission={0.8} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.6} />
             </mesh>
 
             {/* Cabo */}

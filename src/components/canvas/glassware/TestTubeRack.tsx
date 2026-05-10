@@ -30,7 +30,7 @@ export default function TestTubeRack({
     const holeSpacing = rackWidth / (tubes.length + 1)
 
     return (
-        <group ref={groupRef} position={position}>
+        <group ref={groupRef} position={position} raycast={null as any}>
             {/* Base do suporte */}
             <mesh position={[0, 0, 0]} castShadow receiveShadow>
                 <boxGeometry args={[rackWidth, rackHeight, rackDepth]} />

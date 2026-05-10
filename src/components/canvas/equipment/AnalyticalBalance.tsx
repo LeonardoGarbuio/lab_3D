@@ -45,25 +45,25 @@ export default function AnalyticalBalance({ position, mass = 0, scale = 1 }: Ana
                 {/* Vidro lateral esquerdo */}
                 <mesh position={[-0.2, 0.1, 0]}>
                     <boxGeometry args={[0.02, 0.2, 0.3]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} transmission={0.8} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.2} />
                 </mesh>
 
                 {/* Vidro lateral direito */}
                 <mesh position={[0.2, 0.1, 0]}>
                     <boxGeometry args={[0.02, 0.2, 0.3]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} transmission={0.8} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.2} />
                 </mesh>
 
                 {/* Vidro traseiro */}
                 <mesh position={[0, 0.1, -0.15]}>
                     <boxGeometry args={[0.4, 0.2, 0.02]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} transmission={0.8} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.2} />
                 </mesh>
 
                 {/* Vidro superior */}
                 <mesh position={[0, 0.2, 0]}>
                     <boxGeometry args={[0.4, 0.02, 0.3]} />
-                    <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} transmission={0.8} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.2} />
                 </mesh>
 
                 {/* Prato de pesagem */}

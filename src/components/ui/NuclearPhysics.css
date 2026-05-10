@@ -1,0 +1,127 @@
+/* src/components/ui/NuclearPhysics.css */
+.np-overlay {
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,3,12,0.92);backdrop-filter:blur(12px);
+  z-index:9999;display:flex;align-items:center;justify-content:center;
+  animation:qm-fade-in 0.4s ease-out;
+}
+.np-container {
+  width:95vw;height:92vh;max-width:1500px;display:flex;flex-direction:column;
+  border:1px solid rgba(239,68,68,0.2);border-radius:12px;overflow:hidden;
+  background:rgba(5,5,20,0.95);box-shadow:0 0 60px rgba(239,68,68,0.06);
+}
+.np-topbar {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;background:linear-gradient(180deg,rgba(239,68,68,0.06),transparent);
+  border-bottom:1px solid rgba(239,68,68,0.15);flex-shrink:0;gap:12px;
+}
+.np-title { display:flex;align-items:center;gap:10px;flex-shrink:0; }
+.np-title span { font-size:1.4rem; }
+.np-title h2 { font-size:1.1rem;font-weight:600;color:#e0f0ff;margin:0; }
+.np-tabs { display:flex;gap:4px;flex-wrap:wrap;justify-content:center;flex:1; }
+.np-tab {
+  padding:5px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:6px;color:#8899aa;font-size:0.7rem;cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.np-tab:hover { background:rgba(239,68,68,0.08);color:#ef4444; }
+.np-tab.active { background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#ef4444; }
+.np-content { flex:1;overflow-y:auto;padding:20px; }
+.np-section { display:flex;flex-direction:column;align-items:center;gap:16px; }
+.np-section h3 { color:#e0f0ff;margin:0;font-size:1.1rem; }
+.np-desc { color:rgba(180,210,240,0.7);font-size:0.85rem;max-width:700px;text-align:center;margin:0; }
+.np-canvas { max-width:100%;border-radius:8px;background:rgba(0,0,0,0.3); }
+.np-chart { width:100%;max-width:700px; }
+
+/* Radio buttons */
+.np-radio-btns { display:flex;gap:8px; }
+.np-radio-btn {
+  padding:8px 20px;background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.1);
+  border-radius:8px;color:#aaa;cursor:pointer;transition:all 0.2s;font-size:0.85rem;
+}
+.np-radio-btn:hover { background:rgba(255,255,255,0.08); }
+.np-radio-btn.active { background:rgba(255,255,255,0.08);color:#fff; }
+.np-info-card {
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:16px 20px;max-width:600px;width:100%;
+}
+.np-info-card h4 { color:#e0f0ff;margin:0 0 8px;font-size:0.9rem; }
+.np-info-card p { color:rgba(180,210,240,0.7);font-size:0.82rem;margin:4px 0;line-height:1.5; }
+.np-penetration { margin-top:8px; }
+.np-penetration span { font-size:0.82rem;color:#888; }
+.np-pen { padding:2px 8px;border-radius:4px;font-size:0.78rem; }
+.np-pen.low { background:rgba(34,197,94,0.15);color:#4ade80; }
+.np-pen.medium { background:rgba(234,179,8,0.15);color:#eab308; }
+.np-pen.high { background:rgba(239,68,68,0.15);color:#ef4444; }
+
+/* Isotope selector */
+.np-isotope-selector { display:flex;flex-wrap:wrap;gap:6px;justify-content:center; }
+.np-iso-btn {
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  border-radius:6px;cursor:pointer;transition:all 0.15s;color:#888;
+}
+.np-iso-btn:hover { background:rgba(78,205,196,0.08);border-color:rgba(78,205,196,0.2); }
+.np-iso-btn.active { background:rgba(78,205,196,0.15);border-color:rgba(78,205,196,0.4);color:#4ecdc4; }
+.np-iso-name { font-weight:700;font-size:0.8rem;color:inherit; }
+.np-iso-hl { font-size:0.6rem;opacity:0.6; }
+.np-hl-info { max-width:500px;width:100%; }
+.np-hl-info h4 { color:#4ecdc4;margin:0 0 8px; }
+.np-hl-info p { color:#aaa;font-size:0.85rem;margin:2px 0; }
+.np-hl-bars { display:flex;flex-direction:column;gap:4px;margin-top:12px; }
+.np-hl-bar {
+  height:24px;background:rgba(255,255,255,0.05);border-radius:4px;
+  position:relative;overflow:hidden;
+}
+.np-hl-fill {
+  height:100%;background:linear-gradient(90deg,rgba(78,205,196,0.4),rgba(78,205,196,0.15));
+  border-radius:4px;transition:width 0.5s;
+}
+.np-hl-bar span {
+  position:absolute;right:8px;top:4px;font-size:0.7rem;color:#aaa;
+}
+
+/* Decay series */
+.np-series-btns { display:flex;gap:8px; }
+.np-series-btns button {
+  padding:8px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;color:#888;cursor:pointer;font-size:0.78rem;transition:all 0.15s;
+}
+.np-series-btns button:hover { background:rgba(78,205,196,0.08); }
+.np-series-btns button.active { background:rgba(78,205,196,0.15);border-color:rgba(78,205,196,0.4);color:#4ecdc4; }
+.np-decay-chain {
+  display:flex;flex-wrap:wrap;align-items:center;gap:4px;
+  max-width:900px;justify-content:center;
+}
+.np-decay-step { display:flex;align-items:center;gap:4px; }
+.np-isotope {
+  display:flex;flex-direction:column;align-items:center;padding:6px 10px;
+  border:2px solid rgba(255,255,255,0.1);border-radius:8px;
+  background:rgba(255,255,255,0.03);transition:all 0.2s;min-width:50px;
+}
+.np-isotope.final { border-color:#22c55e;background:rgba(34,197,94,0.08); }
+.np-iso-mass { font-size:0.65rem;color:#888; }
+.np-iso-sym { font-size:0.9rem;font-weight:700;color:#e0f0ff; }
+.np-iso-z { font-size:0.55rem;color:#555; }
+.np-decay-arrow { font-size:0.7rem;font-weight:700; }
+.np-decay-step.active .np-isotope { background:rgba(255,255,255,0.08); }
+
+/* Capture cards */
+.np-capture-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;max-width:900px;width:100%; }
+.np-capture-card {
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:16px;
+}
+.np-capture-card h4 { color:#e0f0ff;margin:0 0 8px;font-size:0.9rem; }
+.np-capture-card p { color:rgba(180,210,240,0.7);font-size:0.8rem;margin:4px 0;line-height:1.4; }
+.np-capture-card.highlight { border-color:rgba(139,92,246,0.3);background:rgba(139,92,246,0.05); }
+.np-eq { font-family:monospace;font-size:1rem!important;color:#4ecdc4!important;font-weight:700; }
+.np-result { font-family:monospace;color:#f97316!important; }
+.np-app { color:#22c55e!important;font-style:italic; }
+
+.np-content::-webkit-scrollbar { width:4px; }
+.np-content::-webkit-scrollbar-track { background:transparent; }
+.np-content::-webkit-scrollbar-thumb { background:rgba(239,68,68,0.2);border-radius:2px; }
+@media (max-width:900px) {
+  .np-topbar { flex-direction:column; }
+  .np-capture-grid { grid-template-columns:1fr; }
+}

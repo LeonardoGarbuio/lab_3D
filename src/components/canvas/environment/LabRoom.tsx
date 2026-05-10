@@ -16,14 +16,14 @@ export default function LabRoom({ children }: LabRoomProps) {
     const corrosionMarks = useLabStore(s => s.corrosionMarks)
     const clearExplosion = useLabStore(s => s.clearExplosion)
 
-    const roomWidth = 12
-    const roomDepth = 10
+    const roomWidth = 26
+    const roomDepth = 18
     const roomHeight = 4
     const tileSize = 1
 
     return (
         <group ref={groupRef}>
-            {/* PISO - Azulejos de laboratório */}
+            {/* PISO */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
                 <planeGeometry args={[roomWidth, roomDepth]} />
                 <meshStandardMaterial
@@ -32,28 +32,6 @@ export default function LabRoom({ children }: LabRoomProps) {
                     metalness={0.1}
                 />
             </mesh>
-
-            {/* Linhas do piso (simulando azulejos) */}
-            {Array.from({ length: Math.floor(roomWidth / tileSize) + 1 }).map((_, i) => (
-                <mesh
-                    key={`v-${i}`}
-                    rotation={[-Math.PI / 2, 0, 0]}
-                    position={[-roomWidth / 2 + i * tileSize, 0.001, 0]}
-                >
-                    <planeGeometry args={[0.02, roomDepth]} />
-                    <meshBasicMaterial color="#cccccc" />
-                </mesh>
-            ))}
-            {Array.from({ length: Math.floor(roomDepth / tileSize) + 1 }).map((_, i) => (
-                <mesh
-                    key={`h-${i}`}
-                    rotation={[-Math.PI / 2, 0, 0]}
-                    position={[0, 0.001, -roomDepth / 2 + i * tileSize]}
-                >
-                    <planeGeometry args={[roomWidth, 0.02]} />
-                    <meshBasicMaterial color="#cccccc" />
-                </mesh>
-            ))}
 
             {/* PAREDE TRASEIRA */}
             <mesh position={[0, roomHeight / 2, -roomDepth / 2]} receiveShadow>
@@ -95,20 +73,16 @@ export default function LabRoom({ children }: LabRoomProps) {
 
             {/* Janela na parede traseira */}
             <group position={[0, roomHeight * 0.6, -roomDepth / 2 + 0.01]}>
-                {/* Moldura */}
                 <mesh>
                     <boxGeometry args={[3, 2, 0.05]} />
                     <meshStandardMaterial color="#555555" />
                 </mesh>
-                {/* Vidro */}
                 <mesh position={[0, 0, 0.03]}>
                     <planeGeometry args={[2.8, 1.8]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#87CEEB"
                         transparent
                         opacity={0.3}
-                        roughness={0.05}
-                        transmission={0.7}
                     />
                 </mesh>
             </group>

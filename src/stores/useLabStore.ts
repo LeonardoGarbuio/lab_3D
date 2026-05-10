@@ -79,7 +79,13 @@ interface LabState {
     isReagentPanelOpen: boolean
     isExperimentPanelOpen: boolean
     isNotebookOpen: boolean
+    isQuantumMicroscopeOpen: boolean
+    isAtomicModelsOpen: boolean
+    isPeriodicPropertiesOpen: boolean
+    isNuclearPhysicsOpen: boolean
     isSoundEnabled: boolean
+    isFPSLocked: boolean
+    isElectronConfigOpen: boolean
 
     // Score/Achievements
     experimentScore: number
@@ -99,6 +105,23 @@ interface LabState {
     closeExperimentPanel: () => void
     openNotebook: () => void
     closeNotebook: () => void
+    openQuantumMicroscope: () => void
+    closeQuantumMicroscope: () => void
+    isIntermolecularOpen: boolean
+    openIntermolecular: () => void
+    closeIntermolecular: () => void
+    isSolidStateOpen: boolean
+    openSolidState: () => void
+    closeSolidState: () => void
+    openAtomicModels: () => void
+    closeAtomicModels: () => void
+    setFPSLocked: (locked: boolean) => void
+    openElectronConfig: () => void
+    closeElectronConfig: () => void
+    openPeriodicProperties: () => void
+    closePeriodicProperties: () => void
+    openNuclearPhysics: () => void
+    closeNuclearPhysics: () => void
     toggleSound: () => void
 
     // Experimentos
@@ -205,7 +228,15 @@ export const useLabStore = create<LabState>((set, get) => ({
     isReagentPanelOpen: false,
     isExperimentPanelOpen: false,
     isNotebookOpen: false,
+    isQuantumMicroscopeOpen: false,
+    isAtomicModelsOpen: false,
+    isPeriodicPropertiesOpen: false,
+    isNuclearPhysicsOpen: false,
+    isIntermolecularOpen: false,
+    isSolidStateOpen: false,
     isSoundEnabled: true,
+    isFPSLocked: false,
+    isElectronConfigOpen: false,
     experimentScore: 0,
 
     // Perigos e Efeitos - Estados iniciais
@@ -223,6 +254,21 @@ export const useLabStore = create<LabState>((set, get) => ({
     closeExperimentPanel: () => set({ isExperimentPanelOpen: false }),
     openNotebook: () => set({ isNotebookOpen: true }),
     closeNotebook: () => set({ isNotebookOpen: false }),
+    openQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: true }),
+    closeQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: false }),
+    openIntermolecular: () => set({ isIntermolecularOpen: true }),
+    closeIntermolecular: () => set({ isIntermolecularOpen: false }),
+    openSolidState: () => set({ isSolidStateOpen: true }),
+    closeSolidState: () => set({ isSolidStateOpen: false }),
+    openAtomicModels: () => set({ isAtomicModelsOpen: true }),
+    closeAtomicModels: () => set({ isAtomicModelsOpen: false }),
+    setFPSLocked: (locked) => set({ isFPSLocked: locked }),
+    openElectronConfig: () => set({ isElectronConfigOpen: true }),
+    closeElectronConfig: () => set({ isElectronConfigOpen: false }),
+    openPeriodicProperties: () => set({ isPeriodicPropertiesOpen: true }),
+    closePeriodicProperties: () => set({ isPeriodicPropertiesOpen: false }),
+    openNuclearPhysics: () => set({ isNuclearPhysicsOpen: true }),
+    closeNuclearPhysics: () => set({ isNuclearPhysicsOpen: false }),
     toggleSound: () => set((s) => ({ isSoundEnabled: !s.isSoundEnabled })),
 
     // Experimentos

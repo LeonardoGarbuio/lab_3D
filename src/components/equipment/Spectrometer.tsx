@@ -92,12 +92,11 @@ export function Spectrometer({
             <group position={[0, 0.05, 0]}>
                 <mesh ref={prismRef} rotation={[0, Math.PI / 4, 0]}>
                     <cylinderGeometry args={[0.04, 0.04, 0.08, 3]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.5}
                         roughness={0}
-                        transmission={0.9}
                         ior={1.5}
                     />
                 </mesh>

@@ -8,6 +8,13 @@ import ReagentPanel from './ReagentPanel'
 import ExperimentPanel from './ExperimentPanel'
 import ExperimentGuide from './ExperimentGuide'
 import Notebook from './Notebook'
+import QuantumMicroscope from './QuantumMicroscope'
+import AtomicModels from './AtomicModels'
+import ElectronConfig from './ElectronConfig'
+import PeriodicProperties from './PeriodicProperties'
+import NuclearPhysics from './NuclearPhysics'
+import IntermolecularSimulator from './IntermolecularSimulator'
+import SolidStateSimulator from './SolidStateSimulator'
 import { useSoundEffects } from '../../hooks/useSoundEffects'
 import './LabHUD.css'
 
@@ -17,7 +24,7 @@ export default function LabHUD() {
 
     const {
         selectedId, pouringFromId, lastReaction, analysisTarget, objects, reactionLog,
-        currentExperiment, completedExperiments, experimentScore, isSoundEnabled,
+        currentExperiment, completedExperiments, experimentScore, isSoundEnabled, isFPSLocked,
         cancelPouring, resetLab, startAnalysis, stopAnalysis, breakObject,
         openPeriodicTable, openReagentPanel, openExperimentPanel, openNotebook,
         startHeating, stopHeating, startFreezing, shakeObject, coolDown, emptyObject,
@@ -57,23 +64,8 @@ export default function LabHUD() {
                     </div>
                 </div>
 
-                {/* MENU PRINCIPAL */}
+                {/* CONTROLES GERAIS */}
                 <div className="hud-panel hud-menu">
-                    <h3>MENU</h3>
-                    <div className="menu-grid">
-                        <button onClick={() => { if (isSoundEnabled) playSound('click'); openPeriodicTable() }}>
-                            <span>⚛️</span>Elementos
-                        </button>
-                        <button onClick={() => { if (isSoundEnabled) playSound('click'); openReagentPanel() }}>
-                            <span>🧪</span>Reagentes
-                        </button>
-                        <button onClick={() => { if (isSoundEnabled) playSound('click'); openExperimentPanel() }}>
-                            <span>📚</span>Experimentos
-                        </button>
-                        <button onClick={() => { if (isSoundEnabled) playSound('click'); openNotebook() }}>
-                            <span>📓</span>Anotações
-                        </button>
-                    </div>
                     <div className="controls-row">
                         <button className={`icon-btn ${isSoundEnabled ? 'active' : ''}`} onClick={toggleSound} title="Som">
                             {isSoundEnabled ? '🔊' : '🔇'}
@@ -245,12 +237,38 @@ export default function LabHUD() {
                     onQuit={quitExperiment}
                 />
             )}
+            {/* OVERLAY DE FPS E MIRA */}
+            {!isFPSLocked && !store.isPeriodicTableOpen && !store.isReagentPanelOpen && !store.isExperimentPanelOpen && !store.isNotebookOpen && !store.isQuantumMicroscopeOpen && !store.isAtomicModelsOpen && !store.isElectronConfigOpen && !store.isPeriodicPropertiesOpen && !store.isNuclearPhysicsOpen && !store.isIntermolecularOpen && !store.isSolidStateOpen && (
+                <div className="fps-overlay" style={{
+                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10, pointerEvents: 'none'
+                }}>
+                    <h2 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Clique na tela para jogar</h2>
+                    <p style={{ color: '#aaa' }}>Use W A S D para andar. Esc para liberar o mouse.</p>
+                </div>
+            )}
+            
+            {isFPSLocked && (
+                <div className="crosshair" style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: '4px', height: '4px', backgroundColor: 'white', borderRadius: '50%',
+                    boxShadow: '0 0 4px rgba(0,0,0,0.8)', zIndex: 10, pointerEvents: 'none'
+                }}></div>
+            )}
 
             {/* MODAIS */}
             <PeriodicTable />
             <ReagentPanel isOpen={store.isReagentPanelOpen} onClose={store.closeReagentPanel} />
             <ExperimentPanel isOpen={store.isExperimentPanelOpen} onClose={store.closeExperimentPanel} onStartExperiment={store.startExperiment} />
             <Notebook isOpen={store.isNotebookOpen} onClose={store.closeNotebook} />
+            <QuantumMicroscope isOpen={store.isQuantumMicroscopeOpen} onClose={store.closeQuantumMicroscope} />
+            <AtomicModels isOpen={store.isAtomicModelsOpen} onClose={store.closeAtomicModels} />
+            <ElectronConfig isOpen={store.isElectronConfigOpen} onClose={store.closeElectronConfig} />
+            <PeriodicProperties isOpen={store.isPeriodicPropertiesOpen} onClose={store.closePeriodicProperties} />
+            <NuclearPhysics isOpen={store.isNuclearPhysicsOpen} onClose={store.closeNuclearPhysics} />
+            <IntermolecularSimulator isOpen={store.isIntermolecularOpen} onClose={store.closeIntermolecular} />
+            <SolidStateSimulator isOpen={store.isSolidStateOpen} onClose={store.closeSolidState} />
         </>
     )
 }

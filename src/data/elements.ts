@@ -19,7 +19,7 @@ export interface Element {
     period: number
 }
 
-export const ELEMENTS: Element[] = [
+const _BASE_ELEMENTS: Element[] = [
     // Período 1
     { atomicNumber: 1, symbol: 'H', name: 'Hydrogen', namePt: 'Hidrogênio', atomicMass: 1.008, category: 'nonmetal', phase: 'gas', electronegativity: 2.20, density: 0.00009, meltingPoint: -259, boilingPoint: -253, color: '#ffffff', group: 1, period: 1 },
     { atomicNumber: 2, symbol: 'He', name: 'Helium', namePt: 'Hélio', atomicMass: 4.003, category: 'noble-gas', phase: 'gas', electronegativity: null, density: 0.00018, meltingPoint: -272, boilingPoint: -269, color: '#d9ffff', group: 18, period: 1 },
@@ -82,6 +82,21 @@ export const ELEMENTS: Element[] = [
     { atomicNumber: 87, symbol: 'Fr', name: 'Francium', namePt: 'Frâncio', atomicMass: 223, category: 'alkali-metal', phase: 'solid', electronegativity: 0.70, density: 1.87, meltingPoint: 27, boilingPoint: 677, color: '#420066', group: 1, period: 7 },
     { atomicNumber: 92, symbol: 'U', name: 'Uranium', namePt: 'Urânio', atomicMass: 238.03, category: 'actinide', phase: 'solid', electronegativity: 1.38, density: 19.05, meltingPoint: 1135, boilingPoint: 4131, color: '#008fff', group: 3, period: 7 },
 ]
+
+// Importar elementos faltantes (39-118)
+import { MISSING_ELEMENTS } from './elements_full'
+
+// Mesclar e ordenar por número atômico (remove duplicatas)
+const seen = new Set<number>()
+const merged: Element[] = []
+for (const el of [..._BASE_ELEMENTS, ...MISSING_ELEMENTS]) {
+    if (!seen.has(el.atomicNumber)) {
+        seen.add(el.atomicNumber)
+        merged.push(el)
+    }
+}
+merged.sort((a, b) => a.atomicNumber - b.atomicNumber)
+export const ELEMENTS: Element[] = merged
 
 // Elementos mais usados em laboratório
 export const COMMON_ELEMENTS = ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Ag', 'Au', 'Hg', 'Pb']

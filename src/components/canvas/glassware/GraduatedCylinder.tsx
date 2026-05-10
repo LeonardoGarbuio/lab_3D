@@ -51,26 +51,23 @@ export default function GraduatedCylinder({
             {/* Base alargada */}
             <mesh position={[0, -height / 2 - 0.015, 0]} castShadow>
                 <cylinderGeometry args={[baseRadius, baseRadius * 1.1, 0.03 * scale, 24]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0.02}
-                    transmission={0.9}
                 />
             </mesh>
 
             {/* Tubo cilíndrico principal (vidro) */}
             <mesh castShadow>
                 <cylinderGeometry args={[radius, radius, height, 32, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
                     metalness={0}
-                    transmission={0.95}
-                    thickness={0.3}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -78,23 +75,21 @@ export default function GraduatedCylinder({
             {/* Fundo do tubo */}
             <mesh position={[0, -height / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[radius - wallThickness, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0.02}
-                    transmission={0.9}
                 />
             </mesh>
 
             {/* Bico de derramamento */}
             <mesh position={[radius * 0.8, height / 2 + 0.015, 0]} rotation={[0, 0, -0.3]}>
                 <coneGeometry args={[0.02 * scale, 0.04 * scale, 8, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
-                    transmission={0.9}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -109,12 +104,11 @@ export default function GraduatedCylinder({
                             height * liquidLevel,
                             32
                         ]} />
-                        <meshPhysicalMaterial
+                        <meshStandardMaterial
                             color={liquidColor}
                             transparent
                             opacity={0.7}
                             roughness={0.1}
-                            transmission={0.3}
                         />
                     </mesh>
 
@@ -124,7 +118,7 @@ export default function GraduatedCylinder({
                         rotation={[-Math.PI / 2, 0, 0]}
                     >
                         <circleGeometry args={[radius - wallThickness * 2, 32]} />
-                        <meshPhysicalMaterial
+                        <meshStandardMaterial
                             color={liquidColor}
                             transparent
                             opacity={0.9}

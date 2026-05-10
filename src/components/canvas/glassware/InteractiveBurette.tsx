@@ -75,12 +75,14 @@ export default function InteractiveBurette({
         <group
             ref={groupRef}
             position={position}
-            onClick={handleClick}
-            onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
-            onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
         >
-            {/* HITBOX INVISÍVEL - área grande para facilitar clique */}
-            <mesh visible={false}>
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                visible={false}
+                onClick={handleClick}
+                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+            >
                 <boxGeometry args={[0.15 * scale, tubeHeight * 1.2, 0.15 * scale]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
@@ -94,12 +96,11 @@ export default function InteractiveBurette({
             {/* Tubo principal - MENOS TRANSPARENTE */}
             <mesh castShadow>
                 <cylinderGeometry args={[tubeRadius, tubeRadius, tubeHeight, 24, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={isHovered || isSelected ? 0.45 : 0.3}
                     roughness={0.02}
-                    transmission={0.9}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -107,7 +108,7 @@ export default function InteractiveBurette({
             {/* Topo */}
             <mesh position={[0, tubeHeight / 2 + 0.02, 0]}>
                 <sphereGeometry args={[tubeRadius * 1.5, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.3} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.3} />
             </mesh>
 
             {/* Torneira - CLICÁVEL */}
@@ -128,14 +129,14 @@ export default function InteractiveBurette({
             {/* Ponta */}
             <mesh position={[0, -tubeHeight / 2 - 0.08, 0]}>
                 <coneGeometry args={[tubeRadius * 0.6, 0.04 * scale, 16]} />
-                <meshPhysicalMaterial color="#ffffff" transparent opacity={0.35} />
+                <meshStandardMaterial color="#ffffff" transparent opacity={0.35} />
             </mesh>
 
             {/* Líquido */}
             {fillLevel > 0 && (
                 <mesh position={[0, tubeHeight / 2 - (tubeHeight * fillLevel) / 2, 0]}>
                     <cylinderGeometry args={[tubeRadius * 0.9, tubeRadius * 0.9, tubeHeight * fillLevel, 24]} />
-                    <meshPhysicalMaterial color={color} transparent opacity={0.8} />
+                    <meshStandardMaterial color={color} transparent opacity={0.8} />
                 </mesh>
             )}
 
@@ -145,7 +146,7 @@ export default function InteractiveBurette({
                     {[0, 1, 2].map((i) => (
                         <mesh key={i} position={[0, -(dripPhase + i * 0.33) % 1 * 0.15, 0]}>
                             <sphereGeometry args={[0.006 * scale, 8, 8]} />
-                            <meshPhysicalMaterial color={color} transparent opacity={0.9} />
+                            <meshStandardMaterial color={color} transparent opacity={0.9} />
                         </mesh>
                     ))}
                 </group>

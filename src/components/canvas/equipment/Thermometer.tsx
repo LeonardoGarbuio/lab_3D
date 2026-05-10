@@ -28,11 +28,10 @@ export default function Thermometer({ position, temperature = 25, scale = 1 }: T
             {/* Tubo de vidro */}
             <mesh position={[0, 0.15, 0]}>
                 <cylinderGeometry args={[0.015, 0.015, 0.35, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
-                    transmission={0.9}
                     roughness={0.1}
                 />
             </mesh>
@@ -40,11 +39,10 @@ export default function Thermometer({ position, temperature = 25, scale = 1 }: T
             {/* Bulbo inferior */}
             <mesh position={[0, -0.03, 0]}>
                 <sphereGeometry args={[0.03, 16, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
-                    transmission={0.9}
                 />
             </mesh>
 

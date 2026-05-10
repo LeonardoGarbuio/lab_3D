@@ -31,17 +31,15 @@ export default function SeparatingFunnel({
     const stemLength = 0.15 * scale
 
     return (
-        <group ref={groupRef} position={position}>
+        <group ref={groupRef} position={position} raycast={null as any}>
             {/* Bulbo principal (forma de pêra) */}
             <mesh position={[0, 0, 0]} castShadow>
-                <sphereGeometry args={[bulbRadius, 32, 32]} />
-                <meshPhysicalMaterial
+                <sphereGeometry args={[bulbRadius, 16, 16]} />
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
-                    thickness={0.4}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -49,12 +47,11 @@ export default function SeparatingFunnel({
             {/* Pescoço superior */}
             <mesh position={[0, bulbRadius + neckHeight / 2, 0]} castShadow>
                 <cylinderGeometry args={[neckRadius, neckRadius * 1.5, neckHeight, 16, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -68,11 +65,10 @@ export default function SeparatingFunnel({
             {/* Cone inferior (transição para torneira) */}
             <mesh position={[0, -bulbRadius - 0.03, 0]}>
                 <coneGeometry args={[bulbRadius * 0.3, 0.06 * scale, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
-                    transmission={0.95}
                 />
             </mesh>
 
@@ -81,11 +77,10 @@ export default function SeparatingFunnel({
                 {/* Vidro da torneira */}
                 <mesh rotation={[Math.PI / 2, 0, 0]}>
                     <cylinderGeometry args={[0.025 * scale, 0.025 * scale, 0.06 * scale, 16]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.25}
-                        transmission={0.9}
                     />
                 </mesh>
 
@@ -108,11 +103,10 @@ export default function SeparatingFunnel({
             {/* Stem de saída */}
             <mesh position={[0, -bulbRadius - 0.08 - stemLength / 2 - 0.03, 0]}>
                 <cylinderGeometry args={[0.01 * scale, 0.008 * scale, stemLength, 12]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
-                    transmission={0.9}
                 />
             </mesh>
 
@@ -125,12 +119,11 @@ export default function SeparatingFunnel({
                         0, Math.PI * 2,
                         Math.PI / 2, Math.PI / 2
                     ]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={lowerLiquidColor}
                         transparent
                         opacity={0.7}
                         roughness={0.1}
-                        transmission={0.25}
                     />
                 </mesh>
             )}
@@ -141,8 +134,8 @@ export default function SeparatingFunnel({
                     position={[0, bulbRadius * (lowerLevel - 0.5) * 2, 0]}
                     rotation={[-Math.PI / 2, 0, 0]}
                 >
-                    <circleGeometry args={[bulbRadius * 0.9, 32]} />
-                    <meshPhysicalMaterial
+                    <circleGeometry args={[bulbRadius * 0.9, 16]} />
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.3}
@@ -160,12 +153,11 @@ export default function SeparatingFunnel({
                         0, Math.PI * 2,
                         0, Math.PI / 2
                     ]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={upperLiquidColor}
                         transparent
                         opacity={0.6}
                         roughness={0.1}
-                        transmission={0.3}
                     />
                 </mesh>
             )}

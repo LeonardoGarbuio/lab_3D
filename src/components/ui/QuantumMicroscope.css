@@ -1,0 +1,694 @@
+/* src/components/ui/QuantumMicroscope.css */
+/* Microscópio Quântico — Efeito Holográfico Sci-Fi */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   OVERLAY
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.quantum-microscope-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 3, 12, 0.92);
+    backdrop-filter: blur(12px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: qm-fade-in 0.4s ease-out;
+}
+
+@keyframes qm-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.quantum-microscope {
+    width: 95vw;
+    height: 92vh;
+    max-width: 1600px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0, 247, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(5, 5, 20, 0.95);
+    box-shadow:
+        0 0 60px rgba(0, 247, 255, 0.08),
+        inset 0 0 60px rgba(0, 247, 255, 0.02);
+    animation: qm-slide-up 0.5s ease-out;
+}
+
+@keyframes qm-slide-up {
+    from { transform: translateY(30px) scale(0.97); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP BAR
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.qm-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: linear-gradient(180deg, rgba(0, 247, 255, 0.08), transparent);
+    border-bottom: 1px solid rgba(0, 247, 255, 0.15);
+    flex-shrink: 0;
+}
+
+.qm-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qm-icon {
+    font-size: 1.6rem;
+}
+
+.qm-title h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #e0f0ff;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.qm-badge {
+    background: rgba(0, 247, 255, 0.15);
+    color: #00f7ff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 1px solid rgba(0, 247, 255, 0.3);
+}
+
+.qm-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.qm-toggle {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #aabbcc;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.qm-toggle:hover {
+    background: rgba(0, 247, 255, 0.1);
+    border-color: rgba(0, 247, 255, 0.3);
+    color: #00f7ff;
+}
+
+.qm-toggle.active {
+    background: rgba(0, 247, 255, 0.15);
+    border-color: rgba(0, 247, 255, 0.4);
+    color: #00f7ff;
+}
+
+.qm-close {
+    background: rgba(255, 80, 80, 0.1);
+    border: 1px solid rgba(255, 80, 80, 0.2);
+    color: #ff6666;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qm-close:hover {
+    background: rgba(255, 80, 80, 0.25);
+    border-color: rgba(255, 80, 80, 0.5);
+    transform: scale(1.1);
+}
+
+.qm-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.qm-tab {
+    background: transparent;
+    border: none;
+    color: rgba(180, 200, 230, 0.6);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.qm-tab:hover {
+    color: #00f7ff;
+}
+
+.qm-tab.active {
+    color: #00f7ff;
+    border-bottom-color: #00f7ff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONTENT AREA
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.qm-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* VIEWPORT 3D */
+.qm-viewport {
+    flex: 1;
+    position: relative;
+    min-height: 300px;
+}
+
+.qm-viewport canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Indicador de molécula no viewport */
+.qm-molecule-indicator {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.indicator-formula {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #00f7ff;
+    text-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+    letter-spacing: 1px;
+}
+
+.indicator-geo {
+    font-size: 0.85rem;
+    color: rgba(200, 220, 255, 0.7);
+    letter-spacing: 0.5px;
+}
+
+/* Scanlines holográficas */
+.qm-scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 200, 255, 0.015) 3px,
+        rgba(0, 200, 255, 0.015) 4px
+    );
+    animation: scanline-scroll 8s linear infinite;
+}
+
+@keyframes scanline-scroll {
+    from { background-position-y: 0; }
+    to { background-position-y: 100px; }
+}
+
+/* SIDEBAR */
+.qm-sidebar {
+    width: 360px;
+    border-left: 1px solid rgba(0, 247, 255, 0.1);
+    overflow-y: auto;
+    flex-shrink: 0;
+    background: rgba(0, 5, 15, 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VSEPR INFO PANEL
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.vsepr-info-panel {
+    padding: 20px;
+}
+
+.vsepr-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+}
+
+.vsepr-geometry-icon {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 247, 255, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 247, 255, 0.2);
+}
+
+.vsepr-header h3 {
+    font-size: 1.3rem;
+    color: #e0f0ff;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.vsepr-namept {
+    color: rgba(180, 200, 230, 0.7);
+    font-size: 0.85rem;
+    margin: 2px 0 0 0;
+}
+
+.vsepr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.vsepr-stat {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vsepr-stat.full-width {
+    grid-column: 1 / -1;
+}
+
+.vsepr-label {
+    font-size: 0.7rem;
+    color: rgba(150, 170, 200, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vsepr-value {
+    font-size: 0.95rem;
+    color: #d0ddf0;
+    font-weight: 600;
+}
+
+.vsepr-value.highlight {
+    color: #00f7ff;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+}
+
+.vsepr-value.bp {
+    color: #4ecdc4;
+}
+
+.vsepr-value.lp {
+    color: #ffaa00;
+}
+
+.vsepr-value.polar {
+    color: #ff6b6b;
+}
+
+.vsepr-value.apolar {
+    color: #4ecdc4;
+}
+
+.vsepr-description {
+    background: rgba(0, 247, 255, 0.04);
+    border: 1px solid rgba(0, 247, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.vsepr-description p {
+    color: rgba(180, 210, 240, 0.85);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Tabela de átomos */
+.vsepr-atoms-table h4,
+.vsepr-bonds-summary h4 {
+    font-size: 0.75rem;
+    color: rgba(150, 170, 200, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 8px 0;
+}
+
+.atoms-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.atom-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.atom-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.atom-symbol {
+    font-weight: 700;
+    color: #d0ddf0;
+    font-size: 0.85rem;
+}
+
+.atom-count {
+    color: rgba(160, 180, 210, 0.6);
+    font-size: 0.75rem;
+}
+
+/* Ligações */
+.bonds-list {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.bond-badge {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: #aabbcc;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.bond-badge.double {
+    border-color: rgba(0, 200, 255, 0.2);
+    color: #66ddff;
+}
+
+.bond-badge.triple {
+    border-color: rgba(200, 100, 255, 0.2);
+    color: #cc88ff;
+}
+
+.bond-badge.ionic {
+    border-color: rgba(255, 100, 170, 0.2);
+    color: #ff88aa;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HYBRIDIZATION PANEL
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.hybridization-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.orbital-diagram h4 {
+    font-size: 0.8rem;
+    color: rgba(150, 170, 200, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 12px 0;
+}
+
+.orbital-boxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.orbital-box-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.orbital-box {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    background: rgba(0, 247, 255, 0.05);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.electron {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.electron.up {
+    color: #4ecdc4;
+}
+
+.electron.down {
+    color: #ff6b6b;
+}
+
+.orbital-label {
+    font-size: 0.75rem;
+    color: #aabbcc;
+    font-family: monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOLECULE SELECTOR
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.molecule-selector {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.selector-search input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 247, 255, 0.15);
+    border-radius: 8px;
+    color: #e0f0ff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.selector-search input:focus {
+    border-color: rgba(0, 247, 255, 0.4);
+    box-shadow: 0 0 12px rgba(0, 247, 255, 0.1);
+}
+
+.selector-search input::placeholder {
+    color: rgba(150, 170, 200, 0.5);
+}
+
+.selector-filters {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.selector-filters button {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #8899aa;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.selector-filters button:hover {
+    background: rgba(0, 247, 255, 0.08);
+    color: #00f7ff;
+}
+
+.selector-filters button.active {
+    background: rgba(0, 247, 255, 0.12);
+    border-color: rgba(0, 247, 255, 0.3);
+    color: #00f7ff;
+}
+
+.selector-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.molecule-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    color: #ccc;
+    width: 100%;
+}
+
+.molecule-card:hover {
+    background: rgba(0, 247, 255, 0.06);
+    border-color: rgba(0, 247, 255, 0.2);
+}
+
+.molecule-card.selected {
+    background: rgba(0, 247, 255, 0.1);
+    border-color: rgba(0, 247, 255, 0.35);
+}
+
+.card-formula {
+    font-weight: 700;
+    color: #e0f0ff;
+    font-size: 0.9rem;
+    min-width: 60px;
+}
+
+.card-name {
+    flex: 1;
+    color: rgba(180, 200, 230, 0.7);
+    font-size: 0.78rem;
+}
+
+.card-geometry {
+    font-size: 0.7rem;
+    color: rgba(0, 247, 255, 0.6);
+    font-family: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUICKBAR
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.qm-quickbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    border-top: 1px solid rgba(0, 247, 255, 0.1);
+    background: rgba(0, 5, 15, 0.5);
+    flex-shrink: 0;
+}
+
+.quick-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #8899aa;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.quick-btn:hover {
+    background: rgba(0, 247, 255, 0.08);
+    color: #00f7ff;
+    border-color: rgba(0, 247, 255, 0.25);
+}
+
+.quick-btn.active {
+    background: rgba(0, 247, 255, 0.15);
+    border-color: rgba(0, 247, 255, 0.4);
+    color: #00f7ff;
+    box-shadow: 0 0 12px rgba(0, 247, 255, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.qm-sidebar::-webkit-scrollbar,
+.selector-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.qm-sidebar::-webkit-scrollbar-track,
+.selector-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.qm-sidebar::-webkit-scrollbar-thumb,
+.selector-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 247, 255, 0.2);
+    border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    .qm-content {
+        flex-direction: column;
+    }
+
+    .qm-sidebar {
+        width: 100%;
+        max-height: 40vh;
+        border-left: none;
+        border-top: 1px solid rgba(0, 247, 255, 0.1);
+    }
+
+    .qm-viewport {
+        min-height: 40vh;
+    }
+}

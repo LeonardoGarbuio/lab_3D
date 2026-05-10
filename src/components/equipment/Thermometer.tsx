@@ -4,7 +4,7 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Line } from '@react-three/drei'
 
 interface ThermometerProps {
     position: [number, number, number]
@@ -96,20 +96,18 @@ export function Thermometer({
             {/* Tubo de vidro */}
             <mesh>
                 <cylinderGeometry args={[size * 0.04, size * 0.04, size * 0.8, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0}
-                    transmission={0.9}
-                    thickness={0.01}
                 />
             </mesh>
 
             {/* Tubo interno (para o mercúrio) */}
             <mesh>
                 <cylinderGeometry args={[size * 0.02, size * 0.02, size * 0.75, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.1}
@@ -184,19 +182,18 @@ export function Thermometer({
                         ((maxTemp - dangerTemp) / (maxTemp - minTemp)) * size * 0.7,
                         size * 0.005
                     ]} />
-                    <meshBasicMaterial color="#ff000020" transparent />
+                    <meshBasicMaterial color="#ff0000" opacity={0.125} transparent />
                 </mesh>
             )}
 
             {/* Topo do termômetro */}
             <mesh position={[0, size * 0.42, 0]}>
                 <sphereGeometry args={[size * 0.04, 16, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0}
-                    transmission={0.9}
                 />
             </mesh>
 
@@ -213,7 +210,6 @@ export function Thermometer({
                         color={temperature >= dangerTemp ? '#ff0000' : '#00ff00'}
                         anchorX="center"
                         anchorY="middle"
-                        font="monospace"
                     >
                         {displayValue.toFixed(1)}°{unit}
                     </Text>
@@ -248,24 +244,16 @@ export function IRThermometer({
     isActive = false,
     targetPosition
 }: IRThermometerProps) {
-    const laserRef = useRef<THREE.Line>(null)
-
-    // Atualizar laser
-    useFrame(() => {
-        if (!laserRef.current || !targetPosition || !isActive) return
-
-        const geometry = laserRef.current.geometry as THREE.BufferGeometry
-        const positions = geometry.attributes.position.array as Float32Array
-
-        positions[0] = 0
-        positions[1] = 0
-        positions[2] = 0.15
-        positions[3] = targetPosition[0] - position[0]
-        positions[4] = targetPosition[1] - position[1]
-        positions[5] = targetPosition[2] - position[2]
-
-        geometry.attributes.position.needsUpdate = true
-    })
+    // Cálculo dos pontos do laser
+    const laserPoints = targetPosition 
+        ? [
+            [0, 0, 0.15],
+            [targetPosition[0] - position[0], targetPosition[1] - position[1], targetPosition[2] - position[2]]
+        ] as [number, number, number][]
+        : [
+            [0, 0, 0.15],
+            [0, 0, 2]
+        ] as [number, number, number][]
 
     const getTempColor = () => {
         if (temperature > 100) return '#ff0000'
@@ -312,15 +300,13 @@ export function IRThermometer({
             {/* Laser */}
             {isActive && (
                 <>
-                    <line ref={laserRef}>
-                        <bufferGeometry>
-                            <bufferAttribute
-                                attach="attributes-position"
-                                args={[new Float32Array([0, 0, 0.15, 0, 0, 2]), 3]}
-                            />
-                        </bufferGeometry>
-                        <lineBasicMaterial color="#ff0000" transparent opacity={0.5} />
-                    </line>
+                    <Line 
+                        points={laserPoints} 
+                        color="#ff0000" 
+                        lineWidth={1.5} 
+                        transparent 
+                        opacity={0.6} 
+                    />
 
                     {/* Ponto de laser */}
                     <pointLight

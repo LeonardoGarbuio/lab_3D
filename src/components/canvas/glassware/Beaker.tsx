@@ -29,14 +29,12 @@ export default function Beaker({
             {/* Parede externa do béquer (vidro) */}
             <mesh castShadow receiveShadow>
                 <cylinderGeometry args={[glassRadius, glassRadius * 0.95, glassHeight, 32, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.3}
                     roughness={0.05}
                     metalness={0}
-                    transmission={0.9}
-                    thickness={0.5}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -44,12 +42,11 @@ export default function Beaker({
             {/* Fundo do béquer */}
             <mesh position={[0, -glassHeight / 2 + wallThickness / 2, 0]} receiveShadow>
                 <cylinderGeometry args={[glassRadius * 0.95, glassRadius * 0.95, wallThickness, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.4}
                     roughness={0.05}
-                    transmission={0.8}
                 />
             </mesh>
 
@@ -57,12 +54,11 @@ export default function Beaker({
             {liquidLevel > 0 && (
                 <mesh position={[0, -glassHeight / 2 + liquidHeight / 2 + wallThickness, 0]}>
                     <cylinderGeometry args={[glassRadius * 0.9, glassRadius * 0.85, liquidHeight, 32]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={liquidColor}
                         transparent
                         opacity={0.7}
                         roughness={0.1}
-                        transmission={0.3}
                     />
                 </mesh>
             )}
@@ -82,7 +78,7 @@ export default function Beaker({
             {/* Borda superior engrossada */}
             <mesh position={[0, glassHeight / 2 - 0.02, 0]}>
                 <torusGeometry args={[glassRadius, 0.02 * scale, 8, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.5}

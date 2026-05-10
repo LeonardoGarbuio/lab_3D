@@ -34,33 +34,45 @@ export function OrganicReactionVessel({
     const groupRef = useRef<THREE.Group>(null)
     const liquidRef = useRef<THREE.Mesh>(null)
     const stirrerRef = useRef<THREE.Group>(null)
-
-    const reaction = ORGANIC_REACTIONS[reactionId]
-
-    const [state, setState] = useState<OrganicReactionState>(() => ({
+    const progressBarRef = useRef<THREE.Mesh>(null)
+    const mutableState = useRef<OrganicReactionState>({
         ...createReactionState(reactionId),
         isReacting: isActive,
         temperature,
         stirring
-    }))
+    })
+    const lastUiUpdate = useRef(0)
+
+    const reaction = ORGANIC_REACTIONS[reactionId]
+
+    const [state, setState] = useState<OrganicReactionState>(mutableState.current)
 
     // Atualizar quando props mudam
-    useFrame((_, delta) => {
-        // Atualizar estado com props
-        const updatedState = {
-            ...state,
-            reaction,
-            isReacting: isActive && state.progress < 1,
-            temperature,
-            stirring
-        }
+    useFrame((state, delta) => {
+        const simState = mutableState.current
+        simState.reaction = reaction
+        simState.isReacting = isActive && simState.progress < 1
+        simState.temperature = temperature
+        simState.stirring = stirring
 
         // Atualizar reação
-        const newState = updateOrganicReaction(updatedState, delta)
+        if (simState.isReacting || simState.progress > 0) {
+            updateOrganicReaction(simState, delta)
+        }
 
-        if (newState.progress !== state.progress) {
-            setState(newState)
-            onStateChange?.(newState)
+        const now = performance.now()
+        // Throttle UI updates (reduzido para 500ms para evitar quedas de FPS por GC)
+        if (now - lastUiUpdate.current > 500) {
+            setState({ ...simState })
+            onStateChange?.({ ...simState })
+            lastUiUpdate.current = now
+        }
+        
+        // Atualizar barra de progresso visualmente via ref sem re-render (escala padrão box=0.15)
+        if (progressBarRef.current) {
+            const currentScaleX = Math.max(0.001, simState.progress)
+            progressBarRef.current.scale.x = currentScaleX
+            progressBarRef.current.position.x = -0.075 + (currentScaleX * 0.15) / 2
         }
 
         // Animar agitador
@@ -70,7 +82,7 @@ export function OrganicReactionVessel({
 
         // Animar líquido levemente
         if (liquidRef.current) {
-            liquidRef.current.position.y = 0.08 + Math.sin(Date.now() * 0.002) * 0.003
+            liquidRef.current.position.y = 0.08 + Math.sin(state.clock.elapsedTime * 2) * 0.003
         }
     })
 
@@ -81,12 +93,11 @@ export function OrganicReactionVessel({
             {/* Béquer */}
             <mesh>
                 <cylinderGeometry args={[0.1, 0.08, 0.25, 32, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0}
-                    transmission={0.9}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -94,24 +105,22 @@ export function OrganicReactionVessel({
             {/* Fundo do béquer */}
             <mesh position={[0, -0.125, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <circleGeometry args={[0.08, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0}
-                    transmission={0.9}
                 />
             </mesh>
 
             {/* Líquido */}
             <mesh ref={liquidRef} position={[0, 0.08, 0]}>
                 <cylinderGeometry args={[0.095, 0.075, 0.15, 32]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color={liquidColor}
                     transparent
                     opacity={0.7 + (state.gelViscosity ?? 0) * 0.25}
                     roughness={0.1}
-                    transmission={0.3 - (state.gelViscosity ?? 0) * 0.2}
                 />
             </mesh>
 
@@ -173,8 +182,11 @@ export function OrganicReactionVessel({
                     <boxGeometry args={[0.15, 0.01, 0.01]} />
                     <meshBasicMaterial color="#333333" />
                 </mesh>
-                <mesh position={[-0.075 + state.progress * 0.075, -0.06, 0.005]}>
-                    <boxGeometry args={[state.progress * 0.15, 0.008, 0.008]} />
+                <mesh 
+                    ref={progressBarRef} 
+                    position={[-0.075, -0.06, 0.005]}
+                >
+                    <boxGeometry args={[0.15, 0.008, 0.008]} />
                     <meshBasicMaterial color="#00ff00" />
                 </mesh>
             </group>
@@ -287,7 +299,7 @@ function SlimeEffect({ viscosity, progress }: { viscosity: number; progress: num
         <group position={[0, 0.05, 0]}>
             <mesh ref={slimeRef}>
                 <sphereGeometry args={[0.06 * progress, 16, 16]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#7fff00"
                     transparent
                     opacity={0.7}

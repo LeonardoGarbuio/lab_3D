@@ -30,16 +30,15 @@ export default function Pipette({
     const tipRadius = 0.003 * scale
 
     return (
-        <group ref={groupRef} position={position}>
+        <group ref={groupRef} position={position} raycast={null as any}>
             {/* Tubo superior (sucção) */}
             <mesh position={[0, totalHeight / 2 - 0.08, 0]} castShadow>
                 <cylinderGeometry args={[tubeRadius * 1.2, tubeRadius, 0.16 * scale, 12, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -47,24 +46,22 @@ export default function Pipette({
             {/* Bulbo central (expansão de volume) */}
             <mesh position={[0, 0.08, 0]}>
                 <sphereGeometry args={[bulbRadius, 24, 24]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
                 />
             </mesh>
 
             {/* Tubo principal graduado */}
             <mesh position={[0, -0.08, 0]} castShadow>
                 <cylinderGeometry args={[tubeRadius, tubeRadius, 0.25 * scale, 12, 1, true]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.2}
                     roughness={0.02}
-                    transmission={0.95}
                     side={THREE.DoubleSide}
                 />
             </mesh>
@@ -72,12 +69,11 @@ export default function Pipette({
             {/* Ponta afilada */}
             <mesh position={[0, -totalHeight / 2 + 0.06, 0]}>
                 <coneGeometry args={[tubeRadius, 0.08 * scale, 12]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#ffffff"
                     transparent
                     opacity={0.25}
                     roughness={0.02}
-                    transmission={0.95}
                 />
             </mesh>
 
@@ -87,12 +83,11 @@ export default function Pipette({
                     {/* Líquido no bulbo */}
                     <mesh position={[0, 0.08, 0]}>
                         <sphereGeometry args={[bulbRadius * 0.9 * Math.sqrt(liquidLevel), 16, 16]} />
-                        <meshPhysicalMaterial
+                        <meshStandardMaterial
                             color={liquidColor}
                             transparent
                             opacity={0.7}
                             roughness={0.1}
-                            transmission={0.25}
                         />
                     </mesh>
 
@@ -104,12 +99,11 @@ export default function Pipette({
                             0.24 * scale * liquidLevel,
                             12
                         ]} />
-                        <meshPhysicalMaterial
+                        <meshStandardMaterial
                             color={liquidColor}
                             transparent
                             opacity={0.7}
                             roughness={0.1}
-                            transmission={0.25}
                         />
                     </mesh>
                 </>
@@ -119,7 +113,7 @@ export default function Pipette({
             {isDispensing && (
                 <mesh position={[0, -totalHeight / 2 - 0.01, 0]}>
                     <sphereGeometry args={[tipRadius * 1.5, 8, 8]} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color={liquidColor}
                         transparent
                         opacity={0.9}

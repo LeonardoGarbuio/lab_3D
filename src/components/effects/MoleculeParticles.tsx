@@ -124,12 +124,11 @@ export function MoleculeParticles({
             {showContainer && (
                 <mesh>
                     <boxGeometry args={containerSize} />
-                    <meshPhysicalMaterial
+                    <meshStandardMaterial
                         color="#ffffff"
                         transparent
                         opacity={0.1}
                         roughness={0}
-                        transmission={0.9}
                         side={THREE.BackSide}
                     />
                 </mesh>

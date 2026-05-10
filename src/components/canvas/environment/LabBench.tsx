@@ -5,9 +5,10 @@ import type { Group } from 'three'
 
 interface LabBenchProps {
     position?: [number, number, number]
+    rotation?: [number, number, number]
 }
 
-export default function LabBench({ position = [0, 0, 0] }: LabBenchProps) {
+export default function LabBench({ position = [0, 0, 0], rotation = [0, 0, 0] }: LabBenchProps) {
     const groupRef = useRef<Group>(null)
 
     // BANCADA MAIOR para acomodar todos os equipamentos
@@ -18,7 +19,7 @@ export default function LabBench({ position = [0, 0, 0] }: LabBenchProps) {
     const legSize = 0.08
 
     return (
-        <group ref={groupRef} position={position}>
+        <group ref={groupRef} position={position} rotation={rotation} raycast={null as any}>
             {/* Tampo da bancada (granito escuro) */}
             <mesh position={[0, legHeight + benchHeight / 2, 0]} castShadow receiveShadow>
                 <boxGeometry args={[benchWidth, benchHeight, benchDepth]} />
@@ -57,12 +58,11 @@ export default function LabBench({ position = [0, 0, 0] }: LabBenchProps) {
             {/* Prateleira superior (vidro) */}
             <mesh position={[0, legHeight + 0.6, -benchDepth / 3]} receiveShadow>
                 <boxGeometry args={[benchWidth * 0.9, 0.01, benchDepth * 0.4]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#aaddff"
                     transparent
                     opacity={0.3}
                     roughness={0.05}
-                    transmission={0.8}
                 />
             </mesh>
 
@@ -83,7 +83,7 @@ export default function LabBench({ position = [0, 0, 0] }: LabBenchProps) {
             {/* Água na pia (superfície) */}
             <mesh position={[benchWidth / 2 - 0.5, legHeight - 0.01, 0]}>
                 <planeGeometry args={[0.55, 0.45]} />
-                <meshPhysicalMaterial
+                <meshStandardMaterial
                     color="#4a90d9"
                     transparent
                     opacity={0.6}

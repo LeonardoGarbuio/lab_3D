@@ -55,12 +55,14 @@ export default function InteractiveTripod({
         <group
             ref={groupRef}
             position={position}
-            onClick={handleClick}
-            onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
-            onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
         >
-            {/* HITBOX INVISÍVEL - área grande para facilitar clique */}
-            <mesh visible={false}>
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                visible={false}
+                onClick={handleClick}
+                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+            >
                 <cylinderGeometry args={[0.2 * scale, 0.2 * scale, 0.5 * scale, 16]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
