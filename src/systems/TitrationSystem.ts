@@ -44,30 +44,77 @@ export function calculateTitrationPH(
     // Titulação inválida se ambos são ácidos ou bases
     if (titrantIsAcid === analyteIsAcid) return 7
 
-    // Determinando qual é ácido e qual é base
     const acidMols = titrantIsAcid ? titrantMols : analyteMols
     const baseMols = titrantIsAcid ? analyteMols : titrantMols
+    
+    const acid = titrantIsAcid ? titrant : analyte
+    const base = titrantIsAcid ? analyte : titrant
 
-    // Volume em litros
     const volumeL = volumeML / 1000
 
-    // Diferença de mols (excesso)
-    const excessMols = acidMols - baseMols
+    // Henderson-Hasselbalch para Ácido Fraco + Base Forte
+    if (acid.pKa && !base.pKb) {
+        if (baseMols === 0) {
+            // Apenas ácido fraco: [H+] = sqrt(Ka * Ca)
+            const Ka = Math.pow(10, -acid.pKa)
+            const Ca = acidMols / volumeL
+            return -Math.log10(Math.max(Math.sqrt(Ka * Ca), 1e-14))
+        } else if (baseMols < acidMols) {
+            // Região Tampão: pH = pKa + log([A-]/[HA])
+            const aMinus = baseMols
+            const ha = acidMols - baseMols
+            return acid.pKa + Math.log10(aMinus / ha)
+        } else if (baseMols === acidMols) {
+            // Ponto de equivalência (Hidrólise do sal básico)
+            // pOH = 1/2(pKw - pKa - log(C_sal))
+            const cSal = acidMols / volumeL
+            const pOH = 0.5 * (14 - acid.pKa - Math.log10(cSal))
+            return 14 - pOH
+        } else {
+            // Excesso de base forte
+            const excessOH = (baseMols - acidMols) / volumeL
+            return 14 + Math.log10(Math.max(excessOH, 1e-14))
+        }
+    }
 
+    // Henderson-Hasselbalch para Base Fraca + Ácido Forte
+    if (base.pKb && !acid.pKa) {
+        if (acidMols === 0) {
+            // Apenas base fraca: [OH-] = sqrt(Kb * Cb)
+            const Kb = Math.pow(10, -base.pKb)
+            const Cb = baseMols / volumeL
+            const pOH = -Math.log10(Math.max(Math.sqrt(Kb * Cb), 1e-14))
+            return 14 - pOH
+        } else if (acidMols < baseMols) {
+            // Região Tampão: pOH = pKb + log([BH+]/[B])
+            const bhPlus = acidMols
+            const b = baseMols - acidMols
+            const pOH = base.pKb + Math.log10(bhPlus / b)
+            return 14 - pOH
+        } else if (acidMols === baseMols) {
+            // Ponto de equivalência (Hidrólise do sal ácido)
+            // pH = 1/2(pKw - pKb - log(C_sal))
+            const cSal = baseMols / volumeL
+            return 0.5 * (14 - base.pKb - Math.log10(cSal))
+        } else {
+            // Excesso de ácido forte
+            const excessH = (acidMols - baseMols) / volumeL
+            return -Math.log10(Math.max(excessH, 1e-14))
+        }
+    }
+
+    // Titulação Forte-Forte (Padrão)
+    const excessMols = acidMols - baseMols
     if (Math.abs(excessMols) < 0.0001) {
-        // Ponto de equivalência - sal neutro (simplificado)
-        return 7
+        return 7 // Sal neutro
     } else if (excessMols > 0) {
-        // Excesso de ácido
         const H_concentration = excessMols / volumeL
         const pH = -Math.log10(Math.max(H_concentration, 1e-14))
         return Math.max(0, Math.min(14, pH))
     } else {
-        // Excesso de base
         const OH_concentration = Math.abs(excessMols) / volumeL
         const pOH = -Math.log10(Math.max(OH_concentration, 1e-14))
-        const pH = 14 - pOH
-        return Math.max(0, Math.min(14, pH))
+        return Math.max(0, Math.min(14, 14 - pOH))
     }
 }
 
@@ -136,36 +183,34 @@ export function addTitrantDrop(
 }
 
 /**
- * Determina a cor do indicador baseado no pH
+ * Determina a cor do indicador baseado no pH.
+ * Usa os dados de colorTransition das substâncias quando disponíveis,
+ * com interpolação suave na zona de viragem.
  */
 export function getIndicatorColor(indicator: string, pH: number): string {
+    const substance = ALL_SUBSTANCES[indicator]
+
+    // Se a substância tem colorTransition definido, usar dados dinâmicos
+    if (substance?.colorTransition) {
+        const { phRange, acidColor, baseColor } = substance.colorTransition
+        const [phLow, phHigh] = phRange
+
+        if (pH < phLow) return acidColor
+        if (pH > phHigh) return baseColor
+
+        // Interpolação linear na zona de viragem
+        const t = (pH - phLow) / (phHigh - phLow)
+        return interpolateColor(acidColor, baseColor, t)
+    }
+
+    // Fallback para indicadores sem colorTransition definidos na DB
     switch (indicator) {
-        case 'phenolphthalein':
-            // Incolor < 8.2, rosa/magenta > 10
-            if (pH < 8.2) return 'transparent'
-            if (pH < 10) return `rgba(255, 20, 147, ${(pH - 8.2) / 1.8})`
-            return '#ff1493'
-
-        case 'methyl_orange':
-            // Vermelho < 3.1, laranja 3.1-4.4, amarelo > 4.4
-            if (pH < 3.1) return '#ff0000'
-            if (pH < 4.4) return '#ff8c00'
-            return '#ffd700'
-
         case 'bromothymol_blue':
-            // Amarelo < 6, verde 6-7.6, azul > 7.6
             if (pH < 6) return '#ffff00'
             if (pH < 7.6) return '#00ff00'
             return '#0000ff'
 
-        case 'litmus':
-            // Vermelho < 5, púrpura 5-8, azul > 8
-            if (pH < 5) return '#ff0000'
-            if (pH < 8) return '#800080'
-            return '#0000ff'
-
         case 'universal':
-            // Gradiente completo de cores
             if (pH < 2) return '#ff0000'
             if (pH < 4) return '#ff6600'
             if (pH < 6) return '#ffff00'
@@ -177,6 +222,29 @@ export function getIndicatorColor(indicator: string, pH: number): string {
         default:
             return 'transparent'
     }
+}
+
+/**
+ * Interpola linearmente entre duas cores hex.
+ */
+function interpolateColor(c1: string, c2: string, t: number): string {
+    if (c1 === 'transparent') {
+        // Fade-in da cor c2
+        const r2 = parseInt(c2.slice(1, 3), 16)
+        const g2 = parseInt(c2.slice(3, 5), 16)
+        const b2 = parseInt(c2.slice(5, 7), 16)
+        return `rgba(${r2}, ${g2}, ${b2}, ${t.toFixed(2)})`
+    }
+    const r1 = parseInt(c1.slice(1, 3), 16)
+    const g1 = parseInt(c1.slice(3, 5), 16)
+    const b1 = parseInt(c1.slice(5, 7), 16)
+    const r2 = parseInt(c2.slice(1, 3), 16)
+    const g2 = parseInt(c2.slice(3, 5), 16)
+    const b2 = parseInt(c2.slice(5, 7), 16)
+    const r = Math.round(r1 + (r2 - r1) * t)
+    const g = Math.round(g1 + (g2 - g1) * t)
+    const b = Math.round(b1 + (b2 - b1) * t)
+    return `rgb(${r}, ${g}, ${b})`
 }
 
 /**

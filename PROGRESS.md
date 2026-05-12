@@ -78,7 +78,7 @@
 - [x] Lei de Gay-Lussac (P₁/T₁ = P₂/T₂)
 - [ ] Misturas Gasosas — Pressão Parcial de Dalton
 - [ ] Difusão/Efusão de Graham (visual no exaustor)
-- [ ] Van der Waals: [P + a(n/V)²][V - nb] = nRT
+- [x] Van der Waals: [P + a(n/V)²][V - nb] = nRT
 
 **Termoquímica:**
 - [ ] Banco de Entalpias de Formação Padrão (ΔH°f)
@@ -127,17 +127,17 @@
 **Equilíbrio:**
 - [ ] Constante de Equilíbrio Kc
 - [ ] Constante de Equilíbrio Kp
-- [ ] Produto de Solubilidade (Kps) — precipitação visual ao violar Kps
+- [x] Produto de Solubilidade (Kps) — precipitação visual ao violar Kps
 - [ ] Le Chatelier Dinâmico on-the-fly (pressão/temp/concentração)
 - [ ] Deslocamento visual do equilíbrio em tempo real
 
 **Titulação / pH:**
 - [~] Titulação básica (`TitrationSystem.ts`)
-- [ ] pKa / pKb / pKw (dissociação logarítmica)
+- [x] pKa / pKb / pKw (dissociação logarítmica)
 - [ ] Ácidos/Bases fracas multipróticas
-- [ ] Henderson-Hasselbalch
+- [x] Henderson-Hasselbalch
 - [ ] Sistemas Tampão reais
-- [ ] Bureta eletrônica de gotejamento com indicador  
+- [x] Bureta eletrônica de gotejamento com indicador  
 
 ### 5. Química Inorgânica Pura
 
@@ -153,12 +153,12 @@
 
 **Modelagem:**
 - [ ] Tipologia de Carbonos (sp³/sp²/sp com ângulos) em holograma
-- [ ] Construção de moléculas orgânicas pelo usuário
+- [~] Construção de moléculas orgânicas pelo usuário
 - [ ] Anéis aromáticos (Kekulé) com regra de Hückel (4n+2)
 - [ ] Esqueletos conjugados e ramificados
 
 **Funções Orgânicas:**
-- [~] Algumas reações orgânicas (`OrganicReactionsSystem.ts`)
+- [x] Catálogo e Motor Procedural de Reações (Motor SMILES)
 - [ ] Catálogo completo: álcool, fenol, éter, ácido carboxílico, éster, aldeído, cetona, amina, amida, nitrila, tiol, organometálico (Grignard)
 
 **Isomeria:**
@@ -213,7 +213,7 @@
 - [ ] RMN ¹³C
 - [ ] FTIR: Stretching, Scissoring, Wagging (400–4000 cm⁻¹)
 - [ ] Carbonila a ~1700 cm⁻¹
-- [ ] UV-Vis
+- [x] UV-Vis
 
 ### 4. Condutividade e Auto-Tituladores
 - [ ] Micro-eletrodos de vidro
@@ -281,7 +281,7 @@
 - [ ] Soma em quadratura: σ_total = √(σ₁² + σ₂²)
 
 ### 2. Parser SMILES / InChI
-- [ ] Parser lexical de SMILES
+- [x] Parser lexical de SMILES
 - [ ] Parser InChI
 - [ ] Force Field Embedding (MMFF94) → coordenadas 3D
 - [ ] Integração com MoleculeViewer

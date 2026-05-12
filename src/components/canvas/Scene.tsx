@@ -136,6 +136,17 @@ function LabScene() {
   const selectObject = useLabStore((state) => state.selectObject)
   const cancelPouring = useLabStore((state) => state.cancelPouring)
 
+  // Electrolysis from global store
+  const electrolysisRunning = useLabStore((state) => state.electrolysisRunning)
+  const electrolysisVoltage = useLabStore((state) => state.electrolysisVoltage)
+  const electrolysisElectrolyteId = useLabStore((state) => state.electrolysisElectrolyteId)
+  const openElectrolysisPanel = useLabStore((state) => state.openElectrolysisPanel)
+
+  // Distillation from global store
+  const distillationHeating = useLabStore((state) => state.distillationHeating)
+  const distillationMixtureId = useLabStore((state) => state.distillationMixtureId)
+  const openDistillationPanel = useLabStore((state) => state.openDistillationPanel)
+
   const handleBackgroundClick = () => {
     selectObject(null)
     cancelPouring()
@@ -290,8 +301,9 @@ function LabScene() {
         <DistillationApparatus
           position={[-10.5, 1.02, -1.0]}
           scale={0.6}
-          mixtureId="ethanolWater"
-          isHeating={false}
+          mixtureId={distillationMixtureId as any}
+          isHeating={distillationHeating}
+          onClick={() => openDistillationPanel()}
         />
 
         {/* Reações Orgânicas - Fermentação */}
@@ -339,9 +351,10 @@ function LabScene() {
         <ElectrolysisCell
           position={[10.5, 1.02, -1.5]}
           scale={0.7}
-          electrolyteId="sulfuricAcid"
-          voltage={6}
-          isRunning={false}
+          electrolyteId={electrolysisElectrolyteId as any}
+          voltage={electrolysisVoltage}
+          isRunning={electrolysisRunning}
+          onClick={() => openElectrolysisPanel()}
         />
 
         {/* Cristalização */}

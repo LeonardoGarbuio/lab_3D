@@ -8,7 +8,10 @@ import { Text } from '@react-three/drei'
 import {
     getElementSpectrum,
     wavelengthToPosition,
-    type SpectralLine
+    type SpectralLine,
+    ABSORPTIVITY_PROFILES,
+    generateAbsorbanceCurve,
+    calculateBeerLambertAbsorbance
 } from '../../systems/SpectroscopySystem'
 
 interface SpectrometerProps {
@@ -419,6 +422,137 @@ export function SpectrumGraph({
             >
                 Intensidade
             </text>
+        </svg>
+    )
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ESPECTROFOTOMETRIA UV-VIS (Lei de Beer-Lambert)
+// ═══════════════════════════════════════════════════════════════════════
+
+export function AbsorbanceGraph({
+    substanceFormula,
+    concentration,
+    pathLength = 1.0,
+    width = 440,
+    height = 220,
+}: {
+    substanceFormula: string
+    concentration: number       // mol/L
+    pathLength?: number         // cm
+    width?: number
+    height?: number
+}) {
+    const profile = ABSORPTIVITY_PROFILES[substanceFormula]
+
+    if (!profile) {
+        return (
+            <div style={{
+                width,
+                height,
+                background: '#0a0a0a',
+                borderRadius: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#555',
+                fontFamily: 'monospace',
+                border: '1px solid rgba(255,255,255,0.06)'
+            }}>
+                Substância sem perfil UV-Vis
+            </div>
+        )
+    }
+
+    const curve = generateAbsorbanceCurve(profile, concentration, pathLength, 2)
+    const maxA = Math.max(0.1, ...curve.map(d => d.absorbance))
+    const peakA = calculateBeerLambertAbsorbance(profile.epsilonMax, concentration, pathLength)
+    const peakT = Math.pow(10, -peakA) * 100 // Transmitância %
+
+    const margin = { top: 40, right: 30, bottom: 35, left: 50 }
+    const gw = width - margin.left - margin.right
+    const gh = height - margin.top - margin.bottom
+
+    // Build path string for the absorbance curve
+    const pathData = curve.map((d, i) => {
+        const x = margin.left + ((d.wavelength - 380) / (700 - 380)) * gw
+        const y = margin.top + gh - (d.absorbance / maxA) * gh
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+    }).join(' ')
+
+    // Build area fill
+    const areaData = pathData +
+        ` L${(margin.left + gw).toFixed(1)},${(margin.top + gh).toFixed(1)}` +
+        ` L${margin.left},${(margin.top + gh).toFixed(1)} Z`
+
+    // λmax position
+    const lambdaMaxX = margin.left + ((profile.lambdaMax - 380) / (700 - 380)) * gw
+
+    return (
+        <svg width={width} height={height} style={{ background: '#0a0a0a', borderRadius: 10 }}>
+            {/* Gradients */}
+            <defs>
+                <linearGradient id={`absGrad-${substanceFormula}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={profile.color} stopOpacity={0.4} />
+                    <stop offset="100%" stopColor={profile.color} stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="specBg">
+                    <stop offset="0%" stopColor="#8B00FF" />
+                    <stop offset="15%" stopColor="#0000FF" />
+                    <stop offset="30%" stopColor="#00FFFF" />
+                    <stop offset="45%" stopColor="#00FF00" />
+                    <stop offset="60%" stopColor="#FFFF00" />
+                    <stop offset="80%" stopColor="#FF8C00" />
+                    <stop offset="100%" stopColor="#FF0000" />
+                </linearGradient>
+            </defs>
+
+            {/* Title */}
+            <text x={width / 2} y={18} textAnchor="middle" fill="#e0f0ff" fontSize={13} fontWeight="bold" fontFamily="monospace">
+                Espectrofotometria UV-Vis — {substanceFormula}
+            </text>
+            <text x={width / 2} y={32} textAnchor="middle" fill="#888" fontSize={10} fontFamily="monospace">
+                A = ε·b·c = {profile.epsilonMax}·{pathLength}·{concentration.toFixed(4)} = {peakA.toFixed(3)}   |   T = {peakT.toFixed(1)}%
+            </text>
+
+            {/* Graph background */}
+            <rect x={margin.left} y={margin.top} width={gw} height={gh} fill="#111" stroke="#333" />
+
+            {/* Spectrum reference bar */}
+            <rect x={margin.left} y={margin.top + gh + 2} width={gw} height={6} fill="url(#specBg)" opacity={0.4} rx={2} />
+
+            {/* Grid lines */}
+            {[0.25, 0.5, 0.75].map(f => (
+                <line key={f} x1={margin.left} y1={margin.top + gh * (1 - f)} x2={margin.left + gw} y2={margin.top + gh * (1 - f)} stroke="#222" strokeDasharray="3,3" />
+            ))}
+
+            {/* Area fill */}
+            <path d={areaData} fill={`url(#absGrad-${substanceFormula})`} />
+
+            {/* Absorbance curve */}
+            <path d={pathData} fill="none" stroke={profile.color} strokeWidth={2.5} />
+
+            {/* λmax indicator */}
+            {lambdaMaxX >= margin.left && lambdaMaxX <= margin.left + gw && (
+                <g>
+                    <line x1={lambdaMaxX} y1={margin.top} x2={lambdaMaxX} y2={margin.top + gh} stroke="#ffffff" strokeWidth={1} strokeDasharray="4,4" opacity={0.3} />
+                    <text x={lambdaMaxX} y={margin.top - 3} textAnchor="middle" fill="#aaa" fontSize={9} fontFamily="monospace">
+                        λmax={profile.lambdaMax}nm
+                    </text>
+                </g>
+            )}
+
+            {/* Y axis labels */}
+            <text x={margin.left - 5} y={margin.top + 5} textAnchor="end" fill="#666" fontSize={9} fontFamily="monospace">{maxA.toFixed(1)}</text>
+            <text x={margin.left - 5} y={margin.top + gh} textAnchor="end" fill="#666" fontSize={9} fontFamily="monospace">0</text>
+            <text x={15} y={margin.top + gh / 2} transform={`rotate(-90, 15, ${margin.top + gh / 2})`} textAnchor="middle" fill="#888" fontSize={10} fontFamily="monospace">
+                Abs (A)
+            </text>
+
+            {/* X axis labels */}
+            <text x={margin.left} y={height - 3} fill="#666" fontSize={9} fontFamily="monospace">380nm</text>
+            <text x={margin.left + gw / 2} y={height - 3} textAnchor="middle" fill="#666" fontSize={9} fontFamily="monospace">540nm</text>
+            <text x={margin.left + gw} y={height - 3} textAnchor="end" fill="#666" fontSize={9} fontFamily="monospace">700nm</text>
         </svg>
     )
 }

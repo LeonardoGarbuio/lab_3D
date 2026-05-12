@@ -13,33 +13,91 @@ export interface GasState {
 }
 
 // Constante dos gases ideais
-export const R = 0.0821  // L·atm/(mol·K)
+export const R = 0.0821  // L·atm/(mol·K)\n
+// Constantes de Van der Waals (a: L²·atm/mol², b: L/mol)
+export const VAN_DER_WAALS_CONSTANTS: Record<string, { a: number, b: number }> = {
+    'H2O': { a: 5.464, b: 0.03049 },
+    'CO2': { a: 3.592, b: 0.04267 },
+    'O2': { a: 1.360, b: 0.03183 },
+    'N2': { a: 1.390, b: 0.03913 },
+    'H2': { a: 0.2444, b: 0.02661 },
+    'NH3': { a: 4.170, b: 0.03707 },
+    'CH4': { a: 2.253, b: 0.04278 },
+    'He': { a: 0.03412, b: 0.02370 },
+    'DEFAULT': { a: 0, b: 0 } // Gás Ideal
+}
+
+export function getVDWConstants(formula: string) {
+    return VAN_DER_WAALS_CONSTANTS[formula] || VAN_DER_WAALS_CONSTANTS['DEFAULT']
+}
+
 
 /**
  * Calcula a pressão usando PV = nRT
  * P = nRT/V
  */
-export function calculatePressure(n: number, T: number, V: number): number {
+export function calculatePressure(n: number, T: number, V: number, formula: string = 'DEFAULT'): number {
     if (V <= 0) return Infinity
-    return (n * R * T) / V
+    const { a, b } = getVDWConstants(formula)
+    
+    // P = nRT/(V - nb) - a(n/V)²
+    const effectiveVolume = V - n * b
+    if (effectiveVolume <= 0) return Infinity // Compressão máxima física
+    
+    return ((n * R * T) / effectiveVolume) - (a * Math.pow(n / V, 2))
 }
 
 /**
  * Calcula o volume usando PV = nRT
  * V = nRT/P
  */
-export function calculateVolume(n: number, T: number, P: number): number {
+export function calculateVolume(n: number, T: number, P: number, formula: string = 'DEFAULT'): number {
     if (P <= 0) return Infinity
-    return (n * R * T) / P
+    const { a, b } = getVDWConstants(formula)
+    
+    // Se for gás ideal, usa a fórmula simples
+    if (a === 0 && b === 0) return (n * R * T) / P
+    
+    // Para Van der Waals, usamos Newton-Raphson para achar a raiz de f(V) = 0
+    // f(V) = (P + a*n²/V²)(V - nb) - nRT = 0
+    let V = (n * R * T) / P // Chute inicial (Gás Ideal)
+    const maxIters = 20
+    const tol = 1e-6
+    
+    for (let i = 0; i < maxIters; i++) {
+        const n2 = n * n
+        const V2 = V * V
+        const V3 = V2 * V
+        
+        const fV = (P + a * n2 / V2) * (V - n * b) - n * R * T
+        // Derivada: f'(V) = P - a*n²/V² + 2*a*b*n³/V³
+        const dfV = P - (a * n2 / V2) + (2 * a * b * Math.pow(n, 3) / V3)
+        
+        const dV = fV / dfV
+        V -= dV
+        
+        if (Math.abs(dV) < tol) break
+    }
+    
+    // Evitar retornos físicos impossíveis (menor que o volume das próprias partículas)
+    return Math.max(V, n * b + 0.001)
 }
 
 /**
  * Calcula a temperatura usando PV = nRT
  * T = PV/(nR)
  */
-export function calculateTemperature(P: number, V: number, n: number): number {
+export function calculateTemperature(P: number, V: number, n: number, formula: string = 'DEFAULT'): number {
     if (n <= 0) return 0
-    return (P * V) / (n * R)
+    const { a, b } = getVDWConstants(formula)
+    
+    // T = (P + a*n²/V²)(V - nb) / nR
+    const P_eff = P + a * Math.pow(n / V, 2)
+    const V_eff = V - n * b
+    
+    if (V_eff <= 0) return 0 // Inválido
+    
+    return (P_eff * V_eff) / (n * R)
 }
 
 /**
@@ -74,7 +132,7 @@ export function changeTemperature(
         // Limitar ao volume máximo do container
         const clampedVolume = Math.min(newVolume, state.containerMaxVolume)
         const actualPressure = clampedVolume < newVolume
-            ? calculatePressure(state.mols, newTempKelvin, clampedVolume)
+            ? calculatePressure(state.mols, newTempKelvin, clampedVolume, state.formula)
             : state.pressure
 
         return {
@@ -111,7 +169,7 @@ export function changePressure(
     if (isConstantTemperature) {
         // Lei de Boyle: P1V1 = P2V2
         // V2 = P1V1/P2
-        const newVolume = (state.pressure * state.volume) / newPressure
+        const newVolume = calculateVolume(state.mols, state.temperature, newPressure, state.formula)
         const clampedVolume = Math.max(0.001, Math.min(newVolume, state.containerMaxVolume))
 
         return {
@@ -123,7 +181,7 @@ export function changePressure(
         }
     } else {
         // Pressão e temperatura variam juntas
-        const newTemp = calculateTemperature(newPressure, state.volume, state.mols)
+        const newTemp = calculateTemperature(newPressure, state.volume, state.mols, state.formula)
 
         return {
             ...state,
@@ -156,7 +214,7 @@ export function createGasState(
     const tempKelvin = celsiusToKelvin(tempCelsius)
 
     // Calcular volume real do gás na pressão dada
-    const actualVolume = calculateVolume(mols, tempKelvin, pressure)
+    const actualVolume = calculateVolume(mols, tempKelvin, pressure, formula)
 
     return {
         formula,

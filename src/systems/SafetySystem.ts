@@ -1,5 +1,6 @@
 // src/systems/SafetySystem.ts
 // Sistema de IA de Segurança do Laboratório
+import { calculatePressure } from './GasPhysics'
 
 // ═══════════════════════════════════════════════════════════════════════
 // TIPOS E CONSTANTES
@@ -475,6 +476,138 @@ export function createDefaultSafetyState(): LabSafetyState {
         handlingAcid: false,
         handlingBase: false,
         handlingFlammable: false,
-        handlingToxic: false
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FASE 7: SEGURANÇA BASEADA NA TERMODINÂMICA
+// ═══════════════════════════════════════════════════════════════════════
+
+export interface LabObjectSubset {
+    id: string
+    type: string
+    isSealed: boolean
+    pressure: number
+    temperature: number
+    mols: number
+    volume: number
+    formula: string | null
+}
+
+/**
+ * Retorna a pressão de ruptura (burst pressure) de um recipiente em atm.
+ */
+function getBurstPressure(containerType: string): number {
+    switch (containerType) {
+        case 'beaker': return 2.0             // Béqueres são abertos e frágeis
+        case 'test-tube': return 3.0          // Tubos de ensaio aguentam um pouco mais
+        case 'erlenmeyer': return 4.0         // Formato cônico distribui melhor a pressão
+        case 'flask': return 5.0              // Balões de fundo redondo são mais resistentes
+        case 'graduated-cylinder': return 2.5 // Cilindros
+        case 'burette': return 3.0            // Buretas
+        default: return 3.0
+    }
+}
+
+/**
+ * Avalia o risco termodinâmico de um recipiente (P = nRT/V).
+ * Se o recipiente estiver selado e a pressão exceder o burst pressure, avisa risco crítico.
+ */
+export function evaluateThermodynamicSafety(obj: LabObjectSubset): SafetyWarning | null {
+    if (!obj.isSealed) return null // Recipiente aberto = pressão atmosférica (sem acúmulo perigoso)
+    if (obj.volume <= 0 || obj.mols <= 0) return null
+
+    // Converter volume de mL para L
+    const volumeL = obj.volume / 1000
+    // Temperatura em Kelvin
+    const tempK = obj.temperature + 273.15
+
+    // Calcular pressão real interna usando a física dos gases
+    // PV = nRT -> P = nRT/V
+    const calculatedPressure = calculatePressure(obj.mols, tempK, volumeL, obj.formula || 'DEFAULT')
+    const burstP = getBurstPressure(obj.type)
+
+    if (calculatedPressure > burstP) {
+        return {
+            id: `thermo-burst-${obj.id}-${Date.now()}`,
+            level: 'critical',
+            title: 'PRESSÃO CRÍTICA (PV=nRT)',
+            message: `Pressão interna (${calculatedPressure.toFixed(1)} atm) excede a resistência do vidro (${burstP.toFixed(1)} atm)! Risco de explosão iminente!`,
+            icon: '💥',
+            action: 'Dessele o recipiente ou reduza a temperatura imediatamente!',
+            timestamp: Date.now()
+        }
+    } else if (calculatedPressure > burstP * 0.7) {
+        return {
+            id: `thermo-warn-${obj.id}-${Date.now()}`,
+            level: 'warning',
+            title: 'Pressão Interna Elevada',
+            message: `A pressão no recipiente selado está a atingir níveis perigosos (${calculatedPressure.toFixed(1)} atm).`,
+            icon: '💨',
+            action: 'Atenção ao aumento de temperatura ou geração de gás.',
+            timestamp: Date.now()
+        }
+    }
+
+    return null
+}
+
+/**
+ * Avalia o risco procedural de fogo baseado no Triângulo do Fogo.
+ * 1. Combustível (Orgânico/Inflamável)
+ * 2. Comburente (Oxigênio no ambiente)
+ * 3. Ignição (hasFlame ou Autoignição térmica)
+ */
+export function evaluateCombustionRisk(obj: LabObjectSubset, state: LabSafetyState): SafetyWarning | null {
+    // Verificar se tem combustível
+    if (!obj.formula) return null
+    
+    const isOrganic = obj.formula.includes('C') && (obj.formula.includes('H') || obj.formula.includes('O'))
+    const isFlammableHazard = HAZARDOUS_SUBSTANCES[obj.formula]?.hazards.some(h => h.includes('flammable'))
+    
+    if (!isOrganic && !isFlammableHazard) return null
+
+    // Verificar comburente e ignição
+    const hasIgnition = state.hasFlame || obj.temperature > 300 // Autoignição simplificada a >300C
+
+    if (hasIgnition && !obj.isSealed) { // Se estiver selado, não há contato com O2 do ar (ainda não implementamos O2 no frasco)
+        return {
+            id: `combustion-${obj.id}-${Date.now()}`,
+            level: 'danger',
+            title: 'RISCO DE COMBUSTÃO PROCEDURAL',
+            message: `${obj.formula || 'Substância'} em contato com fonte de ignição e oxigênio do ar!`,
+            icon: '🔥',
+            action: 'Remova a fonte de calor ou abafe o recipiente!',
+            timestamp: Date.now()
+        }
+    }
+
+    return null
+}
+
+/**
+ * Avalia se o choque térmico (ΔH altamente negativo + recipiente selado) causaria uma explosão termodinâmica instantânea.
+ */
+export function evaluateExothermicShock(deltaH: number, mols: number, obj: LabObjectSubset): SafetyWarning | null {
+    // Apenas reações altamente exotérmicas importam para choque térmico (ex: < -100 kJ/mol)
+    if (deltaH >= -100) return null
+    if (!obj.isSealed) return null // Aberto: a energia dissipa e o gás escapa
+    
+    // Calor liberado (Q = n * ΔH)
+    const heatReleased_kJ = Math.abs(mols * deltaH)
+    
+    // Simplificação: o aumento brusco de calor expande os gases rapidamente e aumenta a pressão instantaneamente
+    if (heatReleased_kJ > 50) {
+        return {
+            id: `shock-${obj.id}-${Date.now()}`,
+            level: 'critical',
+            title: 'CHOQUE TÉRMICO ESTRUTURAL',
+            message: `Liberação de ${heatReleased_kJ.toFixed(1)} kJ em recipiente selado. O aumento instantâneo de pressão e calor causará a ruptura do vidro!`,
+            icon: '💥',
+            action: 'EVACUE A ÁREA',
+            timestamp: Date.now()
+        }
+    }
+
+    return null
 }

@@ -1,10 +1,13 @@
 // src/components/ui/QuantumMicroscope.tsx
 // Microscópio Quântico — Holograma VSEPR Fullscreen
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import MoleculeViewer from '../canvas/MoleculeViewer'
 import { VSEPR_MOLECULES, GEOMETRY_INFO, HYBRIDIZATION_DATA, getAvailableMolecules, type VSEPRMolecule } from '../../data/vseprData'
+import { useVSEPR } from '../../hooks/useVSEPR'
+import { useLabStore } from '../../stores/useLabStore'
+import type { GeneratedMolecule } from '../../physics/VSEPRCalculator'
 import './QuantumMicroscope.css'
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -13,12 +16,14 @@ import './QuantumMicroscope.css'
 
 function HologramScene({ 
     formula, 
+    molecule,
     showLonePairs, 
     showPiBonds, 
     animateResonance, 
     showFormalCharges 
 }: { 
     formula: string
+    molecule: VSEPRMolecule | GeneratedMolecule | null
     showLonePairs: boolean
     showPiBonds: boolean
     animateResonance: boolean
@@ -39,6 +44,7 @@ function HologramScene({
             {/* MOLÉCULA HOLOGRÁFICA */}
             <MoleculeViewer
                 formula={formula}
+                moleculeData={molecule}
                 position={[0, 0, 0]}
                 scale={1.8}
                 rotating={true}
@@ -68,8 +74,8 @@ function HologramScene({
 // PAINEL DE INFORMAÇÕES VSEPR
 // ═══════════════════════════════════════════════════════════════════════
 
-function VSEPRInfoPanel({ molecule }: { molecule: VSEPRMolecule }) {
-    const geoInfo = GEOMETRY_INFO[molecule.geometry]
+function VSEPRInfoPanel({ molecule }: { molecule: VSEPRMolecule | GeneratedMolecule }) {
+    const geoInfo = GEOMETRY_INFO[molecule.geometry] || { namePt: molecule.geometry, icon: '🔮', electronDomains: molecule.bondingPairs + molecule.lonePairs }
 
     return (
         <div className="vsepr-info-panel">
@@ -157,7 +163,7 @@ function VSEPRInfoPanel({ molecule }: { molecule: VSEPRMolecule }) {
 // PAINEL DE HIBRIDIZAÇÃO
 // ═══════════════════════════════════════════════════════════════════════
 
-function HybridizationPanel({ molecule }: { molecule: VSEPRMolecule }) {
+function HybridizationPanel({ molecule }: { molecule: VSEPRMolecule | GeneratedMolecule }) {
     const hybData = HYBRIDIZATION_DATA.find(h => h.type === molecule.hybridization)
 
     if (!hybData) {
@@ -283,6 +289,43 @@ function MoleculeSelector({
 // COMPONENTE PRINCIPAL: QUANTUM MICROSCOPE
 // ═══════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════
+// AMOSTRAS DA BANCADA
+// ═══════════════════════════════════════════════════════════════════════
+
+function BenchSamples({ onSelect }: { onSelect: (formula: string) => void }) {
+    const objects = useLabStore(s => s.objects)
+    const beakersWithFormulas = objects.filter(o => o.formula && o.formula !== 'Mistura' && !o.formula.includes('+'))
+
+    if (beakersWithFormulas.length === 0) {
+        return (
+            <div className="vsepr-info-panel">
+                <p style={{ color: '#fff' }}>Nenhuma substância pura na bancada no momento.</p>
+                <p style={{ color: '#888', marginTop: '1rem' }}>Misture elementos e provoque reações nos béqueres para analisá-las aqui!</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="molecule-selector">
+            <h3 style={{ color: '#00f7ff', marginBottom: '1rem', padding: '0 1rem' }}>🧪 Amostras na Bancada</h3>
+            <div className="selector-list">
+                {beakersWithFormulas.map(b => (
+                    <button
+                        key={b.id}
+                        className="molecule-card"
+                        onClick={() => onSelect(b.formula!)}
+                    >
+                        <span className="card-formula" style={{ color: b.color || '#fff' }}>{b.formula}</span>
+                        <span className="card-name">{b.customName || b.formula}</span>
+                        <span className="card-geometry">Béquer</span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
 interface QuantumMicroscopeProps {
     isOpen: boolean
     onClose: () => void
@@ -295,13 +338,23 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
     const [showPiBonds, setShowPiBonds] = useState(false)
     const [animateResonance, setAnimateResonance] = useState(false)
     const [showFormalCharges, setShowFormalCharges] = useState(false)
-    const [showSelector, setShowSelector] = useState(false)
-    const [activeTab, setActiveTab] = useState<'vsepr' | 'hybridization'>('vsepr')
+    
+    type PanelView = 'vsepr' | 'hybridization' | 'catalog' | 'bench'
+    const [activeView, setActiveView] = useState<PanelView>('vsepr')
+
+    // Sincroniza a formula inicial que vem do store
+    useEffect(() => {
+        if (isOpen && initialFormula) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedFormula(initialFormula)
+            setActiveView('vsepr')
+        }
+    }, [isOpen, initialFormula])
+
+    // Hook que gerencia dados estáticos vs procedurais (Worker)
+    const { molecule, isLoading, error } = useVSEPR(selectedFormula)
 
     if (!isOpen) return null
-
-    const molecule = VSEPR_MOLECULES[selectedFormula]
-    if (!molecule) return null
 
     return (
         <div className="quantum-microscope-overlay" onClick={onClose}>
@@ -316,14 +369,14 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                     </div>
                     <div className="qm-tabs">
                         <button 
-                            className={`qm-tab ${activeTab === 'vsepr' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('vsepr')}
+                            className={`qm-tab ${activeView === 'vsepr' ? 'active' : ''}`}
+                            onClick={() => setActiveView('vsepr')}
                         >
                             Estrutura
                         </button>
                         <button 
-                            className={`qm-tab ${activeTab === 'hybridization' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('hybridization')}
+                            className={`qm-tab ${activeView === 'hybridization' ? 'active' : ''}`}
+                            onClick={() => setActiveView('hybridization')}
                         >
                             Hibridização
                         </button>
@@ -360,10 +413,16 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                             ±
                         </button>
                         <button
-                            className={`qm-toggle ${showSelector ? 'active' : ''}`}
-                            onClick={() => setShowSelector(!showSelector)}
+                            className={`qm-toggle ${activeView === 'catalog' ? 'active' : ''}`}
+                            onClick={() => setActiveView('catalog')}
                         >
                             📋 Catálogo
+                        </button>
+                        <button
+                            className={`qm-toggle ${activeView === 'bench' ? 'active' : ''}`}
+                            onClick={() => setActiveView('bench')}
+                        >
+                            🧪 Bancada
                         </button>
                         <button className="qm-close" onClick={onClose}>✕</button>
                     </div>
@@ -391,12 +450,14 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                         </Canvas>
 
                         {/* Indicador de molécula */}
-                        <div className="qm-molecule-indicator">
-                            <span className="indicator-formula">{molecule.formula}</span>
-                            <span className="indicator-geo">
-                                {GEOMETRY_INFO[molecule.geometry].icon} {GEOMETRY_INFO[molecule.geometry].namePt}
-                            </span>
-                        </div>
+                        {molecule && (
+                            <div className="qm-molecule-indicator">
+                                <span className="indicator-formula">{molecule.formula}</span>
+                                <span className="indicator-geo">
+                                    {GEOMETRY_INFO[molecule.geometry]?.icon || '🔮'} {GEOMETRY_INFO[molecule.geometry]?.namePt || molecule.geometry}
+                                </span>
+                            </div>
+                        )}
 
                         {/* Scanlines holográficas */}
                         <div className="qm-scanlines" />
@@ -404,18 +465,30 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
 
                     {/* PAINEL LATERAL */}
                     <div className="qm-sidebar">
-                        {showSelector ? (
+                        {activeView === 'catalog' ? (
                             <MoleculeSelector
                                 selectedFormula={selectedFormula}
-                                onSelect={(f) => { setSelectedFormula(f); setShowSelector(false) }}
+                                onSelect={(f) => { setSelectedFormula(f); setActiveView('vsepr') }}
                             />
-                        ) : (
-                            activeTab === 'vsepr' ? (
-                                <VSEPRInfoPanel molecule={molecule} />
-                            ) : (
-                                <HybridizationPanel molecule={molecule} />
-                            )
-                        )}
+                        ) : activeView === 'bench' ? (
+                            <BenchSamples onSelect={(f) => { setSelectedFormula(f); setActiveView('vsepr') }} />
+                        ) : isLoading ? (
+                            <div className="vsepr-info-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <h3 style={{ color: '#00f7ff' }}>Calculando Geometria...</h3>
+                                    <p style={{ color: '#888' }}>O motor termodinâmico está processando a estrutura de {selectedFormula}.</p>
+                                </div>
+                            </div>
+                        ) : error ? (
+                            <div className="vsepr-info-panel">
+                                <h3 style={{ color: '#ff4444' }}>Erro na Análise</h3>
+                                <p style={{ color: '#ffaaaa' }}>{error}</p>
+                            </div>
+                        ) : molecule && activeView === 'vsepr' ? (
+                            <VSEPRInfoPanel molecule={molecule} />
+                        ) : molecule && activeView === 'hybridization' ? (
+                            <HybridizationPanel molecule={molecule} />
+                        ) : null}
                     </div>
                 </div>
 

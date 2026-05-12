@@ -171,46 +171,89 @@ export const ELECTROLYTES: Record<string, Electrolyte> = {
 /**
  * Determina os produtos da eletrólise baseado no eletrólito e eletrodos
  */
-export function predictElectrolysisProducts(electrolyte: Electrolyte): ElectrolysisResult {
+/**
+ * Aplica a Equação de Nernst para encontrar o potencial real
+ * E = E° - (RT/zF) * ln(Q)
+ */
+function applyNernstEquation(standardPotential: number, concentration: number, z: number, temperatureC: number): number {
+    const R = 8.314; // J/(mol·K)
+    const T = temperatureC + 273.15; // K
+    const F = FARADAY_CONSTANT;
+    
+    // Q para redução: 1 / [íon]
+    // Cuidado com log(0) ou concentração muito baixa
+    const safeConcentration = Math.max(1e-10, concentration);
+    const Q = 1 / safeConcentration;
+    
+    return standardPotential - ((R * T) / (z * F)) * Math.log(Q);
+}
+
+export function predictElectrolysisProducts(electrolyte: Electrolyte, temperatureC: number = 25): ElectrolysisResult {
     const cationData = STANDARD_REDUCTION_POTENTIALS[electrolyte.cation]
     const anionData = STANDARD_REDUCTION_POTENTIALS[electrolyte.anion]
     const waterCation = STANDARD_REDUCTION_POTENTIALS['H+']
     const waterAnion = STANDARD_REDUCTION_POTENTIALS['OH-']
 
-    // No cátodo: íon com MAIOR potencial de redução é reduzido
-    // Comparar cátion do sal com H+ (da água)
+    // Concentração do eletrólito principal
+    const conc = electrolyte.concentration;
+    
+    // Concentração da água (H+ e OH- em água pura ~ 1e-7)
+    // Se for uma solução aquosa, a água está em abundância, mas os íons H+ e OH- dependem do pH
+    // Para simplificar, assumimos pH 7 se não for especificado
+    const waterIonConc = 1e-7;
+
+    // Calcular potenciais reais com Nernst (Assumindo z=2 como média genérica se não tivermos a carga exata)
+    // Para ser mais preciso: Ag+ (z=1), Cu2+ (z=2), Al3+ (z=3)
+    const getZ = (ion: string) => {
+        if (ion.includes('3+')) return 3;
+        if (ion.includes('2+') || ion.includes('-2') || ion.includes('²⁺')) return 2;
+        return 1;
+    }
+
+    const waterCathodePotential = applyNernstEquation(waterCation.potential, waterIonConc, 2, temperatureC);
+    const waterAnodePotential = applyNernstEquation(waterAnion.potential, waterIonConc, 4, temperatureC);
+
+    // No cátodo: íon com MAIOR potencial de redução (E_red real) é reduzido
     let cathodeProduct: string
     let cathodeReduction: number
 
-    if (!cationData || cationData.potential < waterCation.potential) {
-        // H+ é reduzido (produz H2)
+    if (!cationData) {
         cathodeProduct = 'H₂'
-        cathodeReduction = waterCation.potential
+        cathodeReduction = waterCathodePotential
     } else {
-        cathodeProduct = cationData.product
-        cathodeReduction = cationData.potential
+        const cationRealPotential = applyNernstEquation(cationData.potential, conc, getZ(electrolyte.cation), temperatureC);
+        if (cationRealPotential < waterCathodePotential) {
+            cathodeProduct = 'H₂'
+            cathodeReduction = waterCathodePotential
+        } else {
+            cathodeProduct = cationData.product
+            cathodeReduction = cationRealPotential
+        }
     }
 
-    // No ânodo: íon com MENOR potencial de redução é oxidado
-    // Comparar ânion do sal com OH- (da água)
+    // No ânodo: íon com MENOR potencial de redução é oxidado (ou seja, MAIOR potencial de oxidação)
     let anodeProduct: string
     let anodeOxidation: number
 
     if (!anionData) {
         anodeProduct = 'O₂'
-        anodeOxidation = -waterAnion.potential
-    } else if (Math.abs(anionData.potential) < Math.abs(waterAnion.potential)) {
-        // Ânion do sal é oxidado
-        anodeProduct = anionData.product
-        anodeOxidation = -anionData.potential
+        anodeOxidation = -waterAnodePotential
     } else {
-        // OH- é oxidado (produz O2)
-        anodeProduct = 'O₂'
-        anodeOxidation = -waterAnion.potential
+        const anionRealPotential = applyNernstEquation(anionData.potential, conc, getZ(electrolyte.anion), temperatureC);
+        // E_oxidação = -E_redução
+        if (-anionRealPotential < -waterAnodePotential) {
+            anodeProduct = 'O₂'
+            anodeOxidation = -waterAnodePotential
+        } else {
+            anodeProduct = anionData.product
+            anodeOxidation = -anionRealPotential
+        }
     }
 
-    // Tensão mínima = E°cátodo - E°ânodo (+ sobretensão)
-    const voltageRequired = Math.abs(cathodeReduction - anodeOxidation) + 0.5 // +0.5V sobretensão
+    // Tensão mínima = E_cátodo - E_ânodo (+ sobretensão que varia com T e concentração)
+    // A sobretensão na prática aumenta em concentrações muito baixas
+    const overpotential = 0.5 + (conc < 0.01 ? 0.2 : 0)
+    const voltageRequired = Math.abs(cathodeReduction - anodeOxidation) + overpotential
 
     // Construir reação geral
     const overallReaction = buildOverallReaction(electrolyte, cathodeProduct, anodeProduct)
@@ -250,21 +293,25 @@ function buildOverallReaction(electrolyte: Electrolyte, cathodeProduct: string, 
  * Calcula a corrente elétrica baseada na Lei de Ohm
  * I = V / R, onde R depende da condutividade do eletrólito
  */
-export function calculateCurrent(voltage: number, electrolyte: Electrolyte, electrodeArea: number = 0.01): number {
-    // Resistência aproximada baseada na condutividade
-    // R = L / (A * σ), assumindo L = 0.1m (distância entre eletrodos)
+export function calculateCurrent(voltage: number, electrolyte: Electrolyte, temperature: number = 25, electrodeArea: number = 0.01): number {
+    // A condutividade real cai proporcionalmente com a concentração
+    // Assumindo que a condutividade base era para a concentração inicial (~0.5M ou 1.0M)
+    // Condutividade = Condutividade_base * (Concentração_atual / Concentração_inicial_estimada)
+    const dynamicConductivity = Math.max(0.0001, electrolyte.conductivity * (electrolyte.concentration / 1.0));
+    
+    // R = L / (A * σ)
     const distance = 0.1 // metros
-    const resistance = distance / (electrodeArea * electrolyte.conductivity)
+    const resistance = distance / (electrodeArea * dynamicConductivity)
 
-    // Só flui corrente se a tensão for suficiente
-    const products = predictElectrolysisProducts(electrolyte)
+    // Só flui corrente se a tensão for suficiente (verificada usando Nernst com a temp atual)
+    const products = predictElectrolysisProducts(electrolyte, temperature)
     if (voltage < products.voltageRequired) {
         return 0
     }
 
     // Corrente limitada pela tensão acima do mínimo
     const effectiveVoltage = voltage - products.voltageRequired
-    return Math.min(effectiveVoltage / resistance, 10) // Limitar a 10A por segurança
+    return Math.min(effectiveVoltage / resistance, 15) // Limitar a 15A por segurança
 }
 
 /**
@@ -379,7 +426,7 @@ export function updateElectrolysis(state: ElectrolysisState, deltaTime: number):
     newState.time += deltaTime
 
     // Calcular corrente
-    newState.current = calculateCurrent(state.voltage, state.electrolyte)
+    newState.current = calculateCurrent(state.voltage, state.electrolyte, state.temperature)
 
     if (newState.current <= 0) {
         newState.cathode.isActive = false
@@ -388,7 +435,7 @@ export function updateElectrolysis(state: ElectrolysisState, deltaTime: number):
     }
 
     // Prever produtos
-    const products = predictElectrolysisProducts(state.electrolyte)
+    const products = predictElectrolysisProducts(state.electrolyte, state.temperature)
 
     // Ativar eletrodos
     newState.cathode = { ...state.cathode, isActive: true, gasProduced: products.cathodeProduct }
@@ -398,29 +445,49 @@ export function updateElectrolysis(state: ElectrolysisState, deltaTime: number):
     const effectiveCurrent = newState.current * state.efficiency
 
     // Cátodo (ex: H2 ou Cu)
+    let molesConsumedCathode = 0;
     if (products.cathodeProduct === 'H₂') {
         // H2: 2 elétrons por molécula, M = 2 g/mol
-        const molesH2 = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
-        newState.cathode.gasVolume = state.cathode.gasVolume + calculateGasVolume(molesH2)
+        molesConsumedCathode = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
+        newState.cathode.gasVolume = state.cathode.gasVolume + calculateGasVolume(molesConsumedCathode)
         newState.cathode.bubbleRate = calculateBubbleRate(newState.current, 'H2')
     } else if (products.cathodeProduct === 'Cu') {
         // Cu: 2 elétrons, M = 63.5 g/mol
-        const massCu = calculateMassDeposited(effectiveCurrent, deltaTime, 63.5, 2)
+        molesConsumedCathode = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
+        const massCu = molesConsumedCathode * 63.5
         newState.cathode.depositMass = state.cathode.depositMass + massCu
         newState.cathode.bubbleRate = 0
+    } else {
+        // Geração genérica
+        molesConsumedCathode = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
+        newState.cathode.depositMass += molesConsumedCathode * 50 // Massa genérica
     }
 
     // Ânodo (ex: O2 ou Cl2)
+    let molesConsumedAnode = 0;
     if (products.anodeProduct === 'O₂') {
         // O2: 4 elétrons por molécula, M = 32 g/mol
-        const molesO2 = (effectiveCurrent * deltaTime) / (4 * FARADAY_CONSTANT)
-        newState.anode.gasVolume = state.anode.gasVolume + calculateGasVolume(molesO2)
+        molesConsumedAnode = (effectiveCurrent * deltaTime) / (4 * FARADAY_CONSTANT)
+        newState.anode.gasVolume = state.anode.gasVolume + calculateGasVolume(molesConsumedAnode)
         newState.anode.bubbleRate = calculateBubbleRate(newState.current, 'O2')
     } else if (products.anodeProduct === 'Cl₂') {
         // Cl2: 2 elétrons, M = 71 g/mol
-        const molesCl2 = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
-        newState.anode.gasVolume = state.anode.gasVolume + calculateGasVolume(molesCl2)
+        molesConsumedAnode = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
+        newState.anode.gasVolume = state.anode.gasVolume + calculateGasVolume(molesConsumedAnode)
         newState.anode.bubbleRate = calculateBubbleRate(newState.current, 'Cl2')
+    } else {
+        molesConsumedAnode = (effectiveCurrent * deltaTime) / (2 * FARADAY_CONSTANT)
+        newState.anode.gasVolume += calculateGasVolume(molesConsumedAnode)
+    }
+
+    // Atualizar concentração do eletrólito (assumindo volume de 1L para simplificar a perda)
+    const maxMolesConsumed = Math.max(molesConsumedCathode, molesConsumedAnode)
+    if (maxMolesConsumed > 0 && newState.electrolyte) {
+        newState.electrolyte = {
+            ...newState.electrolyte,
+            // A concentração nunca chega a 0 absoluto para evitar log(0), limite de 1e-10
+            concentration: Math.max(1e-10, newState.electrolyte.concentration - maxMolesConsumed)
+        }
     }
 
     return newState

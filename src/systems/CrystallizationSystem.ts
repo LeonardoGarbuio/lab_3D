@@ -10,6 +10,9 @@ export interface CrystalType {
     growthRate: number          // Taxa de crescimento (0-1)
     transparency: number        // 0-1
     crystallizationSpeed?: number // Velocidade de cristalização
+    kps: number                 // Produto de solubilidade a 25°C
+    deltaH: number              // Entalpia de dissolução (kJ/mol)
+    ions: number                // Número de íons em solução (para sais)
 }
 
 export interface Crystal {
@@ -45,7 +48,10 @@ export const CRYSTAL_TYPES: Record<string, CrystalType> = {
         color: '#ffffff',
         saturationTemp: 25,
         growthRate: 0.3,
-        transparency: 0.2
+        transparency: 0.2,
+        kps: 37.3,        // Kps muito alto
+        deltaH: 3.88,     // Pouco dependente da temperatura
+        ions: 2           // Na+, Cl-
     },
     'CuSO4': {
         name: 'Sulfato de Cobre',
@@ -54,7 +60,10 @@ export const CRYSTAL_TYPES: Record<string, CrystalType> = {
         color: '#0066cc',
         saturationTemp: 20,
         growthRate: 0.25,
-        transparency: 0.3
+        transparency: 0.3,
+        kps: 0.05,        // Menos solúvel que NaCl
+        deltaH: 66.0,     // Muito dependente da temperatura
+        ions: 2           // Cu2+, SO4 2-
     },
     'KNO3': {
         name: 'Nitrato de Potássio',
@@ -63,16 +72,22 @@ export const CRYSTAL_TYPES: Record<string, CrystalType> = {
         color: '#f0f0f0',
         saturationTemp: 30,
         growthRate: 0.4,
-        transparency: 0.15
+        transparency: 0.15,
+        kps: 1.1,
+        deltaH: 34.89,    // Alta dependência térmica
+        ions: 2
     },
     'Alum': {
         name: 'Alúmen de Potássio',
         formula: 'KAl(SO4)2',
-        shape: 'cubic', // Na verdade octaédrico, mas usamos cubic
+        shape: 'cubic',
         color: '#e8e8ff',
         saturationTemp: 25,
         growthRate: 0.35,
-        transparency: 0.4
+        transparency: 0.4,
+        kps: 0.1,
+        deltaH: 50.0,
+        ions: 4           // K+, Al3+, 2 SO4 2-
     },
     'Sugar': {
         name: 'Sacarose',
@@ -81,7 +96,10 @@ export const CRYSTAL_TYPES: Record<string, CrystalType> = {
         color: '#fffacd',
         saturationTemp: 20,
         growthRate: 0.2,
-        transparency: 0.5
+        transparency: 0.5,
+        kps: 100.0,       // Molecular, mas simulado com alto Kps
+        deltaH: 15.0,
+        ions: 1
     }
 }
 
@@ -104,11 +122,24 @@ export function calculateSaturation(
  * Retorna solubilidade baseado na temperatura para uma substância
  */
 export function getSolubilityForSubstance(temperature: number, substance: CrystalType): number {
-    // Solubilidade base do NaCl: ~360g/L a 20°C = 6.1 mol/L
-    // Usamos saturationTemp como referência
-    const baseSolubility = 360 // g/L como padrão
-    const tempFactor = 1 + (temperature - substance.saturationTemp) * 0.02
-    return baseSolubility * Math.max(0.1, tempFactor)
+    const T2 = temperature + 273.15 // K
+    const T1 = 298.15 // 25°C
+    const R = 0.008314 // kJ/(mol·K)
+    
+    // Equação de Van 't Hoff: ln(Kps2/Kps1) = (ΔH/R) * (1/T1 - 1/T2)
+    const lnKpsRatio = (substance.deltaH / R) * ((1 / T1) - (1 / T2))
+    const Kps_T2 = substance.kps * Math.exp(lnKpsRatio)
+    
+    // Calcular solubilidade S a partir do Kps
+    // Kps = (x^x * y^y) * S^(x+y) para um sal AxBy
+    // Para simplificar, assumimos sais 1:1 onde Kps = S^2, então S = sqrt(Kps)
+    // Para n íons genéricos: Kps ~ S^n -> S = Kps^(1/n)
+    
+    const S = Math.pow(Kps_T2, 1 / substance.ions)
+    
+    // Converter de mol/L para algo próximo ao esperado pelo motor visual se necessário,
+    // mas S está em mol/L. Retornamos mol/L!
+    return S
 }
 
 /**
@@ -131,19 +162,11 @@ export function checkSaturation(
  * Retorna solubilidade em mol/L baseado na temperatura
  */
 export function getSolubility(formula: string, temperature: number): number {
-    // Valores simplificados de solubilidade
-    const baseSolubility: Record<string, number> = {
-        'NaCl': 6.1,      // ~360g/L
-        'CuSO4': 1.4,     // ~220g/L a 20°C
-        'KNO3': 3.2,      // ~320g/L a 20°C
-        'Alum': 0.3,      // ~115g/L
-        'Sugar': 6.0      // ~2000g/L
+    const crystal = CRYSTAL_TYPES[formula]
+    if (crystal) {
+        return getSolubilityForSubstance(temperature, crystal)
     }
-
-    const base = baseSolubility[formula] || 1
-    // Solubilidade aumenta ~3% por °C acima de 20°C
-    const tempFactor = 1 + (temperature - 20) * 0.03
-    return base * Math.max(0.1, tempFactor)
+    return 1.0 // Fallback genérico
 }
 
 /**

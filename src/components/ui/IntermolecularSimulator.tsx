@@ -1,10 +1,26 @@
 // src/components/ui/IntermolecularSimulator.tsx
-import { useState, useRef, useMemo, useEffect } from 'react'
+// ═══════════════════════════════════════════════════════════════════════
+// 🎛️ SIMULADOR DE FORÇAS INTERMOLECULARES
+// Coordena a comunicação entre a UI (React) e o Cérebro (Web Worker).
+//
+// Fluxo:
+//   1. Ao abrir → cria Worker → envia INIT
+//   2. Worker roda a física em background a 60Hz
+//   3. Worker devolve Float32Array de posições via postMessage
+//   4. React armazena num ref → FluidContainer lê no useFrame
+//   5. Ao fechar → worker.terminate()
+// ═══════════════════════════════════════════════════════════════════════
+
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
-import { FluidEngine, type IMForceType } from '../../physics/FluidEngine'
 import FluidContainer from '../canvas/FluidContainer'
 import './IntermolecularSimulator.css'
+
+// Tipo de força (espelhado do FluidEngine — sem importar o módulo pesado)
+type IMForceType = 'london' | 'dipole' | 'h-bond' | 'ion-dipole'
+
+const NUM_PARTICLES = 120
 
 interface IntermolecularSimulatorProps {
     isOpen: boolean
@@ -40,19 +56,76 @@ const FORCE_DESCRIPTIONS: Record<IMForceType, { title: string; desc: string; col
 
 export default function IntermolecularSimulator({ isOpen, onClose }: IntermolecularSimulatorProps) {
     const [forceType, setForceType] = useState<IMForceType>('london')
-    const engineRef = useRef<FluidEngine | null>(null)
+    const workerRef = useRef<Worker | null>(null)
+    const positionsRef = useRef<Float32Array | null>(null)
+    const [ready, setReady] = useState(false)
 
-    // Inicializa o motor apenas quando abrir
-    if (!engineRef.current && isOpen) {
-        engineRef.current = new FluidEngine(120, forceType)
-    }
-
-    // Atualiza a força quando mudar a aba
+    // ─── Ciclo de vida do Worker ──────────────────────────────────────
     useEffect(() => {
-        if (engineRef.current) {
-            engineRef.current.setForceType(forceType)
+        if (!isOpen) return
+
+        // Criar o Worker via import nativo do Vite
+        const worker = new Worker(
+            new URL('../../workers/physics.worker.ts', import.meta.url),
+            { type: 'module' }
+        )
+        workerRef.current = worker
+
+        // Escutar mensagens do Worker
+        worker.onmessage = (event: MessageEvent) => {
+            const { type } = event.data
+
+            if (type === 'READY') {
+                setReady(true)
+            }
+
+            if (type === 'FRAME') {
+                // Guardar as posições recebidas do Worker
+                // O Float32Array veio via Transferable (zero-copy)
+                positionsRef.current = event.data.positions as Float32Array
+            }
         }
-    }, [forceType])
+
+        worker.onerror = (err) => {
+            console.error('[IntermolecularSimulator] Worker error:', err)
+        }
+
+        // Inicializar a simulação
+        worker.postMessage({
+            type: 'INIT',
+            numParticles: NUM_PARTICLES,
+            forceType: forceType,
+        })
+
+        // Cleanup: matar o Worker quando o componente desmontar ou fechar
+        return () => {
+            worker.terminate()
+            workerRef.current = null
+            positionsRef.current = null
+            setReady(false)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]) // Só recriar quando abrir/fechar
+
+    // ─── Enviar mudança de força para o Worker ────────────────────────
+    useEffect(() => {
+        if (workerRef.current && ready) {
+            workerRef.current.postMessage({
+                type: 'SET_FORCE',
+                forceType: forceType,
+            })
+        }
+    }, [forceType, ready])
+
+    // ─── Agitar Recipiente ────────────────────────────────────────────
+    const handleReset = useCallback(() => {
+        if (workerRef.current) {
+            workerRef.current.postMessage({
+                type: 'RESET',
+                numParticles: NUM_PARTICLES,
+            })
+        }
+    }, [])
 
     if (!isOpen) return null
 
@@ -78,9 +151,13 @@ export default function IntermolecularSimulator({ isOpen, onClose }: Intermolecu
                             <pointLight position={[5, 5, 5]} intensity={0.8} />
                             <pointLight position={[-5, -5, -5]} intensity={0.3} color={currentForce.color} />
                             <color attach="background" args={['#0a0f1a']} />
-                            
-                            <FluidContainer engine={engineRef.current!} particleColor={currentForce.color} />
-                            
+
+                            <FluidContainer
+                                positionsRef={positionsRef}
+                                particleCount={NUM_PARTICLES}
+                                particleColor={currentForce.color}
+                            />
+
                             <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={50} />
                             <OrbitControls makeDefault enablePan={false} autoRotate={true} autoRotateSpeed={1.0} />
                         </Canvas>
@@ -98,14 +175,14 @@ export default function IntermolecularSimulator({ isOpen, onClose }: Intermolecu
                     <div className="im-sidebar">
                         <h3>Controle SPH</h3>
                         <p className="im-sub">Ajuste o tipo de interação intermolecular para observar a mudança na coesão (tensão superficial).</p>
-                        
+
                         <div className="im-force-selector">
                             {(Object.keys(FORCE_DESCRIPTIONS) as IMForceType[]).map(type => (
                                 <button
                                     key={type}
                                     className={`im-force-btn ${forceType === type ? 'active' : ''}`}
                                     onClick={() => setForceType(type)}
-                                    style={{ '--accent': FORCE_DESCRIPTIONS[type].color } as any}
+                                    style={{ '--accent': FORCE_DESCRIPTIONS[type].color } as React.CSSProperties}
                                 >
                                     <span className="btn-color-dot" style={{ background: FORCE_DESCRIPTIONS[type].color }} />
                                     {FORCE_DESCRIPTIONS[type].title}
@@ -114,9 +191,9 @@ export default function IntermolecularSimulator({ isOpen, onClose }: Intermolecu
                         </div>
 
                         <div className="im-actions">
-                            <button 
+                            <button
                                 className="im-action-btn"
-                                onClick={() => engineRef.current?.reset(120)}
+                                onClick={handleReset}
                             >
                                 🔄 Agitar Recipiente
                             </button>

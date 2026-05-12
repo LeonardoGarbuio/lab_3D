@@ -4,7 +4,7 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
 import type { DistillationState } from '../../systems/DistillationSystem'
 import {
     createInitialDistillationState,
@@ -18,6 +18,7 @@ interface DistillationApparatusProps {
     scale?: number
     mixtureId?: keyof typeof DISTILLATION_MIXTURES
     isHeating?: boolean
+    onClick?: () => void
     onStateChange?: (state: DistillationState) => void
 }
 
@@ -33,9 +34,11 @@ export function DistillationApparatus({
     scale = 1,
     mixtureId = 'ethanolWater',
     isHeating = false,
+    onClick,
     onStateChange
 }: DistillationApparatusProps) {
     const groupRef = useRef<THREE.Group>(null)
+    const [isHovered, setIsHovered] = useState(false)
     const [state, setState] = useState<DistillationState>(() => createInitialDistillationState(mixtureId))
     const mutableState = useRef<DistillationState>(state)
     const lastUiUpdate = useRef(0)
@@ -64,12 +67,30 @@ export function DistillationApparatus({
 
     // Atualização do estado
     useFrame((_, delta) => {
-        const simState = mutableState.current
+        let simState = mutableState.current
         simState.isHeating = isHeating
         
-        updateDistillation(simState, delta)
+        // updateDistillation retorna um novo estado! Devemos reatribuir!
+        simState = updateDistillation(simState, delta)
+        mutableState.current = simState
 
         const now = performance.now()
+
+        // Publish live data for UI panel
+        ;(window as any).__distillationLiveData = {
+            temperature: simState.temperature,
+            vaporizing: simState.vaporizing,
+            vaporRate: simState.vaporRate,
+            distillateVolume: simState.distillateVolume,
+            currentFraction: simState.currentFraction?.name || null,
+            condenserTemp: simState.condenserTemperature,
+            fractionCollected: simState.fractionCollected?.map((f: any) => ({
+                name: f.name || f.component?.name || 'Fração',
+                volume: f.volume || 0,
+                bp: f.boilingPoint || f.component?.boilingPoint || 0,
+            })) || [],
+        }
+
         // Throttle UI updates
         if (now - lastUiUpdate.current > 500) {
             setState({ ...simState })
@@ -147,6 +168,50 @@ export function DistillationApparatus({
 
     return (
         <group ref={groupRef} position={position} scale={scale}>
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                position={[0, 0.5, 0]}
+                onClick={(e) => { 
+                    e.stopPropagation(); 
+                    onClick?.(); 
+                }}
+                onPointerEnter={(e) => { 
+                    e.stopPropagation(); 
+                    setIsHovered(true); 
+                    document.body.style.cursor = 'pointer'; 
+                }}
+                onPointerLeave={(e) => { 
+                    e.stopPropagation(); 
+                    setIsHovered(false); 
+                    document.body.style.cursor = 'default'; 
+                }}
+            >
+                <boxGeometry args={[3.0, 3.0, 2.0]} />
+                <meshBasicMaterial transparent opacity={0.01} depthWrite={false} />
+            </mesh>
+
+            {/* Tooltip Hover */}
+            {isHovered && (
+                <Html position={[0, 2.0, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        Destilação Fracionada
+                    </div>
+                </Html>
+            )}
+
             {/* ═══════════════════════════════════════════════════════════════ */}
             {/* BALÃO DE DESTILAÇÃO (Frasco de Fundo Redondo) */}
             {/* ═══════════════════════════════════════════════════════════════ */}
@@ -155,9 +220,9 @@ export function DistillationApparatus({
                 <mesh position={[0, 0.2, 0]}>
                     <sphereGeometry args={[0.3, 32, 32]} />
                     <meshStandardMaterial
-                        color="#ffffff"
+                        color={isHovered ? "#e0f7fa" : "#ffffff"}
                         transparent
-                        opacity={0.2}
+                        opacity={isHovered ? 0.35 : 0.2}
                         roughness={0}
                     />
                 </mesh>
@@ -454,6 +519,16 @@ export function DistillationApparatus({
                         color="#aaaaaa"
                     >
                         Frações: {state.fractionCollected.map(f => f.component.name).join(', ')}
+                    </Text>
+                )}
+
+                {state.mixture && (
+                    <Text
+                        position={[0, -0.32, 0]}
+                        fontSize={0.045}
+                        color="#00ffff"
+                    >
+                        Total Vapor P: {(state.vaporRate * 100 > 0 ? (760 * Math.min(1, state.vaporRate / 0.15)).toFixed(0) : (state.temperature * 7.6).toFixed(0))} mmHg
                     </Text>
                 )}
             </group>

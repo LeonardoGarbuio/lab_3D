@@ -25,6 +25,11 @@ export interface Substance {
     isOxidizer?: boolean
     incompatibleWith?: string[] // Fórmulas incompatíveis
     flameColor?: string         // Cor da chama em teste de chama
+    // Constantes de Equilíbrio
+    pKa?: number
+    pKb?: number
+    // Indicador Ácido-Base
+    colorTransition?: { phRange: [number, number]; acidColor: string; baseColor: string }
 }
 
 
@@ -33,15 +38,15 @@ export const COMMON_SUBSTANCES: Record<string, Substance> = {
     'HCl': { formula: 'HCl', name: 'Ácido Clorídrico', molarMass: 36.46, color: '#e8e8e8', phase: 'aqueous', ph: 1, category: 'acid', isCorrosive: true, corrosionStrength: 7, isToxic: true },
     'H2SO4': { formula: 'H2SO4', name: 'Ácido Sulfúrico', molarMass: 98.08, color: '#f0f0e8', phase: 'liquid', ph: 0.5, category: 'acid', isCorrosive: true, corrosionStrength: 9, isToxic: true, incompatibleWith: ['H2O'] },
     'HNO3': { formula: 'HNO3', name: 'Ácido Nítrico', molarMass: 63.01, color: '#fffacd', phase: 'liquid', ph: 1, category: 'acid', isCorrosive: true, corrosionStrength: 8, isOxidizer: true, isToxic: true, incompatibleWith: ['organics', 'metals'] },
-    'CH3COOH': { formula: 'CH3COOH', name: 'Ácido Acético (Vinagre)', molarMass: 60.05, color: '#fff8dc', phase: 'liquid', ph: 2.9, category: 'acid' },
-    'H3PO4': { formula: 'H3PO4', name: 'Ácido Fosfórico', molarMass: 97.99, color: '#f5f5f5', phase: 'liquid', ph: 1.5, category: 'acid' },
-    'HF': { formula: 'HF', name: 'Ácido Fluorídrico', molarMass: 20.01, color: '#f0ffff', phase: 'liquid', ph: 2, category: 'acid', isCorrosive: true, corrosionStrength: 10, isToxic: true },
+    'CH3COOH': { formula: 'CH3COOH', name: 'Ácido Acético (Vinagre)', molarMass: 60.05, color: '#fff8dc', phase: 'liquid', ph: 2.9, category: 'acid', pKa: 4.76 },
+    'H3PO4': { formula: 'H3PO4', name: 'Ácido Fosfórico', molarMass: 97.99, color: '#f5f5f5', phase: 'liquid', ph: 1.5, category: 'acid', pKa: 2.15 },
+    'HF': { formula: 'HF', name: 'Ácido Fluorídrico', molarMass: 20.01, color: '#f0ffff', phase: 'liquid', ph: 2, category: 'acid', isCorrosive: true, corrosionStrength: 10, isToxic: true, pKa: 3.17 },
 
     // BASES
     'NaOH': { formula: 'NaOH', name: 'Hidróxido de Sódio', molarMass: 40.0, color: '#87ceeb', phase: 'aqueous', ph: 14, category: 'base', isCorrosive: true, corrosionStrength: 8, isToxic: true, flameColor: '#ffd700' },
     'KOH': { formula: 'KOH', name: 'Hidróxido de Potássio', molarMass: 56.1, color: '#add8e6', phase: 'aqueous', ph: 13.5, category: 'base', isCorrosive: true, corrosionStrength: 8, isToxic: true, flameColor: '#9400d3' },
     'Ca(OH)2': { formula: 'Ca(OH)2', name: 'Hidróxido de Cálcio', molarMass: 74.09, color: '#f5f5f5', phase: 'aqueous', ph: 12.5, category: 'base', flameColor: '#ff6600' },
-    'NH4OH': { formula: 'NH4OH', name: 'Hidróxido de Amônio', molarMass: 35.04, color: '#e6f3ff', phase: 'aqueous', ph: 11, category: 'base' },
+    'NH4OH': { formula: 'NH4OH', name: 'Hidróxido de Amônio', molarMass: 35.04, color: '#e6f3ff', phase: 'aqueous', ph: 11, category: 'base', pKb: 4.75 },
     'Mg(OH)2': { formula: 'Mg(OH)2', name: 'Hidróxido de Magnésio', molarMass: 58.32, color: '#ffffff', phase: 'aqueous', ph: 10.5, category: 'base' },
 
     // SAIS
@@ -75,9 +80,9 @@ export const COMMON_SUBSTANCES: Record<string, Substance> = {
     'SO2': { formula: 'SO2', name: 'Dióxido de Enxofre', molarMass: 64.07, color: '#fffacd', phase: 'gas', category: 'gas', isToxic: true },
 
     // INDICADORES
-    'phenolphthalein': { formula: 'C20H14O4', name: 'Fenolftaleína', molarMass: 318.32, color: '#ff69b4', phase: 'liquid', category: 'indicator' },
-    'methyl_orange': { formula: 'C14H14N3NaO3S', name: 'Alaranjado de Metila', molarMass: 327.33, color: '#ff8c00', phase: 'liquid', category: 'indicator' },
-    'litmus': { formula: 'C40H26O4', name: 'Tornassol', molarMass: 350, color: '#9370db', phase: 'liquid', category: 'indicator' },
+    'phenolphthalein': { formula: 'C20H14O4', name: 'Fenolftaleína', molarMass: 318.32, color: '#ff69b4', phase: 'liquid', category: 'indicator', colorTransition: { phRange: [8.2, 10.0], acidColor: 'transparent', baseColor: '#ff1493' } },
+    'methyl_orange': { formula: 'C14H14N3NaO3S', name: 'Alaranjado de Metila', molarMass: 327.33, color: '#ff8c00', phase: 'liquid', category: 'indicator', colorTransition: { phRange: [3.1, 4.4], acidColor: '#ff0000', baseColor: '#ffcc00' } },
+    'litmus': { formula: 'C40H26O4', name: 'Tornassol', molarMass: 350, color: '#9370db', phase: 'liquid', category: 'indicator', colorTransition: { phRange: [4.5, 8.3], acidColor: '#ff0000', baseColor: '#0000ff' } },
 
     // METAIS
     'Fe': { formula: 'Fe', name: 'Ferro', molarMass: 55.845, color: '#708090', phase: 'solid', category: 'metal' },
@@ -108,6 +113,11 @@ export interface ChemicalReaction {
     optimalRatio?: number // Mols de reactante 2 por mol de reactante 1
     unstable?: boolean
     onFailure?: 'explosion' | 'fizzle' | 'nothing'
+    // Dados termodinâmicos reais (preenchidos pelo ReactionEvaluator)
+    deltaH?: number              // ΔH em kJ/mol
+    deltaG?: number              // ΔG em kJ/mol
+    deltaS?: number              // ΔS em J/(mol·K)
+    viable?: boolean             // Se a reação é termodinamicamente viável
 }
 
 export const REACTIONS: ChemicalReaction[] = [
@@ -377,15 +387,76 @@ export const ALL_SUBSTANCES = { ...COMMON_SUBSTANCES, ...EXPANDED_SUBSTANCES }
 export const ALL_REACTIONS = [...REACTIONS, ...EXPANDED_REACTIONS]
 
 // ═══════════════════════════════════════════════════════════════════════
-// FUNÇÕES
+// FUNÇÕES — AGORA COM TERMODINÂMICA REAL
 // ═══════════════════════════════════════════════════════════════════════
 
-export function findReaction(formula1: string, formula2: string): ChemicalReaction | null {
+import { ReactionEvaluator } from '../physics/ReactionEvaluator'
+import type { ReactionResult } from '../physics/ReactionEvaluator'
+
+/**
+ * Encontra e avalia uma reação entre duas substâncias.
+ *
+ * PRIORIDADE:
+ *   1. ReactionEvaluator (termodinâmica real: ΔG, ΔH, ΔS)
+ *   2. Fallback para a lista estática ALL_REACTIONS (indicadores, etc.)
+ *
+ * @param formula1    Fórmula do reagente 1
+ * @param formula2    Fórmula do reagente 2
+ * @param tempCelsius Temperatura do sistema (default 25°C)
+ * @returns ChemicalReaction com dados termodinâmicos enriquecidos, ou null
+ */
+export function findReaction(formula1: string, formula2: string, tempCelsius: number = 25): ChemicalReaction | null {
+    // 1. Tentar o motor termodinâmico primeiro
+    const thermoResult = ReactionEvaluator.evaluate(formula1, formula2, tempCelsius)
+    if (thermoResult) {
+        return mapThermoToLegacy(thermoResult)
+    }
+
+    // 2. Fallback — reações estáticas (indicadores, complexação, etc.)
     return ALL_REACTIONS.find(r =>
         (r.reactants[0] === formula1 && r.reactants[1] === formula2) ||
         (r.reactants[0] === formula2 && r.reactants[1] === formula1)
     ) || null
 }
+
+/**
+ * Converte um ReactionResult (termodinâmico) no formato legado ChemicalReaction
+ * para compatibilidade com o useLabStore e a UI existente.
+ */
+function mapThermoToLegacy(result: ReactionResult): ChemicalReaction {
+    return {
+        id: `thermo-${result.reactants.map(r => r.formula).join('-')}`,
+        reactants: [
+            result.reactants[0]?.formula || '',
+            result.reactants[1]?.formula || result.reactants[0]?.formula || '',
+        ] as [string, string],
+        products: result.products.map(p => p.formula),
+        equation: result.equation,
+        description: result.description,
+        type: result.type as ChemicalReaction['type'],
+        effect: result.effectType === 'none' ? 'glow' : result.effectType as string,
+        effectColor: result.effectColor,
+        productColor: result.productColor,
+        exothermic: result.exothermic,
+        // Dados termodinâmicos reais (novos campos)
+        deltaH: result.deltaH ?? undefined,
+        deltaG: result.deltaG ?? undefined,
+        deltaS: result.deltaS ?? undefined,
+        viable: result.viable,
+    }
+}
+
+/**
+ * Avalia a reação termodinamicamente (para uso direto sem fallback legado).
+ * Ideal para o Worker e sistemas que querem os dados brutos.
+ */
+export function evaluateReactionThermo(formula1: string, formula2: string, tempCelsius: number = 25): ReactionResult | null {
+    return ReactionEvaluator.evaluate(formula1, formula2, tempCelsius)
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FUNÇÕES UTILITÁRIAS (mantidas para compatibilidade)
+// ═══════════════════════════════════════════════════════════════════════
 
 export function mixColors(color1: string, color2: string, ratio: number = 0.5): string {
     const hex2rgb = (hex: string) => {
@@ -418,9 +489,8 @@ export function getSubstancesByCategory(category: string): Substance[] {
 }
 
 export function getAllReactionTypes(): string[] {
-    return [...new Set(ALL_REACTIONS.map(r => r.type))]
+    return Array.from(new Set(ALL_REACTIONS.map(r => r.type)))
 }
-
 // ═══════════════════════════════════════════════════════════════════════
 // SISTEMA DE pH E TITULAÇÃO
 // ═══════════════════════════════════════════════════════════════════════

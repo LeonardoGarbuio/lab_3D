@@ -37,7 +37,9 @@ export function FPSControls() {
         state.isPeriodicPropertiesOpen ||
         state.isNuclearPhysicsOpen ||
         state.isIntermolecularOpen ||
-        state.isSolidStateOpen
+        state.isSolidStateOpen ||
+        state.isElectrolysisPanelOpen ||
+        state.isDistillationPanelOpen
     )
 
     useEffect(() => {
@@ -74,8 +76,12 @@ export function FPSControls() {
         }
     }, [camera])
 
-    useFrame((_, delta) => {
+    useFrame((state, delta) => {
         if (!controlsRef.current?.isLocked) return
+
+        // Fix: O R3F guarda a última posição do rato antes do lock. 
+        // Precisamos forçar o raycaster (pointer) para o centro da tela (mira)
+        state.pointer.set(0, 0)
 
         // Fixed timestep physics (sem tocar em events/raycaster)
         const clampedDelta = Math.min(delta, 0.25)

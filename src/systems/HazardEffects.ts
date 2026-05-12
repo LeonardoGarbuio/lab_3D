@@ -108,6 +108,50 @@ export function createFire(params: FireParams): HazardEffect {
     return effect
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// EFEITOS TERMODINÂMICOS (Fase 7)
+// ═══════════════════════════════════════════════════════════════════════
+
+export function createPressureExplosion(
+    position: THREE.Vector3,
+    pressure: number,
+    burstPressure: number
+): HazardEffect {
+    // Potência proporcional ao quão acima do limite a pressão estava (P - P_burst) / P_burst
+    const overloadRatio = Math.max(0.1, (pressure - burstPressure) / burstPressure)
+    const power = Math.min(10, 3 + overloadRatio * 5)
+    
+    return createExplosion({
+        position,
+        power,
+        isChemical: false, // É uma explosão física/mecânica de gás comprimido
+        color: '#aaaaaa',  // Explosão mecânica gera poeira e vidro, menos "fogo"
+        soundLevel: power * 12
+    })
+}
+
+export function createCombustionFire(
+    position: THREE.Vector3,
+    substanceFormula: string,
+    oxygenConcentration: number // 0-1
+): HazardEffect {
+    const intensity = Math.min(1, 0.3 + oxygenConcentration * 0.7)
+    
+    // Algumas substâncias queimam com cores diferentes
+    let fireColor = '#ff6600' // Laranja padrão
+    if (substanceFormula.includes('Cu')) fireColor = '#00ff00' // Fogo verde
+    if (substanceFormula.includes('K')) fireColor = '#dda0dd'  // Fogo lilás
+    if (substanceFormula.includes('CH3OH')) fireColor = '#87cefa' // Fogo azul claro (metanol)
+    
+    return createFire({
+        position,
+        intensity,
+        color: fireColor,
+        spreadRate: intensity * 2
+    })
+}
+
+
 export function createCorrosion(params: CorrosionParams): HazardEffect {
     const id = effectIdCounter++
     const effect: HazardEffect = {

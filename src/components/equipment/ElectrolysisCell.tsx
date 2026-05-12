@@ -4,7 +4,7 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
 import type { ElectrolysisState } from '../../systems/ElectrolysisSystem'
 import {
     createInitialElectrolysisState,
@@ -21,6 +21,7 @@ interface ElectrolysisCellProps {
     electrolyteId?: keyof typeof ELECTROLYTES
     voltage?: number
     isRunning?: boolean
+    onClick?: () => void
     onStateChange?: (state: ElectrolysisState) => void
 }
 
@@ -41,9 +42,11 @@ export function ElectrolysisCell({
     electrolyteId = 'sulfuricAcid',
     voltage = 0,
     isRunning = false,
+    onClick,
     onStateChange
 }: ElectrolysisCellProps) {
     const containerRef = useRef<THREE.Group>(null)
+    const [isHovered, setIsHovered] = useState(false)
     const [state, setState] = useState<ElectrolysisState>(() => {
         const initial = createInitialElectrolysisState()
         initial.electrolyte = ELECTROLYTES[electrolyteId] || null
@@ -70,25 +73,47 @@ export function ElectrolysisCell({
     const cathodeColor = products ? getProductColor(products.cathodeProduct) : '#ffffff'
     const anodeColor = products ? getProductColor(products.anodeProduct) : '#ffffff'
 
-    // Atualizar estado
     useFrame((_, delta) => {
-        const simState = mutableState.current
+        let simState = mutableState.current
+        const wasRunning = simState.isRunning
         simState.voltage = voltage
         simState.isRunning = isRunning
         simState.electrolyte = ELECTROLYTES[electrolyteId] || null
 
         if (simState.electrolyte && isRunning) {
-            updateElectrolysis(simState, delta) // Mutate in place if possible, or reassign
+            simState = updateElectrolysis(simState, delta)
+            mutableState.current = simState
+
+            // Publish live data for UI panel
+            const prods = products;
+            (window as any).__electrolysisLiveData = {
+                current: simState.current,
+                gasCathode: simState.cathode.gasVolume,
+                gasAnode: simState.anode.gasVolume,
+                cathodeProduct: prods?.cathodeProduct || '',
+                anodeProduct: prods?.anodeProduct || '',
+                overallReaction: prods?.overallReaction || '',
+                voltageRequired: prods?.voltageRequired || 0,
+                concentration: simState.electrolyte?.concentration || 0,
+            }
             
-            // Limit UI React renders to 10 FPS
+            // Limit UI React renders
             const now = performance.now()
             if (now - lastUiUpdate.current > 500) {
                 setState({ ...simState })
                 onStateChange?.({ ...simState })
                 lastUiUpdate.current = now
             }
+        } else if (wasRunning && !isRunning) {
+            simState.cathode.isActive = false
+            simState.anode.isActive = false
+            mutableState.current = simState
+            setState({ ...simState })
+            onStateChange?.({ ...simState })
+        }
 
-            // Gerar bolhas diretamente na RAM (Object pooling)
+        if (simState.electrolyte && isRunning) {
+            const now = performance.now()
             if (simState.current > 0) {
                 if (simState.cathode.bubbleRate > 0) {
                     const cathodeBubbleInterval = 1000 / simState.cathode.bubbleRate
@@ -142,7 +167,7 @@ export function ElectrolysisCell({
             if (mesh) {
                 mesh.scale.setScalar(b.size / 0.02) // Normalizando escala visual
                 // Atualizar cor material hackish
-                const material = mesh.material as THREE.meshStandardMaterial
+                const material = mesh.material as THREE.MeshStandardMaterial
                 material.color.set(electrode === 'cathode' ? cathodeColor : anodeColor)
             }
         }
@@ -156,13 +181,57 @@ export function ElectrolysisCell({
 
     return (
         <group ref={containerRef} position={position} scale={scale}>
+            {/* HITBOX INVISÍVEL OTIMIZADA PARA RAYCAST */}
+            <mesh 
+                position={[0, 0.5, 0]}
+                onClick={(e) => { 
+                    e.stopPropagation(); 
+                    onClick?.(); 
+                }}
+                onPointerEnter={(e) => { 
+                    e.stopPropagation(); 
+                    setIsHovered(true); 
+                    document.body.style.cursor = 'pointer'; 
+                }}
+                onPointerLeave={(e) => { 
+                    e.stopPropagation(); 
+                    setIsHovered(false); 
+                    document.body.style.cursor = 'default'; 
+                }}
+            >
+                <boxGeometry args={[2.0, 3.0, 2.0]} />
+                <meshBasicMaterial transparent opacity={0.01} depthWrite={false} />
+            </mesh>
+
+            {/* Tooltip Hover */}
+            {isHovered && (
+                <Html position={[0, 2.0, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        Célula Eletrolítica
+                    </div>
+                </Html>
+            )}
+
             {/* Recipiente de vidro */}
             <mesh>
                 <boxGeometry args={[1.2, 1.5, 0.8]} />
                 <meshStandardMaterial
-                    color="#ffffff"
+                    color={isHovered ? "#e0f7fa" : "#ffffff"}
                     transparent
-                    opacity={0.15}
+                    opacity={isHovered ? 0.3 : 0.15}
                     roughness={0}
                     side={THREE.DoubleSide}
                 />
@@ -313,7 +382,7 @@ export function ElectrolysisCell({
 
             {/* Informações do estado */}
             {isRunning && products && (
-                <group position={[0, -1, 0]}>
+                <group position={[0, 1.8, 0]}>
                     <Text
                         position={[-0.4, 0, 0]}
                         fontSize={0.06}
@@ -337,6 +406,22 @@ export function ElectrolysisCell({
                         anchorX="center"
                     >
                         I = {(state.current * 1000).toFixed(1)} mA
+                    </Text>
+                    <Text
+                        position={[0, -0.18, 0]}
+                        fontSize={0.045}
+                        color="#00ffff"
+                        anchorX="center"
+                    >
+                        Nernst E_req: {products.voltageRequired.toFixed(2)}V
+                    </Text>
+                    <Text
+                        position={[0, -0.24, 0]}
+                        fontSize={0.045}
+                        color="#ff00ff"
+                        anchorX="center"
+                    >
+                        [Concentração]: {state.electrolyte?.concentration.toFixed(4)} M
                     </Text>
                 </group>
             )}

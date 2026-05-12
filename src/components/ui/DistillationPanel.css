@@ -1,0 +1,339 @@
+/* DistillationPanel.css */
+/* Painel de Destilação — estilo consistente com QuantumMicroscope e Eletrólise */
+
+.distillation-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,3,12,0.85);
+  backdrop-filter: blur(8px);
+  animation: distFadeIn 0.3s ease;
+}
+
+@keyframes distFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.distillation-panel {
+  background: linear-gradient(145deg, rgba(20,10,12,0.97), rgba(12,8,12,0.98));
+  border: 1px solid rgba(255,140,0,0.2);
+  border-radius: 12px;
+  width: min(540px, 94vw);
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 60px rgba(255,100,0,0.08),
+    0 20px 60px rgba(0,0,0,0.5),
+    inset 0 0 60px rgba(255,100,0,0.02);
+  color: #e0e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  animation: elec-slideUp 0.4s ease-out;
+}
+
+/* ═══════════════════════════════════════════════
+   TOP BAR — mesmo padrão do Microscópio Quântico
+   ═══════════════════════════════════════════════ */
+
+.distillation-panel .panel-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(255,140,0,0.08), transparent);
+  border-bottom: 1px solid rgba(255,140,0,0.15);
+  flex-shrink: 0;
+}
+
+.distillation-panel .panel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.distillation-panel .panel-icon {
+  font-size: 1.5rem;
+}
+
+.distillation-panel .panel-title-group h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff0e0;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.distillation-panel .panel-badge {
+  background: rgba(255,140,0,0.15);
+  color: #ffaa00;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,140,0,0.3);
+}
+
+.distillation-panel .panel-close {
+  background: rgba(255,80,80,0.1);
+  border: 1px solid rgba(255,80,80,0.2);
+  color: #ff6666;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.distillation-panel .panel-close:hover {
+  background: rgba(255,80,80,0.25);
+  border-color: rgba(255,80,80,0.5);
+  transform: scale(1.1);
+}
+
+/* ═══════════════════════════════════════════════
+   BODY — scrollable
+   ═══════════════════════════════════════════════ */
+
+.distillation-panel .panel-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.distillation-panel .panel-body::-webkit-scrollbar { width: 4px; }
+.distillation-panel .panel-body::-webkit-scrollbar-track { background: transparent; }
+.distillation-panel .panel-body::-webkit-scrollbar-thumb { background: rgba(255,140,0,0.2); border-radius: 2px; }
+
+/* Section cards */
+.distillation-panel .config-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.distillation-panel .config-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255,160,50,0.7);
+  font-weight: 500;
+}
+
+/* Mixture selector */
+.distillation-panel .mixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.distillation-panel .mixture-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #d8ccc0;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.distillation-panel .mixture-btn:hover {
+  background: rgba(255,140,0,0.1);
+  border-color: rgba(255,140,0,0.3);
+}
+
+.distillation-panel .mixture-btn.active {
+  background: rgba(255,140,0,0.15);
+  border-color: rgba(255,140,0,0.5);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255,140,0,0.15);
+}
+
+.distillation-panel .mixture-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.distillation-panel .mixture-btn .formula {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #ffb84d;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.distillation-panel .mixture-btn .name {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  display: block;
+}
+
+.distillation-panel .mixture-btn .beaker-tag {
+  font-size: 0.65rem;
+  color: rgba(255,200,100,0.6);
+  display: block;
+  margin-top: 4px;
+}
+
+/* No beakers message */
+.distillation-panel .no-beakers-msg {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.distillation-panel .no-beakers-msg p {
+  margin: 0 0 4px 0;
+}
+
+/* Temperature gauge */
+.distillation-panel .temp-gauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 10px 0;
+}
+
+.distillation-panel .temp-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s;
+}
+
+.distillation-panel .temp-value.cool { color: #4ecdc4; }
+.distillation-panel .temp-value.warm { color: #ffcc00; }
+.distillation-panel .temp-value.hot { color: #ff6b4a; text-shadow: 0 0 12px rgba(255,80,40,0.4); }
+
+/* Monitor grid */
+.distillation-panel .monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.distillation-panel .monitor-card {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.distillation-panel .monitor-card .monitor-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #ff9944;
+  text-shadow: 0 0 8px rgba(255,150,60,0.3);
+}
+
+.distillation-panel .monitor-card .monitor-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Fractions list */
+.distillation-panel .fractions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.distillation-panel .fraction-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.distillation-panel .fraction-item .frac-name {
+  font-weight: 600;
+  color: #ffd080;
+}
+
+.distillation-panel .fraction-item .frac-bp {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+}
+
+.distillation-panel .fraction-item .frac-collected {
+  color: #00e864;
+  font-weight: 600;
+}
+
+/* Power */
+.distillation-panel .power-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.distillation-panel .power-btn {
+  background: linear-gradient(135deg, rgba(255,120,0,0.15), rgba(255,120,0,0.05));
+  border: 2px solid rgba(255,120,0,0.3);
+  color: #ff9944;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 14px 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.distillation-panel .power-btn:hover {
+  background: linear-gradient(135deg, rgba(255,120,0,0.25), rgba(255,120,0,0.1));
+  box-shadow: 0 0 20px rgba(255,120,0,0.2);
+  transform: translateY(-1px);
+}
+
+.distillation-panel .power-btn.running {
+  background: linear-gradient(135deg, rgba(100,180,255,0.15), rgba(100,180,255,0.05));
+  border-color: rgba(100,180,255,0.4);
+  color: #80c0ff;
+}
+
+.distillation-panel .status-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #444;
+  transition: background 0.3s;
+}
+
+.distillation-panel .status-dot.on {
+  background: #ff8c00;
+  box-shadow: 0 0 12px rgba(255,140,0,0.6);
+  animation: pulse-heat 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-heat {
+  0%, 100% { box-shadow: 0 0 6px rgba(255,140,0,0.4); }
+  50% { box-shadow: 0 0 16px rgba(255,140,0,0.8); }
+}

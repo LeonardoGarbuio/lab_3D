@@ -4,6 +4,8 @@ import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { VSEPR_MOLECULES, calculateFormalCharge, type VSEPRMolecule, type BondType } from '../../data/vseprData'
+import { useVSEPR } from '../../hooks/useVSEPR'
+import type { GeneratedMolecule } from '../../physics/VSEPRCalculator'
 
 // ═══════════════════════════════════════════════════════════════════════
 // CONSTANTES VISUAIS
@@ -370,6 +372,7 @@ interface MoleculeViewerProps {
     showPiBonds?: boolean           // Diferenciar visualmente ligações Pi
     animateResonance?: boolean      // Interpolar estruturas de ressonância
     showFormalCharges?: boolean     // Mostrar badges de carga formal
+    moleculeData?: VSEPRMolecule | GeneratedMolecule | null // Dados pré-buscados
 }
 
 export default function MoleculeViewer({
@@ -383,13 +386,16 @@ export default function MoleculeViewer({
     showPiBonds = false,
     animateResonance = false,
     showFormalCharges = false,
+    moleculeData,
 }: MoleculeViewerProps) {
     const groupRef = useRef<THREE.Group>(null)
     const [resonanceIdx, setResonanceIdx] = useState(0)
 
-    // Buscar molécula nos dados VSEPR
-    const molecule = VSEPR_MOLECULES[formula]
-    const hasResonance = molecule?.resonance && molecule.resonance.length > 0
+    // Buscar molécula nos dados VSEPR ou usar o hook procedural
+    const { molecule: fetchedMolecule } = useVSEPR(!moleculeData ? formula : null)
+    const molecule = moleculeData || fetchedMolecule
+
+    const hasResonance = molecule && 'resonance' in molecule && molecule.resonance && molecule.resonance.length > 0
 
     // Rotação automática e ressonância
     useFrame((state, delta) => {
@@ -406,8 +412,8 @@ export default function MoleculeViewer({
         }
     })
 
-    const activeBonds = (animateResonance && hasResonance && resonanceIdx > 0)
-        ? molecule.resonance![resonanceIdx - 1].bonds
+    const activeBonds = (animateResonance && hasResonance && resonanceIdx > 0 && 'resonance' in molecule!)
+        ? molecule!.resonance![resonanceIdx - 1].bonds
         : molecule?.bonds || []
 
 

@@ -16,6 +16,8 @@ import NuclearPhysics from './NuclearPhysics'
 import IntermolecularSimulator from './IntermolecularSimulator'
 import SolidStateSimulator from './SolidStateSimulator'
 import { useSoundEffects } from '../../hooks/useSoundEffects'
+import ElectrolysisPanel from './ElectrolysisPanel'
+import DistillationPanel from './DistillationPanel'
 import './LabHUD.css'
 
 export default function LabHUD() {
@@ -238,7 +240,7 @@ export default function LabHUD() {
                 />
             )}
             {/* OVERLAY DE FPS E MIRA */}
-            {!isFPSLocked && !store.isPeriodicTableOpen && !store.isReagentPanelOpen && !store.isExperimentPanelOpen && !store.isNotebookOpen && !store.isQuantumMicroscopeOpen && !store.isAtomicModelsOpen && !store.isElectronConfigOpen && !store.isPeriodicPropertiesOpen && !store.isNuclearPhysicsOpen && !store.isIntermolecularOpen && !store.isSolidStateOpen && (
+            {!isFPSLocked && !store.isPeriodicTableOpen && !store.isReagentPanelOpen && !store.isExperimentPanelOpen && !store.isNotebookOpen && !store.isQuantumMicroscopeOpen && !store.isAtomicModelsOpen && !store.isElectronConfigOpen && !store.isPeriodicPropertiesOpen && !store.isNuclearPhysicsOpen && !store.isIntermolecularOpen && !store.isSolidStateOpen && !store.isElectrolysisPanelOpen && !store.isDistillationPanelOpen && (
                 <div className="fps-overlay" style={{
                     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -262,13 +264,15 @@ export default function LabHUD() {
             <ReagentPanel isOpen={store.isReagentPanelOpen} onClose={store.closeReagentPanel} />
             <ExperimentPanel isOpen={store.isExperimentPanelOpen} onClose={store.closeExperimentPanel} onStartExperiment={store.startExperiment} />
             <Notebook isOpen={store.isNotebookOpen} onClose={store.closeNotebook} />
-            <QuantumMicroscope isOpen={store.isQuantumMicroscopeOpen} onClose={store.closeQuantumMicroscope} />
+            <QuantumMicroscope isOpen={store.isQuantumMicroscopeOpen} onClose={store.closeQuantumMicroscope} initialFormula={store.activeQuantumFormula || 'H2O'} />
             <AtomicModels isOpen={store.isAtomicModelsOpen} onClose={store.closeAtomicModels} />
             <ElectronConfig isOpen={store.isElectronConfigOpen} onClose={store.closeElectronConfig} />
             <PeriodicProperties isOpen={store.isPeriodicPropertiesOpen} onClose={store.closePeriodicProperties} />
             <NuclearPhysics isOpen={store.isNuclearPhysicsOpen} onClose={store.closeNuclearPhysics} />
             <IntermolecularSimulator isOpen={store.isIntermolecularOpen} onClose={store.closeIntermolecular} />
             <SolidStateSimulator isOpen={store.isSolidStateOpen} onClose={store.closeSolidState} />
+            <ElectrolysisPanel />
+            <DistillationPanel />
         </>
     )
 }

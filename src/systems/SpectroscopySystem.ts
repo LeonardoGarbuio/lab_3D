@@ -28,6 +28,59 @@ export interface SpectrumAnalysis {
     confidence: number      // 0-1
 }
 
+// Perfil de absortividade molar para soluções (Lei de Beer-Lambert)
+export interface AbsorptivityProfile {
+    substanceId: string
+    color: string           // Cor predominante transmitida
+    lambdaMax: number       // Comprimento de onda de máxima absorção (nm)
+    epsilonMax: number      // Absortividade molar máxima (L/(mol·cm))
+    width: number           // Largura da banda de absorção (nm)
+}
+
+export const ABSORPTIVITY_PROFILES: Record<string, AbsorptivityProfile> = {
+    'CuSO4': { substanceId: 'CuSO4', color: '#1e90ff', lambdaMax: 810, epsilonMax: 12.0, width: 100 },
+    'KMnO4': { substanceId: 'KMnO4', color: '#ff00ff', lambdaMax: 525, epsilonMax: 2400, width: 45 },
+    'NiSO4': { substanceId: 'NiSO4', color: '#00ff00', lambdaMax: 395, epsilonMax: 5.0, width: 50 },
+    'CoCl2': { substanceId: 'CoCl2', color: '#ff69b4', lambdaMax: 510, epsilonMax: 4.5, width: 60 }
+}
+
+/**
+ * Calcula a absorbância baseada na Lei de Beer-Lambert: A = ε * b * c
+ * @param epsilonMax Absortividade molar no pico (L/mol.cm)
+ * @param concentration Concentração (mol/L)
+ * @param pathLength Caminho ótico em cm (padrão = 1cm)
+ */
+export function calculateBeerLambertAbsorbance(
+    epsilonMax: number,
+    concentration: number,
+    pathLength: number = 1.0
+): number {
+    return epsilonMax * pathLength * concentration
+}
+
+/**
+ * Gera a curva de Absorbância vs Comprimento de Onda
+ */
+export function generateAbsorbanceCurve(
+    profile: AbsorptivityProfile,
+    concentration: number,
+    pathLength: number = 1.0,
+    resolution: number = 1
+): { wavelength: number; absorbance: number; transmittance: number }[] {
+    const data = []
+    const peakA = calculateBeerLambertAbsorbance(profile.epsilonMax, concentration, pathLength)
+    
+    for (let wl = 380; wl <= 700; wl += resolution) {
+        // Distribuição Gaussiana ao redor do lambdaMax
+        const factor = Math.exp(-Math.pow(wl - profile.lambdaMax, 2) / (2 * profile.width * profile.width))
+        const absorbance = peakA * factor
+        const transmittance = Math.pow(10, -absorbance)
+        data.push({ wavelength: wl, absorbance, transmittance })
+    }
+    return data
+}
+
+
 // ═══════════════════════════════════════════════════════════════════════
 // ESPECTROS DE EMISSÃO DOS ELEMENTOS
 // ═══════════════════════════════════════════════════════════════════════

@@ -40,6 +40,13 @@ export interface LabObject {
     isBoiling: boolean
     isFreezing: boolean
     density: number             // g/mL
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PROPRIEDADES TERMODINÂMICAS (Fase 7)
+    // ═══════════════════════════════════════════════════════════════════
+    isSealed: boolean           // Se o recipiente está selado (pressão acumula)
+    pressure: number            // Pressão interna (atm), default 1.0
+    enthalpy: number            // Entalpia acumulada (kJ), default 0
 }
 
 interface ReactionLog {
@@ -80,12 +87,23 @@ interface LabState {
     isExperimentPanelOpen: boolean
     isNotebookOpen: boolean
     isQuantumMicroscopeOpen: boolean
+    activeQuantumFormula: string | null
     isAtomicModelsOpen: boolean
     isPeriodicPropertiesOpen: boolean
     isNuclearPhysicsOpen: boolean
     isSoundEnabled: boolean
     isFPSLocked: boolean
     isElectronConfigOpen: boolean
+    isElectrolysisPanelOpen: boolean
+    isDistillationPanelOpen: boolean
+
+    // Electrolysis config
+    electrolysisVoltage: number
+    electrolysisElectrolyteId: string
+    electrolysisRunning: boolean
+
+    // Distillation config
+    distillationHeating: boolean
 
     // Score/Achievements
     experimentScore: number
@@ -105,7 +123,7 @@ interface LabState {
     closeExperimentPanel: () => void
     openNotebook: () => void
     closeNotebook: () => void
-    openQuantumMicroscope: () => void
+    openQuantumMicroscope: (formula?: string) => void
     closeQuantumMicroscope: () => void
     isIntermolecularOpen: boolean
     openIntermolecular: () => void
@@ -113,6 +131,16 @@ interface LabState {
     isSolidStateOpen: boolean
     openSolidState: () => void
     closeSolidState: () => void
+    openElectrolysisPanel: () => void
+    closeElectrolysisPanel: () => void
+    setElectrolysisVoltage: (v: number) => void
+    setElectrolysisElectrolyteId: (id: string) => void
+    setElectrolysisRunning: (r: boolean) => void
+    openDistillationPanel: () => void
+    closeDistillationPanel: () => void
+    setDistillationHeating: (h: boolean) => void
+    distillationMixtureId: string
+    setDistillationMixtureId: (id: string) => void
     openAtomicModels: () => void
     closeAtomicModels: () => void
     setFPSLocked: (locked: boolean) => void
@@ -154,6 +182,10 @@ interface LabState {
     coolDown: (id: string) => void
     emptyObject: (id: string) => void
     breakObject: (id: string) => void
+    
+    // Termodinâmica (Fase 7)
+    sealObject: (id: string) => void
+    unsealObject: (id: string) => void
 
     // Análise
     startAnalysis: (id: string) => void
@@ -209,6 +241,11 @@ const createInitialObjects = (): LabObject[] => {
             isBoiling: false,
             isFreezing: false,
             density: 1.0,             // g/mL
+            
+            // Termodinâmica (Fase 7)
+            isSealed: false,
+            pressure: 1.0,            // atm
+            enthalpy: 0,              // kJ
         })
     })
     return objects
@@ -229,6 +266,7 @@ export const useLabStore = create<LabState>((set, get) => ({
     isExperimentPanelOpen: false,
     isNotebookOpen: false,
     isQuantumMicroscopeOpen: false,
+    activeQuantumFormula: null,
     isAtomicModelsOpen: false,
     isPeriodicPropertiesOpen: false,
     isNuclearPhysicsOpen: false,
@@ -237,6 +275,13 @@ export const useLabStore = create<LabState>((set, get) => ({
     isSoundEnabled: true,
     isFPSLocked: false,
     isElectronConfigOpen: false,
+    isElectrolysisPanelOpen: false,
+    isDistillationPanelOpen: false,
+    electrolysisVoltage: 6,
+    electrolysisElectrolyteId: 'sulfuricAcid',
+    electrolysisRunning: false,
+    distillationHeating: false,
+    distillationMixtureId: 'ethanolWater',
     experimentScore: 0,
 
     // Perigos e Efeitos - Estados iniciais
@@ -254,12 +299,21 @@ export const useLabStore = create<LabState>((set, get) => ({
     closeExperimentPanel: () => set({ isExperimentPanelOpen: false }),
     openNotebook: () => set({ isNotebookOpen: true }),
     closeNotebook: () => set({ isNotebookOpen: false }),
-    openQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: true }),
-    closeQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: false }),
+    openQuantumMicroscope: (formula) => set({ isQuantumMicroscopeOpen: true, activeQuantumFormula: formula || null }),
+    closeQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: false, activeQuantumFormula: null }),
     openIntermolecular: () => set({ isIntermolecularOpen: true }),
     closeIntermolecular: () => set({ isIntermolecularOpen: false }),
     openSolidState: () => set({ isSolidStateOpen: true }),
     closeSolidState: () => set({ isSolidStateOpen: false }),
+    openElectrolysisPanel: () => set({ isElectrolysisPanelOpen: true }),
+    closeElectrolysisPanel: () => set({ isElectrolysisPanelOpen: false, electrolysisRunning: false }),
+    setElectrolysisVoltage: (v) => set({ electrolysisVoltage: v }),
+    setElectrolysisElectrolyteId: (id) => set({ electrolysisElectrolyteId: id }),
+    setElectrolysisRunning: (r) => set({ electrolysisRunning: r }),
+    openDistillationPanel: () => set({ isDistillationPanelOpen: true }),
+    closeDistillationPanel: () => set({ isDistillationPanelOpen: false }),
+    setDistillationHeating: (h) => set({ distillationHeating: h }),
+    setDistillationMixtureId: (id) => set({ distillationMixtureId: id }),
     openAtomicModels: () => set({ isAtomicModelsOpen: true }),
     closeAtomicModels: () => set({ isAtomicModelsOpen: false }),
     setFPSLocked: (locked) => set({ isFPSLocked: locked }),
@@ -293,11 +347,30 @@ export const useLabStore = create<LabState>((set, get) => ({
 
     // Elementos
     addElementToObject: (id, element) => {
+        // Elementos diatômicos na natureza (estado padrão gasoso/líquido)
+        const diatomicElements = ['H', 'N', 'O', 'F', 'Cl', 'Br', 'I']
+        let formula = element.symbol
+        let mols = 1.0
+
+        if (diatomicElements.includes(element.symbol)) {
+            formula = `${element.symbol}2`
+            mols = 0.5 // 1 mol de átomos = 0.5 mol de moléculas diatômicas
+        }
+
         set((s) => ({
-            objects: s.objects.map(o => o.id === id ? { ...o, formula: element.symbol, element, mols: 1.0, color: element.color, fillLevel: 0.6, customName: element.namePt } : o),
-            lastReaction: `⚛️ ${element.namePt} (${element.symbol})`,
+            objects: s.objects.map(o => o.id === id ? {
+                ...o,
+                formula: formula,
+                element,
+                mols: mols,
+                color: element.color,
+                fillLevel: 0.6,
+                customName: element.namePt,
+                phase: diatomicElements.includes(element.symbol) ? (element.symbol === 'Br' ? 'liquid' : (element.symbol === 'I' ? 'solid' : 'gas')) : 'solid'
+            } : o),
+            lastReaction: `⚛️ ${element.namePt} (${formula})`,
         }))
-        setTimeout(() => set((s) => s.lastReaction?.includes(element.symbol) ? { lastReaction: null } : s), 2000)
+        setTimeout(() => set((s) => s.lastReaction?.includes(element.namePt) ? { lastReaction: null } : s), 2000)
     },
 
     addSubstanceToObject: (id, formula, mols) => {
@@ -362,7 +435,8 @@ export const useLabStore = create<LabState>((set, get) => ({
             ? ((to.temperature * to.mols) + (from.temperature * transferMols)) / totalMols
             : to.temperature
 
-        let msg = '', newColor = to.color, newFormula = to.formula, finalMols = totalMols
+        let msg = '', newColor = to.color, newFormula = to.formula
+        const finalMols = totalMols
         let effect: LabObject['activeEffect'] = 'none', effectColor = '#fff'
         let exploded = false
 
@@ -423,54 +497,62 @@ export const useLabStore = create<LabState>((set, get) => ({
                         effectColor = hazard.effectColor || '#ff6600'
                         msg = hazard.description
 
-                        // Aumentar temperatura drasticamente
-                        const tempIncrease = 150
+
+
 
                         get().triggerHazard(hazard)
                     }
                 }
             }
 
-            // Tentar encontrar reação normal
-            const reaction = findReaction(from.formula, to.formula)
+            // Tentar encontrar reação normal — agora com termodinâmica!
+            const reaction = findReaction(from.formula, to.formula, effectiveTemp)
             if (reaction && !exploded) {
-                // CHECK TEMPERATURE
-                const minTemp = reaction.requiredTemp?.min ?? -273
-                const maxTemp = reaction.requiredTemp?.max ?? 10000
-
-                if (effectiveTemp < minTemp) {
-                    // Too cold to react -> Just mix
+                // 1. O novo motor diz que não é viável? (Ex: falta energia de ativação)
+                if (reaction.viable === false) {
                     newColor = mixColors(from.color, to.color, transferMols / totalMols)
                     newFormula = `${to.formula}+${from.formula}`
-                    msg = `❄️ Muito frio para reagir (Req: ${minTemp}°C)`
-                } else if (effectiveTemp > maxTemp || (reaction.unstable && effectiveTemp > 50)) {
-                    // Too hot or unstable! EXPLOSION
-                    effect = 'explosion'
-                    exploded = true
-                    msg = `💥 INSTABILIDADE TÉRMICA!`
+                    msg = reaction.description // Ex: ❄️ Temperatura insuficiente
                 } else {
-                    // REACTION HAPPENS!
-                    newFormula = reaction.products[0]
-                    newColor = reaction.productColor || newColor
-                    effect = reaction.effect as LabObject['activeEffect']
-                    effectColor = reaction.effectColor || '#fff'
-                    msg = `⚗️ ${reaction.description}`
+                    // 2. É viável! Verificar limites antigos de instabilidade, se existirem
+                    const maxTemp = reaction.requiredTemp?.max ?? 10000
 
-                    // Log it
-                    set((s) => ({
-                        reactionLog: [...s.reactionLog, {
-                            id: `${Date.now()}`,
-                            timestamp: new Date(),
-                            equation: reaction.equation,
-                            description: reaction.description
-                        }]
-                    }))
+                    if (effectiveTemp > maxTemp || (reaction.unstable && effectiveTemp > 50)) {
+                        // Muito quente ou instável! EXPLOSÃO
+                        effect = 'explosion'
+                        exploded = true
+                        msg = `💥 INSTABILIDADE TÉRMICA!`
+                    } else {
+                        // REAÇÃO ACONTECE!
+                        newFormula = reaction.products[0]
+                        newColor = reaction.productColor || newColor
+                        effect = reaction.effect as LabObject['activeEffect']
+                        effectColor = reaction.effectColor || '#fff'
+                        msg = `⚗️ ${reaction.description}`
+
+                        // Atualiza a temperatura baseado na entalpia se for muito exotérmica
+                        if (reaction.deltaH && reaction.deltaH < -200) {
+                            effect = 'fire'
+                            effectColor = '#ff6600'
+                        }
+
+                        // Log it
+                        set((s) => ({
+                            reactionLog: [...s.reactionLog, {
+                                id: `${Date.now()}`,
+                                timestamp: new Date(),
+                                equation: reaction.equation,
+                                description: reaction.description,
+                                deltaH: reaction.deltaH,
+                            }]
+                        }))
+                    }
                 }
             } else if (!exploded && !reaction) {
                 // No reaction found
                 newColor = mixColors(from.color, to.color, transferMols / totalMols)
                 newFormula = `${to.formula}+${from.formula}`
-                msg = `🔀 Mistura idêntica`
+                msg = `🔀 Mistura de ${from.formula} com ${to.formula}`
             }
         }
 
@@ -495,7 +577,7 @@ export const useLabStore = create<LabState>((set, get) => ({
                     effectColor,
                     effectIntensity: 1,
                     temperature: finalTemp,
-                    customName: effect !== 'none' ? (newFormula || undefined) : o.customName,
+                    customName: newFormula.includes('+') ? 'Mistura' : (effect !== 'none' ? (newFormula || undefined) : o.customName),
                     element: undefined
                 }
                 return o
@@ -511,6 +593,14 @@ export const useLabStore = create<LabState>((set, get) => ({
     startDragging: (id) => set({ draggingId: id }),
     stopDragging: () => set({ draggingId: null }),
 
+    // Termodinâmica (Fase 7)
+    sealObject: (id) => set((s) => ({
+        objects: s.objects.map(o => o.id === id ? { ...o, isSealed: true } : o)
+    })),
+    unsealObject: (id) => set((s) => ({
+        objects: s.objects.map(o => o.id === id ? { ...o, isSealed: false, pressure: 1.0 } : o)
+    })),
+
     // Ações físicas - AQUECIMENTO ATÉ 5000°C COM TRANSIÇÕES DE FASE
     startHeating: (id) => {
         set((s) => ({ objects: s.objects.map(o => o.id === id ? { ...o, isHeating: true, activeEffect: 'bubbles', effectColor: '#ff6600' } : o), lastReaction: '🔥 Aquecendo...' }))
@@ -519,7 +609,7 @@ export const useLabStore = create<LabState>((set, get) => ({
             if (!obj || !obj.isHeating) { clearInterval(interval); return }
 
             // Aquece gradualmente
-            const newTemp = Math.min(5000, obj.temperature + 50)
+            const newTemp = Math.min(1000000, obj.temperature + 50)
 
             // TRANSIÇÃO DE FASE - Verificar ebulição
             let newPhase = obj.phase
@@ -540,24 +630,83 @@ export const useLabStore = create<LabState>((set, get) => ({
             else if (newTemp > obj.boilingPoint) effect = 'evaporating'
             else if (isBoiling) effect = 'boiling'
 
+            const finalTemp = newTemp
+            let finalFormula = obj.formula
+            let finalColor = obj.color
+            let finalName = obj.customName
+            const finalPhase = newPhase
+            let effectColor = obj.effectColor
+
+            // VERIFICAÇÃO DE REAÇÃO TÉRMICA PARA MISTURAS
+            let reacted = false
+            let exploded = false
+
+            if (obj.formula && obj.formula.includes('+')) {
+                const parts = obj.formula.split('+')
+                if (parts.length >= 2) {
+                    const reaction = findReaction(parts[0] ?? '', parts[1] ?? '', newTemp)
+                    
+                    if (reaction && reaction.viable) {
+                        reacted = true
+                        finalFormula = reaction.products[0] ?? finalFormula
+                        finalColor = reaction.productColor || finalColor
+                        
+                        // Verificar explosão/instabilidade térmica
+                        const maxTemp = reaction.requiredTemp?.max ?? 10000
+                        if (newTemp > maxTemp || reaction.unstable) {
+                            exploded = true
+                        } else {
+                            // Reação bem sucedida
+                            effect = reaction.effect as typeof obj.activeEffect
+                            effectColor = reaction.effectColor || '#fff'
+                            finalName = finalFormula // Remove o nome 'Mistura'
+                            
+                            // Log
+                            set((s) => ({
+                                reactionLog: [...s.reactionLog, {
+                                    id: `${Date.now()}`,
+                                    timestamp: new Date(),
+                                    equation: reaction.equation,
+                                    description: reaction.description,
+                                    deltaH: reaction.deltaH,
+                                }]
+                            }))
+                            get().setLastReaction(`⚗️ ${reaction.description}`)
+                        }
+                    }
+                }
+            }
+
+            if (exploded) {
+                clearInterval(interval)
+                get().breakObject(id)
+                get().setLastReaction('💥 EXPLOSÃO TÉRMICA!')
+                
+                // Add explosion effect
+                get().addExplosion(obj.position, 2, '#ff6600')
+                return
+            }
+
             set((s) => ({
                 objects: s.objects.map(o => o.id === id ? {
                     ...o,
-                    temperature: newTemp,
-                    phase: newPhase,
+                    temperature: finalTemp,
+                    phase: finalPhase,
                     isBoiling: isBoiling,
                     activeEffect: effect,
-                    effectColor: newTemp > 1500 ? '#ff2200' : newTemp > 500 ? '#ff4400' : '#ff6600',
+                    effectColor: reacted ? effectColor : (newTemp > 1500 ? '#ff2200' : newTemp > 500 ? '#ff4400' : '#ff6600'),
                     effectIntensity: Math.min(1, newTemp / 500),
-                    // Evaporação: reduz volume quando está fervendo
                     volume: isBoiling ? Math.max(0, o.volume - 5) : o.volume,
                     fillLevel: isBoiling ? Math.max(0, o.fillLevel - 0.02) : o.fillLevel,
+                    formula: finalFormula,
+                    color: finalColor,
+                    customName: finalName
                 } : o),
-                lastReaction: isBoiling
+                lastReaction: reacted ? get().lastReaction : (isBoiling
                     ? `🫧 ${newTemp}°C - EBULIÇÃO! (${obj.boilingPoint}°C)`
-                    : `🌡️ ${newTemp}°C${newPhase !== obj.phase ? ` → ${newPhase}` : ''}`
+                    : `🌡️ ${newTemp}°C${newPhase !== obj.phase ? ` → ${newPhase}` : ''}`)
             }))
-            if (newTemp >= 5000) clearInterval(interval)
+            if (newTemp >= 1000000) clearInterval(interval)
         }, 300)
     },
     stopHeating: (id) => set((s) => ({ objects: s.objects.map(o => o.id === id ? { ...o, isHeating: false, isBoiling: false, activeEffect: 'none' } : o), lastReaction: '⏹️ Aquecimento parado' })),
