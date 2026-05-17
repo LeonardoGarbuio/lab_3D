@@ -1,8 +1,9 @@
 // src/components/canvas/glassware/SeparatingFunnel.tsx
 // Funil de separação para misturas heterogêneas
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { Group } from 'three'
 import * as THREE from 'three'
+import { Html } from '@react-three/drei'
 
 interface SeparatingFunnelProps {
     position: [number, number, number]
@@ -24,6 +25,7 @@ export default function SeparatingFunnel({
     isOpen = false
 }: SeparatingFunnelProps) {
     const groupRef = useRef<Group>(null)
+    const [hovered, setHovered] = useState(false)
 
     const bulbRadius = 0.12 * scale
     const neckHeight = 0.2 * scale
@@ -31,8 +33,36 @@ export default function SeparatingFunnel({
     const stemLength = 0.15 * scale
 
     return (
-        <group ref={groupRef} position={position} raycast={null as any}>
-            {/* Bulbo principal (forma de pêra) */}
+        <group ref={groupRef} position={position}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, 0, 0]}
+                onClick={(e) => e.stopPropagation()}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <cylinderGeometry args={[bulbRadius * 1.5, bulbRadius * 1.5, 0.6 * scale, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, bulbRadius + neckHeight + 0.15, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Funil de Separacao
+                    </div>
+                </Html>
+            )}
+
+            {/* Bulbo principal (forma de pera) */}
             <mesh position={[0, 0, 0]} castShadow>
                 <sphereGeometry args={[bulbRadius, 16, 16]} />
                 <meshStandardMaterial

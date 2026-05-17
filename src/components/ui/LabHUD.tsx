@@ -18,6 +18,9 @@ import SolidStateSimulator from './SolidStateSimulator'
 import { useSoundEffects } from '../../hooks/useSoundEffects'
 import ElectrolysisPanel from './ElectrolysisPanel'
 import DistillationPanel from './DistillationPanel'
+import SpectrometerPanel from './SpectrometerPanel'
+import CrystallizerPanel from './CrystallizerPanel'
+import OrganicPanel from './OrganicPanel'
 import './LabHUD.css'
 
 export default function LabHUD() {
@@ -240,7 +243,7 @@ export default function LabHUD() {
                 />
             )}
             {/* OVERLAY DE FPS E MIRA */}
-            {!isFPSLocked && !store.isPeriodicTableOpen && !store.isReagentPanelOpen && !store.isExperimentPanelOpen && !store.isNotebookOpen && !store.isQuantumMicroscopeOpen && !store.isAtomicModelsOpen && !store.isElectronConfigOpen && !store.isPeriodicPropertiesOpen && !store.isNuclearPhysicsOpen && !store.isIntermolecularOpen && !store.isSolidStateOpen && !store.isElectrolysisPanelOpen && !store.isDistillationPanelOpen && (
+            {!isFPSLocked && !store.isPeriodicTableOpen && !store.isReagentPanelOpen && !store.isExperimentPanelOpen && !store.isNotebookOpen && !store.isQuantumMicroscopeOpen && !store.isAtomicModelsOpen && !store.isElectronConfigOpen && !store.isPeriodicPropertiesOpen && !store.isNuclearPhysicsOpen && !store.isIntermolecularOpen && !store.isSolidStateOpen && !store.isElectrolysisPanelOpen && !store.isDistillationPanelOpen && !store.isSpectrometerPanelOpen && !store.isCrystallizerPanelOpen && !store.isOrganicPanelOpen && (
                 <div className="fps-overlay" style={{
                     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -273,6 +276,9 @@ export default function LabHUD() {
             <SolidStateSimulator isOpen={store.isSolidStateOpen} onClose={store.closeSolidState} />
             <ElectrolysisPanel />
             <DistillationPanel />
+            <SpectrometerPanel />
+            <CrystallizerPanel />
+            <OrganicPanel />
         </>
     )
 }

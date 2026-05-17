@@ -1,10 +1,10 @@
 // src/components/equipment/Thermometer.tsx
 // Termômetro visual 3D para laboratório
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text, Line } from '@react-three/drei'
+import { Text, Line, Html } from '@react-three/drei'
 
 interface ThermometerProps {
     position: [number, number, number]
@@ -31,6 +31,7 @@ export function Thermometer({
 }: ThermometerProps) {
     const mercuryRef = useRef<THREE.Mesh>(null)
     const currentHeightRef = useRef(0)
+    const [hovered, setHovered] = useState(false)
 
     // Converter temperatura para outras unidades
     const convertTemp = (celsius: number): number => {
@@ -93,6 +94,33 @@ export function Thermometer({
 
     return (
         <group position={position} rotation={rotation}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                onClick={(e) => e.stopPropagation()}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <boxGeometry args={[size * 0.3, size * 1.2, size * 0.15]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, size * 0.7, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Termometro
+                    </div>
+                </Html>
+            )}
+
             {/* Tubo de vidro */}
             <mesh>
                 <cylinderGeometry args={[size * 0.04, size * 0.04, size * 0.8, 16]} />

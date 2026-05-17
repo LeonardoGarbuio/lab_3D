@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
+import { Html } from '@react-three/drei'
 import { useLabStore } from '../../../stores/useLabStore'
 import { Bubbles, Smoke, Precipitate, Glow } from '../effects/ParticleSystem'
 
@@ -161,6 +162,22 @@ export default function InteractiveBeaker({
                 <cylinderGeometry args={[glassRadius * 1.5, glassRadius * 1.5, glassHeight * 1.5, 16]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
+
+            {isHovered && !isSelected && (
+                <Html position={[0, glassHeight / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Bequer
+                    </div>
+                </Html>
+            )}
 
             {/* EFEITOS */}
             {activeEffect === 'bubbles' && <Bubbles position={[0, 0, 0]} color={effectColor} intensity={effectIntensity} active />}

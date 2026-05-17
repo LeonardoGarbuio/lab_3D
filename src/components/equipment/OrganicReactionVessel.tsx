@@ -4,7 +4,8 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
+import { useLabStore } from '../../stores/useLabStore'
 import {
     ORGANIC_REACTIONS,
     type OrganicReactionState,
@@ -46,6 +47,8 @@ export function OrganicReactionVessel({
     const reaction = ORGANIC_REACTIONS[reactionId]
 
     const [state, setState] = useState<OrganicReactionState>(mutableState.current)
+    const [hovered, setHovered] = useState(false)
+    const { openOrganicPanel } = useLabStore()
 
     // Atualizar quando props mudam
     useFrame((state, delta) => {
@@ -66,6 +69,15 @@ export function OrganicReactionVessel({
             setState({ ...simState })
             onStateChange?.({ ...simState })
             lastUiUpdate.current = now
+
+            // Expor dados para o painel UI
+            ;(window as any).__organicLiveData = {
+                progress: simState.progress,
+                status: getReactionStatus(simState),
+                threadLength: simState.threadLength || 0,
+                gelViscosity: simState.gelViscosity || 0,
+                bubbleRate: simState.bubbleRate || 0,
+            }
         }
         
         // Atualizar barra de progresso visualmente via ref sem re-render (escala padrão box=0.15)
@@ -90,6 +102,37 @@ export function OrganicReactionVessel({
 
     return (
         <group ref={groupRef} position={position}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, 0.05, 0]}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    openOrganicPanel()
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <cylinderGeometry args={[0.15, 0.15, 0.4, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, 0.35, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Sintese Organica ({reaction.name})
+                    </div>
+                </Html>
+            )}
+
             {/* Béquer */}
             <mesh>
                 <cylinderGeometry args={[0.1, 0.08, 0.25, 32, 1, true]} />

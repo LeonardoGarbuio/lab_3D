@@ -18,7 +18,9 @@ import { BunsenBurner } from './glassware/BunsenBurner'
 import InteractiveTripod from './equipment/InteractiveTripod'
 import InteractiveGraduatedCylinder from './glassware/InteractiveGraduatedCylinder'
 import InteractiveBurette from './glassware/InteractiveBurette'
-import Pipette from './glassware/Pipette'
+import InteractivePipette from './glassware/InteractivePipette'
+import InteractiveErlenmeyer from './glassware/InteractiveErlenmeyer'
+import InteractiveRoundBottomFlask from './glassware/InteractiveRoundBottomFlask'
 import SeparatingFunnel from './glassware/SeparatingFunnel'
 import InteractiveFumeHood from './equipment/InteractiveFumeHood'
 
@@ -123,6 +125,49 @@ function LabObjects() {
             />
           )
         }
+        if ((obj.type as string) === 'erlenmeyer') {
+          return (
+            <InteractiveErlenmeyer
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              ph={obj.ph || 7}
+              scale={0.6}
+            />
+          )
+        }
+        if ((obj.type as string) === 'pipette') {
+          return (
+            <InteractivePipette
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              ph={obj.ph || 7}
+              volume={10}
+              scale={0.8}
+            />
+          )
+        }
+        if ((obj.type as string) === 'roundflask') {
+          return (
+            <InteractiveRoundBottomFlask
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              ph={obj.ph || 7}
+              scale={0.7}
+            />
+          )
+        }
         return null
       })}
     </>
@@ -146,6 +191,17 @@ function LabScene() {
   const distillationHeating = useLabStore((state) => state.distillationHeating)
   const distillationMixtureId = useLabStore((state) => state.distillationMixtureId)
   const openDistillationPanel = useLabStore((state) => state.openDistillationPanel)
+
+  // Crystallizer from global store
+  const crystallizerSubstanceId = useLabStore((state) => state.crystallizerSubstanceId)
+  const crystallizerIsHeating = useLabStore((state) => state.crystallizerIsHeating)
+  const crystallizerIsCooling = useLabStore((state) => state.crystallizerIsCooling)
+
+  // Organic from global store
+  const organicReactionId = useLabStore((state) => state.organicReactionId)
+  const organicIsActive = useLabStore((state) => state.organicIsActive)
+  const organicTemperature = useLabStore((state) => state.organicTemperature)
+  const organicStirring = useLabStore((state) => state.organicStirring)
 
   const handleBackgroundClick = () => {
     selectObject(null)
@@ -182,8 +238,11 @@ function LabScene() {
         {/* Bancada Esquerda - Área de Síntese Orgânica e Equipamentos Analíticos com Gases */}
         <LabBench position={[-11, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
 
-        {/* Bancada Direita - Área de Eletroquímica, Cristalização e Análise Espectral */}
+        {/* Bancada Direita */}
         <LabBench position={[11, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+
+        {/* Bancada Frontal (mais espaço para vidraria) */}
+        <LabBench position={[0, 0, 4]} />
 
         {/* OBJETOS INTERATIVOS DA CENA PADRÃO (renderizados na bancada central) */}
         <LabObjects />
@@ -192,9 +251,9 @@ function LabScene() {
         {/* BANCADA CENTRAL (Química Úmida) */}
         {/* ═══════════════════════════════════════════ */}
 
-        {/* Tubos de ensaio decorativos */}
+        {/* Tubos de ensaio (decorativos) */}
         <TestTubeRack
-          position={[2.0, 1.02, -0.3]}
+          position={[2.5, 1.02, -0.3]}
           tubes={[
             { color: '#ff6b6b', level: 0.8 },
             { color: '#4ecdc4', level: 0.6 },
@@ -204,11 +263,11 @@ function LabScene() {
           ]}
         />
 
-        {/* Bico de Bunsen e Tripé */}
-        <BunsenBurner position={[-1.5, 1.02, -0.2]} isLit={false} />
+        {/* Bico de Bunsen e Tripe */}
+        <BunsenBurner position={[-1.8, 1.02, -0.2]} isLit={false} />
         <InteractiveTripod
           id="tripod-1"
-          position={[-1.5, 1.02, -0.2]}
+          position={[-1.8, 1.02, -0.2]}
           scale={1.0}
           isHeating={false}
         />
@@ -216,69 +275,57 @@ function LabScene() {
         {/* Proveta graduada */}
         <InteractiveGraduatedCylinder
           id="graduated-cylinder-1"
-          position={[-0.5, 1.45, -0.4]}
+          position={[1.8, 1.45, -0.3]}
           formula={null}
-          fillLevel={0.6}
+          fillLevel={0}
           color="#4ecdc4"
           temperature={25}
           ph={7}
-          volume={60}
+          volume={0}
           maxVolume={100}
           scale={0.7}
         />
 
-        {/* Bureta INTERATIVA */}
+        {/* Bureta FUNCIONAL — sobre o erlenmeyer */}
         <InteractiveBurette
           id="burette-1"
-          position={[0.0, 1.75, -0.4]}
-          formula="NaOH"
-          fillLevel={0.75}
-          color="#ff69b4"
-          ph={14}
+          position={[-0.2, 1.75, -0.2]}
+          targetId="erlenmeyer-1"
           maxVolume={50}
           scale={0.7}
         />
 
-        {/* Pipeta — decorativo, sem raycast */}
-        <Pipette
-          position={[-0.5, 1.35, 0.4]}
-          scale={0.6}
-          liquidColor="#87CEEB"
-          liquidLevel={0.5}
-          volume={10}
-        />
-
-        {/* Funil de separação — decorativo */}
+        {/* Funil de separacao */}
         <SeparatingFunnel
-          position={[0.8, 1.45, -0.4]}
+          position={[1.2, 1.45, -0.3]}
           scale={0.5}
           upperLiquidColor="#ffe066"
           lowerLiquidColor="#4ecdc4"
-          upperLevel={0.3}
-          lowerLevel={0.4}
+          upperLevel={0}
+          lowerLevel={0}
         />
 
-        {/* Termômetro */}
+        {/* Termometro */}
         <Thermometer
-          position={[1.5, 1.3, -0.4]}
+          position={[-1.2, 1.3, -0.3]}
           size={0.4}
-          temperature={37}
+          temperature={25}
           minTemp={-10}
           maxTemp={110}
         />
 
-        {/* Manômetro */}
+        {/* Manometro */}
         <Manometer
-          position={[2.0, 1.4, -0.4]}
-          size={0.2}
-          pressure={1.5}
+          position={[0.5, 1.35, -0.3]}
+          size={0.4}
+          pressure={1.0}
           maxPressure={5}
           unit="atm"
         />
 
         {/* Prancheta e Caderno */}
-        <DeviceExperimentClipboard position={[1.5, 1.02, 0.5]} scale={0.7} />
-        <DeviceNotebook position={[2.5, 1.02, 0.5]} rotation={[0, -0.2, 0]} scale={0.8} />
+        <DeviceExperimentClipboard position={[-2.5, 1.02, 0.5]} scale={0.7} />
+        <DeviceNotebook position={[3.0, 1.02, 0.5]} rotation={[0, -0.2, 0]} scale={0.8} />
 
         {/* PAREDES (Posters) */}
         <DevicePeriodicTablePoster position={[0, 3.5, -8.9]} />
@@ -310,10 +357,10 @@ function LabScene() {
         <group position={[-10.5, 1.0, 0.5]} scale={0.8}>
           <OrganicReactionVessel
             position={[0, 0, 0]}
-            reactionId="fermentation"
-            isActive={false}
-            temperature={30}
-            stirring={false}
+            reactionId={'fermentation' as any}
+            isActive={organicIsActive && organicReactionId === 'fermentation'}
+            temperature={organicTemperature}
+            stirring={organicStirring}
           />
         </group>
 
@@ -328,11 +375,14 @@ function LabScene() {
           maxRadius={0.1}
         />
 
-        {/* Reator Orgânico - Esterificação */}
+        {/* Reator Organico - Esterificacao */}
         <group position={[-10.5, 1.02, 2.0]} scale={0.8}>
           <OrganicReactionVessel
             position={[0, 0, 0]}
-            reactionId="esterification"
+            reactionId={'esterification' as any}
+            isActive={organicIsActive && organicReactionId === 'esterification'}
+            temperature={organicTemperature}
+            stirring={organicStirring}
           />
         </group>
 
@@ -357,14 +407,14 @@ function LabScene() {
           onClick={() => openElectrolysisPanel()}
         />
 
-        {/* Cristalização */}
+        {/* Cristalização — CONTROLADA PELO STORE */}
         <CrystallizationDish
           position={[10.5, 1.05, -0.5]}
-          substanceId="NaCl"
+          substanceId={crystallizerSubstanceId as any}
           initialConcentration={400}
           initialTemperature={80}
-          isHeating={false}
-          isCooling={false}
+          isHeating={crystallizerIsHeating}
+          isCooling={crystallizerIsCooling}
         />
 
         {/* Espectrômetro de Massa */}

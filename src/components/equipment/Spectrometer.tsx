@@ -4,7 +4,8 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
+import { useLabStore } from '../../stores/useLabStore'
 import {
     getElementSpectrum,
     wavelengthToPosition,
@@ -33,6 +34,9 @@ export function Spectrometer({
     const prismRef = useRef<THREE.Mesh>(null)
     const [analyzing, setAnalyzing] = useState(false)
     const [analysisProgress, setAnalysisProgress] = useState(0)
+
+    const [hovered, setHovered] = useState(false)
+    const { openSpectrometerPanel } = useLabStore()
 
     const spectrum = useMemo(() =>
         sampleElement ? getElementSpectrum(sampleElement) : null,
@@ -67,6 +71,37 @@ export function Spectrometer({
 
     return (
         <group ref={groupRef} position={position}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, 0.05, 0]}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    openSpectrometerPanel(sampleElement || undefined)
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <boxGeometry args={[0.55, 0.25, 0.35]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, 0.3, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Espectrometro
+                    </div>
+                </Html>
+            )}
+
             {/* Base do espectrômetro */}
             <mesh position={[0, -0.05, 0]}>
                 <boxGeometry args={[0.5, 0.03, 0.3]} />

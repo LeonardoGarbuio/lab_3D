@@ -97,6 +97,26 @@ interface LabState {
     isElectrolysisPanelOpen: boolean
     isDistillationPanelOpen: boolean
 
+    // Novos painéis de equipamentos avançados
+    isSpectrometerPanelOpen: boolean
+    spectrometerSampleElement: string | null
+    isCrystallizerPanelOpen: boolean
+    crystallizerSubstanceId: string
+    crystallizerIsHeating: boolean
+    crystallizerIsCooling: boolean
+    isOrganicPanelOpen: boolean
+    organicReactionId: string
+    organicIsActive: boolean
+    organicTemperature: number
+    organicStirring: boolean
+
+    // Bureta funcional
+    buretteFillLevel: number
+    buretteIsOpen: boolean
+    buretteFormula: string | null
+    buretteColor: string
+    burettePh: number
+
     // Electrolysis config
     electrolysisVoltage: number
     electrolysisElectrolyteId: string
@@ -150,6 +170,27 @@ interface LabState {
     closePeriodicProperties: () => void
     openNuclearPhysics: () => void
     closeNuclearPhysics: () => void
+
+    // Novos painéis avançados
+    openSpectrometerPanel: (element?: string) => void
+    closeSpectrometerPanel: () => void
+    setSpectrometerSample: (element: string | null) => void
+    openCrystallizerPanel: () => void
+    closeCrystallizerPanel: () => void
+    setCrystallizerSubstanceId: (id: string) => void
+    setCrystallizerIsHeating: (h: boolean) => void
+    setCrystallizerIsCooling: (c: boolean) => void
+    openOrganicPanel: () => void
+    closeOrganicPanel: () => void
+    setOrganicReactionId: (id: string) => void
+    setOrganicIsActive: (a: boolean) => void
+    setOrganicTemperature: (t: number) => void
+    setOrganicStirring: (s: boolean) => void
+
+    // Bureta funcional
+    setBuretteIsOpen: (open: boolean) => void
+    setBuretteFillLevel: (level: number) => void
+    buretteDrip: (targetId: string, delta: number) => void
     toggleSound: () => void
 
     // Experimentos
@@ -207,13 +248,13 @@ interface LabState {
 // Objetos iniciais
 const createInitialObjects = (): LabObject[] => {
     const objects: LabObject[] = []
-    // Apenas 5 béqueres, posicionados no centro-frente da bancada
+    // 5 beakers na bancada central, bem espaçados
     const positions: [number, number, number][] = [
-        [-0.8, 1.05, 0.35],   // Centro-esquerda
-        [-0.2, 1.05, 0.35],   // Centro
-        [0.4, 1.05, 0.35],    // Centro-direita
-        [1.0, 1.05, 0.35],    // Direita
-        [1.6, 1.05, 0.35],    // Extrema direita
+        [-0.8, 1.05, 0.35],   // Esquerda
+        [0.2, 1.05, 0.35],    // Centro-esquerda
+        [0.8, 1.05, 0.35],    // Centro
+        [1.4, 1.05, 0.35],    // Centro-direita
+        [2.0, 1.05, 0.35],    // Direita
     ]
     positions.forEach((pos, i) => {
         objects.push({
@@ -231,22 +272,55 @@ const createInitialObjects = (): LabObject[] => {
             activeEffect: 'none',
             effectColor: '#ffffff',
             effectIntensity: 1,
-            // Novas propriedades químicas
-            ph: 7,                    // Neutro quando vazio
-            concentration: 0,         // mol/L
-            volume: 0,                // mL
-            phase: 'liquid',          // Estado padrão
-            boilingPoint: 100,        // Água como padrão
+            ph: 7,
+            concentration: 0,
+            volume: 0,
+            phase: 'liquid',
+            boilingPoint: 100,
             freezingPoint: 0,
             isBoiling: false,
             isFreezing: false,
-            density: 1.0,             // g/mL
-            
-            // Termodinâmica (Fase 7)
+            density: 1.0,
             isSealed: false,
-            pressure: 1.0,            // atm
-            enthalpy: 0,              // kJ
+            pressure: 1.0,
+            enthalpy: 0,
         })
+    })
+    // Erlenmeyer — sob a bureta na bancada central
+    objects.push({
+        id: 'erlenmeyer-1',
+        type: 'erlenmeyer' as any,
+        position: [-0.2, 1.02, -0.2],
+        formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
+        isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+        activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+        ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+        boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+        density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
+    })
+    // Pipeta volumetrica — bancada frontal
+    objects.push({
+        id: 'pipette-1',
+        type: 'pipette' as any,
+        position: [-0.8, 1.35, 4.35],
+        formula: null, mols: 0, fillLevel: 0, color: '#87CEEB',
+        isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+        activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+        ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+        boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+        density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
+    })
+    // Balao de fundo redondo — bancada frontal
+    objects.push({
+        id: 'roundflask-1',
+        type: 'roundflask' as any,
+        position: [0.5, 1.12, 4.35],
+        formula: null, mols: 0, fillLevel: 0, color: '#ffe066',
+        isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+        activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+        ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+        boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+        density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
     })
     return objects
 }
@@ -283,6 +357,26 @@ export const useLabStore = create<LabState>((set, get) => ({
     distillationHeating: false,
     distillationMixtureId: 'ethanolWater',
     experimentScore: 0,
+
+    // Novos painéis avançados
+    isSpectrometerPanelOpen: false,
+    spectrometerSampleElement: null,
+    isCrystallizerPanelOpen: false,
+    crystallizerSubstanceId: 'NaCl',
+    crystallizerIsHeating: false,
+    crystallizerIsCooling: false,
+    isOrganicPanelOpen: false,
+    organicReactionId: 'fermentation',
+    organicIsActive: false,
+    organicTemperature: 25,
+    organicStirring: false,
+
+    // Bureta funcional
+    buretteFillLevel: 0,
+    buretteIsOpen: false,
+    buretteFormula: 'NaOH',
+    buretteColor: '#4ecdc4',
+    burettePh: 13,
 
     // Perigos e Efeitos - Estados iniciais
     hazardEvents: [],
@@ -323,6 +417,61 @@ export const useLabStore = create<LabState>((set, get) => ({
     closePeriodicProperties: () => set({ isPeriodicPropertiesOpen: false }),
     openNuclearPhysics: () => set({ isNuclearPhysicsOpen: true }),
     closeNuclearPhysics: () => set({ isNuclearPhysicsOpen: false }),
+
+    // Novos painéis avançados
+    openSpectrometerPanel: (element) => set({ isSpectrometerPanelOpen: true, spectrometerSampleElement: element || null }),
+    closeSpectrometerPanel: () => set({ isSpectrometerPanelOpen: false }),
+    setSpectrometerSample: (element) => set({ spectrometerSampleElement: element }),
+    openCrystallizerPanel: () => set({ isCrystallizerPanelOpen: true }),
+    closeCrystallizerPanel: () => set({ isCrystallizerPanelOpen: false }),
+    setCrystallizerSubstanceId: (id) => set({ crystallizerSubstanceId: id }),
+    setCrystallizerIsHeating: (h) => set({ crystallizerIsHeating: h }),
+    setCrystallizerIsCooling: (c) => set({ crystallizerIsCooling: c }),
+    openOrganicPanel: () => set({ isOrganicPanelOpen: true }),
+    closeOrganicPanel: () => set({ isOrganicPanelOpen: false, organicIsActive: false }),
+    setOrganicReactionId: (id) => set({ organicReactionId: id, organicIsActive: false }),
+    setOrganicIsActive: (a) => set({ organicIsActive: a }),
+    setOrganicTemperature: (t) => set({ organicTemperature: t }),
+    setOrganicStirring: (s) => set({ organicStirring: s }),
+
+    // Bureta funcional
+    setBuretteIsOpen: (open) => set({ buretteIsOpen: open }),
+    setBuretteFillLevel: (level) => set({ buretteFillLevel: level }),
+    buretteDrip: (targetId, delta) => {
+        const state = get()
+        if (!state.buretteIsOpen || state.buretteFillLevel <= 0) return
+
+        const dripRate = 0.03 // por segundo
+        const dripAmount = dripRate * delta
+        const newFill = Math.max(0, state.buretteFillLevel - dripAmount)
+
+        const target = state.objects.find(o => o.id === targetId)
+        if (target && !target.isBroken && target.fillLevel < 1) {
+            const addedFill = Math.min(dripAmount * 2, 1 - target.fillLevel)
+            // Mistura de pH simples
+            const oldPh = target.ph || 7
+            const burettePh = state.burettePh
+            const ratio = addedFill / (target.fillLevel + addedFill + 0.01)
+            const newPh = oldPh + (burettePh - oldPh) * ratio
+
+            set({
+                buretteFillLevel: newFill,
+                objects: state.objects.map(o =>
+                    o.id === targetId
+                        ? {
+                            ...o,
+                            fillLevel: Math.min(1, o.fillLevel + addedFill),
+                            formula: o.formula || state.buretteFormula,
+                            color: o.formula ? o.color : state.buretteColor,
+                            ph: newPh,
+                        }
+                        : o
+                )
+            })
+        } else {
+            set({ buretteFillLevel: newFill })
+        }
+    },
     toggleSound: () => set((s) => ({ isSoundEnabled: !s.isSoundEnabled })),
 
     // Experimentos

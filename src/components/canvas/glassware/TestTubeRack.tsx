@@ -1,7 +1,8 @@
 // src/components/canvas/glassware/TestTubeRack.tsx
 // Suporte para tubos de ensaio
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { Group } from 'three'
+import { Html } from '@react-three/drei'
 import TestTube from './TestTube'
 
 interface TestTubeRackProps {
@@ -23,14 +24,43 @@ export default function TestTubeRack({
     ]
 }: TestTubeRackProps) {
     const groupRef = useRef<Group>(null)
+    const [hovered, setHovered] = useState(false)
 
-    const rackWidth = 1.2
-    const rackDepth = 0.3
+    const rackWidth = 1.8
+    const rackDepth = 0.4
     const rackHeight = 0.15
     const holeSpacing = rackWidth / (tubes.length + 1)
 
     return (
-        <group ref={groupRef} position={position} raycast={null as any}>
+        <group ref={groupRef} position={position}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, rackHeight + 0.3, 0]}
+                onClick={(e) => e.stopPropagation()}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <boxGeometry args={[rackWidth + 0.1, 1.2, rackDepth + 0.1]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, rackHeight + 1.2, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Tubos de Ensaio
+                    </div>
+                </Html>
+            )}
+
             {/* Base do suporte */}
             <mesh position={[0, 0, 0]} castShadow receiveShadow>
                 <boxGeometry args={[rackWidth, rackHeight, rackDepth]} />
@@ -55,12 +85,12 @@ export default function TestTubeRack({
                     key={index}
                     position={[
                         -rackWidth / 2 + holeSpacing * (index + 1),
-                        rackHeight + 0.6,
+                        rackHeight + 0.4,
                         0
                     ]}
                     liquidColor={tube.color}
                     liquidLevel={tube.level}
-                    scale={0.8}
+                    scale={0.5}
                 />
             ))}
         </group>

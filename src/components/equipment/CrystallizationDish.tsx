@@ -4,8 +4,9 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
 import { Crystal } from '../effects/Crystal'
+import { useLabStore } from '../../stores/useLabStore'
 import {
     CRYSTAL_SUBSTANCES,
     type CrystallizationState,
@@ -45,6 +46,8 @@ export function CrystallizationDish({
     onStateChange
 }: CrystallizationDishProps) {
     const dishRef = useRef<THREE.Group>(null)
+    const [hovered, setHovered] = useState(false)
+    const { openCrystallizerPanel } = useLabStore()
 
     const substance = CRYSTAL_SUBSTANCES[substanceId]
 
@@ -150,6 +153,14 @@ export function CrystallizationDish({
             setState({ ...simState })
             onStateChange?.({ ...simState })
             lastUiUpdate.current = now
+
+            // Expor dados para o painel UI
+            ;(window as any).__crystallizationLiveData = {
+                temperature: simState.temperature,
+                saturation: simState.saturation,
+                crystalsFormed: simState.crystalsFormed,
+                concentration: simState.concentration,
+            }
         }
     })
 
@@ -158,6 +169,37 @@ export function CrystallizationDish({
 
     return (
         <group ref={dishRef} position={position}>
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, 0.02, 0]}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    openCrystallizerPanel()
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, 0.2, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Cristalizacao
+                    </div>
+                </Html>
+            )}
+
             {/* Recipiente de cristalização (vidro de relógio grande) */}
             <mesh rotation={[0, 0, 0]}>
                 <cylinderGeometry args={[0.15, 0.12, 0.08, 32]} />

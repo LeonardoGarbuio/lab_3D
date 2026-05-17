@@ -1,10 +1,10 @@
 // src/components/equipment/Manometer.tsx
 // Manômetro visual para medição de pressão de gases
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
 
 interface ManometerProps {
     position: [number, number, number]
@@ -29,6 +29,7 @@ export function Manometer({
 }: ManometerProps) {
     const needleRef = useRef<THREE.Group>(null)
     const currentAngleRef = useRef(0)
+    const [hovered, setHovered] = useState(false)
 
     // Converter pressão para outras unidades
     const convertPressure = (atmPressure: number): number => {
@@ -92,7 +93,35 @@ export function Manometer({
 
     return (
         <group position={position}>
-            {/* Caixa do manômetro */}
+            {/* HITBOX INTERATIVA */}
+            <mesh
+                visible={false}
+                position={[0, 0, 0]}
+                onClick={(e) => e.stopPropagation()}
+                onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { setHovered(false); document.body.style.cursor = 'auto' }}
+            >
+                <cylinderGeometry args={[size * 1.2, size * 1.2, size * 0.5, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
+
+            {hovered && (
+                <Html position={[0, size * 0.6, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Manometro
+                    </div>
+                </Html>
+            )}
+
+            {/* Caixa do manometro */}
             <mesh>
                 <cylinderGeometry args={[size, size * 1.1, size * 0.3, 32]} />
                 <meshStandardMaterial color="#333" metalness={0.8} roughness={0.3} />

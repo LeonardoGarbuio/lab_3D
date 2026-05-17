@@ -1,0 +1,225 @@
+/* OrganicPanel.css */
+/* Painel de Reações Orgânicas */
+
+.organic-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,3,12,0.85);
+  backdrop-filter: blur(8px);
+  animation: org-fadeIn 0.3s ease;
+}
+@keyframes org-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.organic-panel {
+  background: linear-gradient(145deg, rgba(5,5,20,0.97), rgba(8,12,28,0.98));
+  border: 1px solid rgba(255,180,0,0.2);
+  border-radius: 12px;
+  width: min(580px, 94vw);
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(255,180,0,0.08), 0 20px 60px rgba(0,0,0,0.5);
+  color: #e0e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  animation: org-slideUp 0.4s ease-out;
+}
+@keyframes org-slideUp {
+  from { transform: translateY(20px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.organic-panel .panel-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(255,180,0,0.08), transparent);
+  border-bottom: 1px solid rgba(255,180,0,0.15);
+  flex-shrink: 0;
+}
+.organic-panel .panel-title-group { display: flex; align-items: center; gap: 10px; }
+.organic-panel .panel-icon { font-size: 1.5rem; }
+.organic-panel .panel-title-group h2 {
+  font-size: 1.1rem; font-weight: 600; color: #e0f0ff;
+  letter-spacing: 1.5px; margin: 0; text-transform: uppercase;
+}
+.organic-panel .panel-badge {
+  background: rgba(255,180,0,0.15); color: #ffcc00;
+  padding: 2px 10px; border-radius: 20px;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;
+  border: 1px solid rgba(255,180,0,0.3);
+}
+.organic-panel .panel-close {
+  background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.2);
+  color: #ff6666; width: 36px; height: 36px; border-radius: 8px;
+  font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.organic-panel .panel-close:hover { background: rgba(255,80,80,0.25); transform: scale(1.1); }
+
+.organic-panel .panel-body {
+  padding: 20px 24px; display: flex; flex-direction: column; gap: 18px;
+  overflow-y: auto; flex: 1;
+}
+.organic-panel .panel-body::-webkit-scrollbar { width: 4px; }
+.organic-panel .panel-body::-webkit-scrollbar-thumb { background: rgba(255,180,0,0.2); border-radius: 2px; }
+
+.organic-panel .config-section {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 16px;
+}
+.organic-panel .config-section h3 {
+  margin: 0 0 12px 0; font-size: 0.82rem; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,180,0,0.7); font-weight: 500;
+}
+
+/* Reaction grid */
+.organic-panel .reaction-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px;
+}
+.organic-panel .reaction-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 12px 10px; color: #c0ccd8;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.organic-panel .reaction-btn:hover {
+  background: rgba(255,180,0,0.1); border-color: rgba(255,180,0,0.3);
+}
+.organic-panel .reaction-btn.active {
+  background: rgba(255,180,0,0.15); border-color: rgba(255,180,0,0.5);
+  color: #fff; box-shadow: 0 0 12px rgba(255,180,0,0.15);
+}
+.organic-panel .reaction-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.organic-panel .reaction-btn .emoji { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.organic-panel .reaction-btn .rxn-name {
+  font-weight: 600; font-size: 0.78rem; display: block; margin-bottom: 2px;
+}
+.organic-panel .reaction-btn .rxn-type {
+  font-size: 0.65rem; opacity: 0.5; display: block;
+}
+
+/* Reaction details */
+.organic-panel .rxn-details .description {
+  font-size: 0.82rem; color: rgba(255,255,255,0.6); margin: 0 0 12px 0; line-height: 1.5;
+}
+.organic-panel .reagent-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+.organic-panel .reagent-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 8px 12px; text-align: center; min-width: 80px;
+}
+.organic-panel .reagent-card.product {
+  border-color: rgba(0,255,100,0.3); background: rgba(0,255,100,0.05);
+}
+.organic-panel .reagent-card .label {
+  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;
+  opacity: 0.4; display: block; margin-bottom: 4px;
+}
+.organic-panel .reagent-card .formula {
+  font-weight: 600; font-size: 0.82rem; color: #ffcc00; display: block;
+}
+.organic-panel .reagent-card .sub-formula {
+  font-size: 0.65rem; opacity: 0.5; display: block; margin-top: 2px;
+  font-family: 'Courier New', monospace;
+}
+.organic-panel .plus, .organic-panel .arrow {
+  font-size: 1.2rem; color: rgba(255,255,255,0.3); font-weight: bold;
+}
+
+/* Temperature */
+.organic-panel .temp-control {
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+}
+.organic-panel .temp-value {
+  font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px currentColor;
+}
+.organic-panel .temp-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.organic-panel input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%;
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, #00ccff, #ff4400);
+  outline: none; cursor: pointer;
+}
+.organic-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #ffcc00; box-shadow: 0 0 10px rgba(255,200,0,0.5);
+  cursor: pointer; border: 2px solid rgba(0,0,0,0.3);
+}
+.organic-panel input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Progress */
+.organic-panel .progress-container {
+  display: flex; align-items: center; gap: 12px;
+}
+.organic-panel .progress-bar {
+  flex: 1; height: 8px; background: rgba(255,255,255,0.06);
+  border-radius: 4px; overflow: hidden;
+}
+.organic-panel .progress-fill {
+  height: 100%; background: linear-gradient(90deg, #ffcc00, #00ff88);
+  border-radius: 4px; transition: width 0.3s;
+}
+.organic-panel .progress-text {
+  font-size: 1rem; font-weight: 700; color: #ffcc00;
+  font-variant-numeric: tabular-nums; min-width: 50px; text-align: right;
+}
+.organic-panel .status-text {
+  font-size: 0.82rem; color: rgba(255,255,255,0.5); text-align: center;
+  margin-top: 8px;
+}
+
+/* Monitors */
+.organic-panel .monitor-grid {
+  display: flex; gap: 10px; margin-top: 12px; justify-content: center;
+}
+.organic-panel .monitor-card {
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px; padding: 12px 16px; text-align: center; min-width: 80px;
+}
+.organic-panel .monitor-card .monitor-value {
+  font-size: 1.2rem; font-weight: 700; color: #00ff88;
+  text-shadow: 0 0 8px rgba(0,255,136,0.3);
+}
+.organic-panel .monitor-card .monitor-label {
+  font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* Controls */
+.organic-panel .power-section {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.organic-panel .control-btn {
+  background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15);
+  color: #c0ccd8; font-size: 0.85rem; font-weight: 600;
+  padding: 12px 24px; border-radius: 12px; cursor: pointer;
+  transition: all 0.25s; text-transform: uppercase; letter-spacing: 1px;
+}
+.organic-panel .control-btn:hover { background: rgba(255,255,255,0.1); }
+.organic-panel .control-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.organic-panel .control-btn.active-stir {
+  background: rgba(100,200,255,0.15); border-color: rgba(100,200,255,0.5);
+  color: #66ccff; box-shadow: 0 0 12px rgba(100,200,255,0.2);
+}
+
+.organic-panel .power-btn {
+  background: linear-gradient(135deg, rgba(0,200,100,0.15), rgba(0,200,100,0.05));
+  border: 2px solid rgba(0,200,100,0.3); color: #00e864;
+  font-size: 1rem; font-weight: 600; padding: 14px 32px;
+  border-radius: 12px; cursor: pointer; transition: all 0.25s;
+  text-transform: uppercase; letter-spacing: 2px;
+}
+.organic-panel .power-btn:hover {
+  background: linear-gradient(135deg, rgba(0,200,100,0.25), rgba(0,200,100,0.1));
+  box-shadow: 0 0 20px rgba(0,200,100,0.2);
+}
+.organic-panel .power-btn.running {
+  background: linear-gradient(135deg, rgba(255,60,60,0.2), rgba(255,60,60,0.05));
+  border-color: rgba(255,60,60,0.4); color: #ff6b6b;
+}

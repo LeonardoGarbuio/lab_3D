@@ -2,7 +2,7 @@
 // Proveta graduada INTERATIVA - pode receber líquidos e medir volumes
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Text, Html } from '@react-three/drei'
 import type { Group, Mesh } from 'three'
 import * as THREE from 'three'
 import { useLabStore } from '../../../stores/useLabStore'
@@ -95,6 +95,22 @@ export default function InteractiveGraduatedCylinder({
                 <cylinderGeometry args={[0.12 * scale, 0.12 * scale, height * 1.2, 16]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
+
+            {isHovered && !isSelected && (
+                <Html position={[0, height / 2 + 0.15, 0]} center style={{ pointerEvents: 'none' }}>
+                    <div style={{
+                        background: 'rgba(0, 247, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid #00f7ff',
+                        padding: '8px 16px', borderRadius: '8px',
+                        color: '#fff', fontWeight: 'bold', fontSize: '14px',
+                        whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(0,247,255,0.3)',
+                        textTransform: 'uppercase', letterSpacing: '1px'
+                    }}>
+                        Cilindro Graduado
+                    </div>
+                </Html>
+            )}
 
             {/* Outline de seleção */}
             <mesh ref={outlineRef} visible={false}>
