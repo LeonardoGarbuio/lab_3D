@@ -95,6 +95,12 @@ This simulator pushes the limits of the browser using cutting-edge architecture:
 
 ---
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
 <div align="center">
   <i>"Imagination is more important than knowledge. Knowledge is limited. Imagination encircles the world." — Albert Einstein</i>
   <br/><br/>
