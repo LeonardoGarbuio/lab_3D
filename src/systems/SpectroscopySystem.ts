@@ -85,8 +85,9 @@ export function generateAbsorbanceCurve(
 // ESPECTROS DE EMISSÃO DOS ELEMENTOS
 // ═══════════════════════════════════════════════════════════════════════
 
+/*
 // Cores baseadas no comprimento de onda
-function wavelengthToColor(wavelength: number): string {
+function _wavelengthToColor(wavelength: number): string {
     // Espectro visível: 380nm (violeta) - 700nm (vermelho)
     if (wavelength < 380) return '#8B00FF'  // UV -> violeta
     if (wavelength < 440) return '#4B0082'  // Violeta
@@ -98,6 +99,7 @@ function wavelengthToColor(wavelength: number): string {
     if (wavelength < 700) return '#FF0000'  // Vermelho
     return '#8B0000'  // Infravermelho -> vermelho escuro
 }
+*/
 
 export const ELEMENT_SPECTRA: Record<string, ElementSpectrum> = {
     // Hidrogênio - Série de Balmer

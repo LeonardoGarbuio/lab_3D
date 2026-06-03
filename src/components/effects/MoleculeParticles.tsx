@@ -26,7 +26,7 @@ export function MoleculeParticles({
     showContainer = true
 }: MoleculeParticlesProps) {
     const pointsRef = useRef<THREE.Points>(null)
-    const velocitiesRef = useRef<Float32Array>()
+    const velocitiesRef = useRef<Float32Array>(null)
 
     // Calcular velocidade baseada na temperatura
     const speed = useMemo(() => {
@@ -139,9 +139,7 @@ export function MoleculeParticles({
                 <bufferGeometry>
                     <bufferAttribute
                         attach="attributes-position"
-                        count={particleCount}
-                        array={positions}
-                        itemSize={3}
+                        args={[positions, 3]}
                     />
                 </bufferGeometry>
                 <pointsMaterial

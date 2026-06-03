@@ -4,10 +4,8 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import {
-    HazardEffect,
-    HazardEffectType,
-    updateEffects
+import type {
+    HazardEffect
 } from '../../systems/HazardEffects'
 
 interface HazardEffects3DProps {
@@ -137,9 +135,7 @@ function ExplosionEffect({ effect }: { effect: HazardEffect }) {
                     <bufferGeometry>
                         <bufferAttribute
                             attach="attributes-position"
-                            count={particleCount}
-                            array={particles.positions}
-                            itemSize={3}
+                            args={[particles.positions, 3]}
                         />
                     </bufferGeometry>
                     <pointsMaterial
@@ -406,7 +402,7 @@ function SmokeEffect({ effect }: { effect: HazardEffect }) {
         timeRef.current += delta
 
         // Movimento ascendente e expansivo
-        smokeRef.current.children.forEach((child, i) => {
+        smokeRef.current.children.forEach((child, _i) => {
             child.position.y += delta * 0.1
             let scale = child.scale.x + delta * 0.05
             
@@ -501,9 +497,7 @@ function SparkParticles({ position, intensity }: { position: number[]; intensity
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
-                    count={particles.count}
-                    array={particles.positions}
-                    itemSize={3}
+                    args={[particles.positions, 3]}
                 />
             </bufferGeometry>
             <pointsMaterial
@@ -558,9 +552,7 @@ function GasParticles({ radius, color, intensity }: { radius: number; color: str
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
-                    count={count}
-                    array={positions}
-                    itemSize={3}
+                    args={[positions, 3]}
                 />
             </bufferGeometry>
             <pointsMaterial

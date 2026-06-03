@@ -15,6 +15,7 @@ export default function CrystallizerPanel() {
         setCrystallizerIsHeating,
         crystallizerIsCooling,
         setCrystallizerIsCooling,
+        objects,
     } = useLabStore()
 
     const [liveData, setLiveData] = useState({
@@ -50,6 +51,23 @@ export default function CrystallizerPanel() {
     const substance = CRYSTAL_SUBSTANCES[crystallizerSubstanceId]
     const solubility = substance ? getSolubilityForSubstance(liveData.temperature, substance) : 0
 
+    // === BÉQUERES COM SUBSTÂNCIAS CRISTALIZÁVEIS ===
+    const availableBeakers = objects.filter(o => o.formula && !o.isBroken && o.fillLevel > 0)
+    const beakerCrystals = availableBeakers
+        .map(beaker => {
+            const bForm = beaker.formula?.toLowerCase() || ''
+            const match = Object.entries(CRYSTAL_SUBSTANCES).find(([key, sub]) => 
+                key.toLowerCase() === bForm || sub.formula.toLowerCase() === bForm || sub.name.toLowerCase() === bForm
+            )
+            if (match) {
+                return { beakerId: beaker.id, substanceKey: match[0], substance: match[1], beaker }
+            }
+            return null
+        })
+        .filter(Boolean) as Array<{ beakerId: string; substanceKey: string; substance: typeof CRYSTAL_SUBSTANCES[string]; beaker: typeof objects[0] }>
+
+    const hasBeakerCrystals = beakerCrystals.length > 0
+
     return (
         <div className="crystallizer-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeCrystallizerPanel() }}>
             <div className="crystallizer-panel" onClick={e => e.stopPropagation()}>
@@ -59,30 +77,68 @@ export default function CrystallizerPanel() {
                         <h2>CRISTALIZAÇÃO</h2>
                         <span className="panel-badge">ESTADO SÓLIDO</span>
                     </div>
-                    <button className="panel-close" onClick={closeCrystallizerPanel}>✕</button>
+                    <div className="panel-controls">
+                        <button className="panel-close" onClick={closeCrystallizerPanel}>✕</button>
+                    </div>
                 </div>
 
-                <div className="panel-body">
+                <div className="panel-content">
+                    {/* SIDEBAR - Controles */}
+                    <div className="panel-sidebar">
                     {/* Substance selector */}
                     <div className="config-section">
-                        <h3>🧪 Substância</h3>
-                        <div className="substance-grid">
-                            {Object.entries(CRYSTAL_SUBSTANCES).map(([id, sub]) => (
-                                <button
-                                    key={id}
-                                    className={`substance-btn ${crystallizerSubstanceId === id ? 'active' : ''}`}
-                                    onClick={() => setCrystallizerSubstanceId(id)}
-                                    disabled={crystallizerIsHeating || crystallizerIsCooling}
-                                >
-                                    <div className="crystal-preview" style={{ background: sub.color, boxShadow: `0 0 8px ${sub.color}40` }} />
-                                    <span className="formula">{sub.formula}</span>
-                                    <span className="name">{sub.name}</span>
-                                    <span className="shape">{sub.shape}</span>
-                                </button>
-                            ))}
-                        </div>
+                        <h3>🧪 Substância (dos Béqueres)</h3>
+                        {hasBeakerCrystals ? (
+                            <div className="substance-grid">
+                                {beakerCrystals.map(({ beakerId, substanceKey, substance: sub, beaker }) => (
+                                    <button
+                                        key={beakerId}
+                                        className={`substance-btn ${crystallizerSubstanceId === substanceKey ? 'active' : ''}`}
+                                        onClick={() => setCrystallizerSubstanceId(substanceKey)}
+                                        disabled={crystallizerIsHeating || crystallizerIsCooling}
+                                    >
+                                        <div className="crystal-preview" style={{ background: sub.color, boxShadow: `0 0 8px ${sub.color}40` }} />
+                                        <span className="formula">{sub.formula}</span>
+                                        <span className="name">{sub.name}</span>
+                                        <span className="shape">{sub.shape}</span>
+                                        <div style={{ fontSize: '0.6rem', marginTop: 4, opacity: 0.7 }}>Béquer {beaker.id.split('-')[1]}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="no-beakers-msg" style={{ fontSize: '0.85rem', color: '#ff8888', padding: '10px 0' }}>
+                                <p>⚠️ Nenhum béquer com substância cristalizável disponível.</p>
+                                <p>Adicione CuSO₄, NaCl, KNO₃ ou Ac. Acetilsalicílico a um béquer na mesa.</p>
+                            </div>
+                        )}
                     </div>
 
+                    {/* Controls */}
+                    <div className="power-section">
+                        <button
+                            className={`control-btn ${crystallizerIsHeating ? 'active-heat' : ''}`}
+                            onClick={() => {
+                                setCrystallizerIsHeating(!crystallizerIsHeating)
+                                if (!crystallizerIsHeating) setCrystallizerIsCooling(false)
+                            }}
+                        >
+                            🔥 {crystallizerIsHeating ? 'Parar' : 'Aquecer'}
+                        </button>
+                        <button
+                            className={`control-btn ${crystallizerIsCooling ? 'active-cool' : ''}`}
+                            onClick={() => {
+                                setCrystallizerIsCooling(!crystallizerIsCooling)
+                                if (!crystallizerIsCooling) setCrystallizerIsHeating(false)
+                            }}
+                        >
+                            🧊 {crystallizerIsCooling ? 'Parar' : 'Resfriar'}
+                        </button>
+                    </div>
+                    
+                    </div> {/* End Sidebar */}
+
+                    {/* MAIN VIEWPORT - Gráficos e Monitores */}
+                    <div className="panel-main">
                     {/* Data Monitors */}
                     <div className="config-section">
                         <h3>📊 Monitores</h3>
@@ -116,28 +172,6 @@ export default function CrystallizerPanel() {
                         </div>
                     </div>
 
-                    {/* Controls */}
-                    <div className="power-section">
-                        <button
-                            className={`control-btn ${crystallizerIsHeating ? 'active-heat' : ''}`}
-                            onClick={() => {
-                                setCrystallizerIsHeating(!crystallizerIsHeating)
-                                if (!crystallizerIsHeating) setCrystallizerIsCooling(false)
-                            }}
-                        >
-                            🔥 {crystallizerIsHeating ? 'Parar Aquecimento' : 'Aquecer'}
-                        </button>
-                        <button
-                            className={`control-btn ${crystallizerIsCooling ? 'active-cool' : ''}`}
-                            onClick={() => {
-                                setCrystallizerIsCooling(!crystallizerIsCooling)
-                                if (!crystallizerIsCooling) setCrystallizerIsHeating(false)
-                            }}
-                        >
-                            🧊 {crystallizerIsCooling ? 'Parar Resfriamento' : 'Resfriar'}
-                        </button>
-                    </div>
-
                     {/* Status */}
                     <div className="config-section">
                         <h3>ℹ️ Status</h3>
@@ -149,6 +183,7 @@ export default function CrystallizerPanel() {
                                             '⏸️ Parado — aqueça e resfrie para cristalizar'}
                         </div>
                     </div>
+                    </div> {/* End Main Viewport */}
                 </div>
             </div>
         </div>

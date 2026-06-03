@@ -22,9 +22,9 @@
   background: linear-gradient(145deg, rgba(5,5,20,0.97), rgba(8,12,28,0.98));
   border: 1px solid rgba(200,100,255,0.2);
   border-radius: 12px;
-  width: min(580px, 94vw);
-  max-height: 92vh;
-  overflow: hidden;
+  width: 95vw;
+  height: 92vh;
+  max-width: 1500px;
   display: flex;
   flex-direction: column;
   box-shadow:
@@ -79,13 +79,47 @@
   background: rgba(255,80,80,0.25); border-color: rgba(255,80,80,0.5); transform: scale(1.1);
 }
 
-.spectrometer-panel .panel-body {
-  padding: 20px 24px; display: flex; flex-direction: column; gap: 18px;
-  overflow-y: auto; flex: 1;
+.spectrometer-panel .panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.spectrometer-panel .panel-body::-webkit-scrollbar { width: 4px; }
-.spectrometer-panel .panel-body::-webkit-scrollbar-track { background: transparent; }
-.spectrometer-panel .panel-body::-webkit-scrollbar-thumb { background: rgba(200,100,255,0.2); border-radius: 2px; }
+
+.spectrometer-panel .panel-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.spectrometer-panel .panel-sidebar {
+  width: 360px;
+  border-right: 1px solid rgba(200,100,255,0.1);
+  overflow-y: auto;
+  flex-shrink: 0;
+  background: rgba(0,5,15,0.6);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.spectrometer-panel .panel-sidebar::-webkit-scrollbar { width: 4px; }
+.spectrometer-panel .panel-sidebar::-webkit-scrollbar-track { background: transparent; }
+.spectrometer-panel .panel-sidebar::-webkit-scrollbar-thumb { background: rgba(200,100,255,0.2); border-radius: 2px; }
+
+/* Main Viewport */
+.spectrometer-panel .panel-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(20,20,40,0.5), rgba(5,5,15,0.8));
+}
+.spectrometer-panel .panel-main::-webkit-scrollbar { width: 4px; }
+.spectrometer-panel .panel-main::-webkit-scrollbar-track { background: transparent; }
+.spectrometer-panel .panel-main::-webkit-scrollbar-thumb { background: rgba(200,100,255,0.2); border-radius: 2px; }
 
 /* Tab selector */
 .spectrometer-panel .tab-selector {
@@ -106,11 +140,13 @@
 }
 
 /* Section cards */
-.spectrometer-panel .config-section {
+.spectrometer-panel .config-section,
+.spectrometer-panel .main-section {
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px; padding: 16px;
 }
-.spectrometer-panel .config-section h3 {
+.spectrometer-panel .config-section h3,
+.spectrometer-panel .main-section h3 {
   margin: 0 0 12px 0; font-size: 0.82rem; text-transform: uppercase;
   letter-spacing: 1.5px; color: rgba(200,100,255,0.7); font-weight: 500;
 }
@@ -141,6 +177,7 @@
 /* Spectrum container */
 .spectrometer-panel .spectrum-container {
   display: flex; justify-content: center; overflow: hidden; border-radius: 8px;
+  background: rgba(0,0,0,0.2); padding: 16px; border: 1px solid rgba(255,255,255,0.05);
 }
 .spectrometer-panel .spectrum-container svg {
   max-width: 100%;
@@ -194,4 +231,16 @@
   width: 20px; height: 20px; border-radius: 50%;
   background: #cc88ff; box-shadow: 0 0 10px rgba(200,100,255,0.5);
   cursor: pointer; border: 2px solid rgba(0,0,0,0.3);
+}
+
+@media (max-width: 900px) {
+  .spectrometer-panel .panel-content {
+    flex-direction: column;
+  }
+  .spectrometer-panel .panel-sidebar {
+    width: 100%;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(200,100,255,0.1);
+  }
 }

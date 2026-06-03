@@ -20,7 +20,7 @@ export function PHGraph({
     title = 'Curva de Titulação'
 }: PHGraphProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const [dimensions, setDimensions] = useState({ width: 300, height: 200 })
+    const [dimensions, _setDimensions] = useState({ width: 300, height: 200 })
 
     // Desenhar gráfico
     useEffect(() => {

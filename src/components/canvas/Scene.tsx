@@ -1,8 +1,9 @@
 // src/components/canvas/Scene.tsx
 // Laboratório Virtual 3D - Cena Principal
 import { Suspense, useState, useEffect, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { PerspectiveCamera } from '@react-three/drei'
+import * as THREE from 'three'
 import { FPSControls } from './FPSControls'
 
 // Ambiente
@@ -22,6 +23,7 @@ import InteractivePipette from './glassware/InteractivePipette'
 import InteractiveErlenmeyer from './glassware/InteractiveErlenmeyer'
 import InteractiveRoundBottomFlask from './glassware/InteractiveRoundBottomFlask'
 import SeparatingFunnel from './glassware/SeparatingFunnel'
+import InteractiveTestTube from './glassware/InteractiveTestTube'
 import InteractiveFumeHood from './equipment/InteractiveFumeHood'
 
 // SISTEMAS AVANÇADOS
@@ -29,10 +31,12 @@ import { CrystallizationDish } from '../equipment/CrystallizationDish'
 import { ElectrolysisCell } from '../equipment/ElectrolysisCell'
 import { DistillationApparatus } from '../equipment/DistillationApparatus'
 import { GasBalloon } from '../effects/GasBalloon'
+import HolographicProjector from './HolographicProjector'
 import { Spectrometer } from '../equipment/Spectrometer'
 import { Manometer } from '../equipment/Manometer'
 import { Thermometer } from '../equipment/Thermometer'
 import { OrganicReactionVessel } from '../equipment/OrganicReactionVessel'
+import { QuantumZoom } from './effects/QuantumZoom'
 
 // EQUIPAMENTOS DIELÉTICOS (Menu 3D)
 import { 
@@ -135,7 +139,7 @@ function LabObjects() {
               fillLevel={obj.fillLevel}
               color={obj.color}
               ph={obj.ph || 7}
-              scale={0.6}
+              scale={1.0}
             />
           )
         }
@@ -150,7 +154,7 @@ function LabObjects() {
               color={obj.color}
               ph={obj.ph || 7}
               volume={10}
-              scale={0.8}
+              scale={1.8}
             />
           )
         }
@@ -164,7 +168,51 @@ function LabObjects() {
               fillLevel={obj.fillLevel}
               color={obj.color}
               ph={obj.ph || 7}
-              scale={0.7}
+              scale={1.5}
+            />
+          )
+        }
+        if ((obj.type as string) === 'cylinder') {
+          return (
+            <InteractiveGraduatedCylinder
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              temperature={obj.temperature}
+              ph={obj.ph || 7}
+              volume={obj.volume}
+              maxVolume={100}
+              scale={1.5}
+            />
+          )
+        }
+        if ((obj.type as string) === 'separating_funnel') {
+          return (
+            <SeparatingFunnel
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              scale={1.5}
+            />
+          )
+        }
+        if ((obj.type as string) === 'test-tube') {
+          return (
+            <InteractiveTestTube
+              key={obj.id}
+              id={obj.id}
+              position={obj.position}
+              formula={obj.formula}
+              fillLevel={obj.fillLevel}
+              color={obj.color}
+              ph={obj.ph || 7}
+              scale={0.5}
             />
           )
         }
@@ -202,6 +250,9 @@ function LabScene() {
   const organicIsActive = useLabStore((state) => state.organicIsActive)
   const organicTemperature = useLabStore((state) => state.organicTemperature)
   const organicStirring = useLabStore((state) => state.organicStirring)
+  
+  const activeQuantumFormula = useLabStore((state) => state.activeQuantumFormula)
+  const isQuantumZoomOpen = useLabStore((state) => state.isQuantumZoomOpen)
 
   const handleBackgroundClick = () => {
     selectObject(null)
@@ -217,6 +268,12 @@ function LabScene() {
         intensity={1.5}
       />
       <hemisphereLight intensity={0.5} groundColor="#1a1a2e" />
+
+      {/* Projetor Holográfico da Fase 2 */}
+      <HolographicProjector 
+        position={[2, 0.8, -1.5]} 
+        formulaToLoad={activeQuantumFormula} 
+      />
 
       {/* AMBIENTE */}
       <LabRoom>
@@ -241,69 +298,43 @@ function LabScene() {
         {/* Bancada Direita */}
         <LabBench position={[11, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
 
-        {/* Bancada Frontal (mais espaço para vidraria) */}
-        <LabBench position={[0, 0, 4]} />
-
         {/* OBJETOS INTERATIVOS DA CENA PADRÃO (renderizados na bancada central) */}
         <LabObjects />
 
-        {/* ═══════════════════════════════════════════ */}
         {/* BANCADA CENTRAL (Química Úmida) */}
         {/* ═══════════════════════════════════════════ */}
 
-        {/* Tubos de ensaio (decorativos) */}
-        <TestTubeRack
-          position={[2.5, 1.02, -0.3]}
-          tubes={[
-            { color: '#ff6b6b', level: 0.8 },
-            { color: '#4ecdc4', level: 0.6 },
-            { color: '#ffe66d', level: 0.9 },
-            { color: '#ff69b4', level: 0.4 },
-            { color: '#87CEEB', level: 0.7 },
-          ]}
-        />
+        {/* Rack de tubos de ensaio vazio (tubos dinâmicos ficam aqui dentro da msm coord) */}
+        <TestTubeRack position={[1.6, 1.02, -0.5]} />
 
         {/* Bico de Bunsen e Tripe */}
-        <BunsenBurner position={[-1.8, 1.02, -0.2]} isLit={false} />
+        <BunsenBurner position={[-2.5, 1.02, -0.5]} isLit={false} />
         <InteractiveTripod
           id="tripod-1"
-          position={[-1.8, 1.02, -0.2]}
+          position={[-2.5, 1.02, -0.5]}
           scale={1.0}
           isHeating={false}
         />
 
-        {/* Proveta graduada */}
-        <InteractiveGraduatedCylinder
-          id="graduated-cylinder-1"
-          position={[1.8, 1.45, -0.3]}
-          formula={null}
-          fillLevel={0}
-          color="#4ecdc4"
-          temperature={25}
-          ph={7}
-          volume={0}
-          maxVolume={100}
-          scale={0.7}
-        />
-
-        {/* Bureta FUNCIONAL — sobre o erlenmeyer */}
+        {/* Suporte base da Bureta FUNCIONAL */}
+        <group position={[-1.0, 1.4, -0.5]}>
+            <mesh castShadow>
+                <cylinderGeometry args={[0.02, 0.02, 1.6, 16]} />
+                <meshStandardMaterial color="#666666" metalness={0.8} />
+            </mesh>
+            <mesh position={[0, -0.35, 0]} castShadow>
+                <cylinderGeometry args={[0.15, 0.15, 0.05, 16]} />
+                <meshStandardMaterial color="#444444" metalness={0.5} />
+            </mesh>
+        </group>
         <InteractiveBurette
           id="burette-1"
-          position={[-0.2, 1.75, -0.2]}
-          targetId="erlenmeyer-1"
+          position={[-1.0, 2.35, -0.5]}
           maxVolume={50}
-          scale={0.7}
+          scale={1.5}
         />
 
-        {/* Funil de separacao */}
-        <SeparatingFunnel
-          position={[1.2, 1.45, -0.3]}
-          scale={0.5}
-          upperLiquidColor="#ffe066"
-          lowerLiquidColor="#4ecdc4"
-          upperLevel={0}
-          lowerLevel={0}
-        />
+
 
         {/* Termometro */}
         <Thermometer
@@ -339,7 +370,6 @@ function LabScene() {
         <InteractiveFumeHood
           id="fumehood-1"
           position={[-11.0, 0.02, -2.5]}
-          scale={0.9}
           isOn={true}
           sashHeight={0.5}
         />
@@ -347,14 +377,13 @@ function LabScene() {
         {/* Destilação */}
         <DistillationApparatus
           position={[-10.5, 1.02, -1.0]}
-          scale={0.6}
           mixtureId={distillationMixtureId as any}
           isHeating={distillationHeating}
           onClick={() => openDistillationPanel()}
         />
 
         {/* Reações Orgânicas - Fermentação */}
-        <group position={[-10.5, 1.0, 0.5]} scale={0.8}>
+        <group position={[-10.5, 1.0, 0.5]}>
           <OrganicReactionVessel
             position={[0, 0, 0]}
             reactionId={'fermentation' as any}
@@ -376,7 +405,7 @@ function LabScene() {
         />
 
         {/* Reator Organico - Esterificacao */}
-        <group position={[-10.5, 1.02, 2.0]} scale={0.8}>
+        <group position={[-10.5, 1.02, 2.0]}>
           <OrganicReactionVessel
             position={[0, 0, 0]}
             reactionId={'esterification' as any}
@@ -387,20 +416,19 @@ function LabScene() {
         </group>
 
         {/* Equipamentos Dieléticos - Esquerda */}
-        <DeviceReagentCabinet position={[-11.5, 0.02, 0.5]} rotation={[0, Math.PI / 2, 0]} scale={0.9} />
-        <DeviceNuclearReactor position={[-11.0, 1.02, 3.5]} scale={0.8} />
+        <DeviceReagentCabinet position={[-11.5, 0.02, 0.5]} rotation={[0, Math.PI / 2, 0]} />
+        <DeviceNuclearReactor position={[-11.0, 1.02, 3.5]} />
 
         {/* ═══════════════════════════════════════════ */}
         {/* BANCADA DIREITA (Análise e Eletroquímica) */}
         {/* ═══════════════════════════════════════════ */}
 
         {/* Tanque SPH */}
-        <DeviceSPHTank position={[10.5, 1.02, -2.5]} rotation={[0, -Math.PI / 2, 0]} scale={0.6} />
+        <DeviceSPHTank position={[10.5, 1.02, -2.5]} rotation={[0, -Math.PI / 2, 0]} />
 
         {/* Eletrólise */}
         <ElectrolysisCell
           position={[10.5, 1.02, -1.5]}
-          scale={0.7}
           electrolyteId={electrolysisElectrolyteId as any}
           voltage={electrolysisVoltage}
           isRunning={electrolysisRunning}
@@ -408,17 +436,19 @@ function LabScene() {
         />
 
         {/* Cristalização — CONTROLADA PELO STORE */}
-        <CrystallizationDish
-          position={[10.5, 1.05, -0.5]}
-          substanceId={crystallizerSubstanceId as any}
-          initialConcentration={400}
-          initialTemperature={80}
-          isHeating={crystallizerIsHeating}
-          isCooling={crystallizerIsCooling}
-        />
+        <group position={[10.5, 1.05, -0.5]}>
+          <CrystallizationDish
+            position={[0, 0, 0]}
+            substanceId={crystallizerSubstanceId as any}
+            initialConcentration={400}
+            initialTemperature={80}
+            isHeating={crystallizerIsHeating}
+            isCooling={crystallizerIsCooling}
+          />
+        </group>
 
         {/* Espectrômetro de Massa */}
-        <group position={[10.5, 1.02, 0.5]} scale={0.7}>
+        <group position={[10.5, 1.02, 0.5]}>
           <Spectrometer
             position={[0, 0, 0]}
             isActive={false}
@@ -426,17 +456,52 @@ function LabScene() {
         </group>
 
         {/* Equipamentos Dieléticos - Direita */}
-        <DeviceMicroscope position={[10.5, 1.02, 1.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} />
-        <DeviceComputerTerminal position={[10.5, 1.02, 2.5]} rotation={[0, -Math.PI / 2, 0]} scale={1.2} />
-        <DeviceSolidState position={[10.0, 1.02, 3.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.8} />
-        <DeviceProjector position={[11.0, 1.02, 3.2]} rotation={[0, -Math.PI / 2, 0]} scale={0.8} />
+        <DeviceMicroscope position={[10.5, 1.02, 1.5]} rotation={[0, -Math.PI / 2, 0]} />
+        <DeviceComputerTerminal position={[10.5, 1.02, 2.5]} rotation={[0, -Math.PI / 2, 0]} />
+        <DeviceSolidState position={[10.0, 1.02, 3.5]} rotation={[0, -Math.PI / 2, 0]} />
+        <DeviceProjector position={[11.5, 1.02, 3.5]} rotation={[0, -Math.PI / 2, 0]} />
 
       </LabRoom>
+
+      {/* FASE 3: MERGULHO SUBATÔMICO */}
+      {isQuantumZoomOpen && (
+        <group position={[2, 0.8, -1.5]}>
+          <QuantumZoom formula={activeQuantumFormula} />
+        </group>
+      )}
 
       {/* CONTROLES FPS */}
       <FPSControls />
     </>
   )
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CAMERA WARP EFFECT (Fase 3 Transition)
+// ═══════════════════════════════════════════════════════════════════════
+function CameraTransition() {
+  const isQuantumZoomOpen = useLabStore((state) => state.isQuantumZoomOpen)
+  const { camera } = useThree()
+  
+  useFrame((_, delta) => {
+    if (isQuantumZoomOpen) {
+      // Zoom into the holographic projector position
+      const targetPos = new THREE.Vector3(2, 0.8, -1.0)
+      camera.position.lerp(targetPos, delta * 3)
+      if ((camera as any).fov) {
+        ;(camera as any).fov = THREE.MathUtils.lerp((camera as any).fov, 120, delta * 4)
+        camera.updateProjectionMatrix()
+      }
+    } else {
+      // Reset FOV smoothly when closing
+      if ((camera as any).fov > 50) {
+        ;(camera as any).fov = THREE.MathUtils.lerp((camera as any).fov, 50, delta * 4)
+        camera.updateProjectionMatrix()
+      }
+    }
+  })
+  
+  return null
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -501,7 +566,7 @@ export default function Scene() {
           stencil: false,
           depth: true,
         }}
-        onCreated={({ gl }) => {
+        onCreated={({ gl: _gl }) => {
           console.log('🧪 Laboratório inicializado (perf otimizado)')
         }}
       >
@@ -514,6 +579,7 @@ export default function Scene() {
           <LabScene />
         </Suspense>
 
+        <CameraTransition />
         <PerfDebugger />
       </Canvas>
     </div>

@@ -342,7 +342,7 @@ function SlimeEffect({ viscosity, progress }: { viscosity: number; progress: num
         <group position={[0, 0.05, 0]}>
             <mesh ref={slimeRef}>
                 <sphereGeometry args={[0.06 * progress, 16, 16]} />
-                <meshStandardMaterial
+                <meshPhysicalMaterial
                     color="#7fff00"
                     transparent
                     opacity={0.7}

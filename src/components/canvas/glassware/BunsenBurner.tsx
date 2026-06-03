@@ -20,7 +20,6 @@ export function BunsenBurner({ position, isLit = false, onToggle }: BunsenBurner
     const flameMaterialRef = useRef<THREE.MeshStandardMaterial>(null)
     const timeRef = useRef(0)
 
-    const selectedId = useLabStore(s => s.selectedId)
     const objects = useLabStore(s => s.objects)
 
     // Detectar substância próxima para teste de chama

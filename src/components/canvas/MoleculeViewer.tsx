@@ -459,7 +459,7 @@ export default function MoleculeViewer({
                     radius={atom.radius}
                     symbol={showLabels ? atom.symbol : ''}
                     hologram={hologram}
-                    formalCharge={showFormalCharges ? calculateFormalCharge(molecule, i) : 0}
+                    formalCharge={showFormalCharges ? calculateFormalCharge(molecule as VSEPRMolecule, i) : 0}
                     showFormalCharge={showFormalCharges}
                 />
             ))}

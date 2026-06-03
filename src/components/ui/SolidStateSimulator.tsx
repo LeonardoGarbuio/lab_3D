@@ -1,7 +1,7 @@
 // src/components/ui/SolidStateSimulator.tsx
 import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei'
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import CrystalLattice, { type LatticeType } from '../canvas/CrystalLattice'
 import './SolidStateSimulator.css'
 

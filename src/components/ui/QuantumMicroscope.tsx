@@ -76,6 +76,7 @@ function HologramScene({
 
 function VSEPRInfoPanel({ molecule }: { molecule: VSEPRMolecule | GeneratedMolecule }) {
     const geoInfo = GEOMETRY_INFO[molecule.geometry] || { namePt: molecule.geometry, icon: '🔮', electronDomains: molecule.bondingPairs + molecule.lonePairs }
+    const moleculeNamePt = 'namePt' in molecule ? (molecule as VSEPRMolecule).namePt : molecule.name
 
     return (
         <div className="vsepr-info-panel">
@@ -83,7 +84,7 @@ function VSEPRInfoPanel({ molecule }: { molecule: VSEPRMolecule | GeneratedMolec
                 <span className="vsepr-geometry-icon">{geoInfo.icon}</span>
                 <div>
                     <h3>{molecule.formula}</h3>
-                    <p className="vsepr-namept">{molecule.namePt}</p>
+                    <p className="vsepr-namept">{moleculeNamePt}</p>
                 </div>
             </div>
 
@@ -424,6 +425,16 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                         >
                             🧪 Bancada
                         </button>
+                        <button
+                            className={`qm-toggle`}
+                            onClick={() => {
+                                useLabStore.getState().openQuantumZoom(selectedFormula)
+                                onClose()
+                            }}
+                            title="Fase 3: Mergulho Subatômico"
+                        >
+                            ⚛️ Mergulho Subatômico
+                        </button>
                         <button className="qm-close" onClick={onClose}>✕</button>
                     </div>
                 </div>
@@ -442,6 +453,7 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                         >
                             <HologramScene
                                 formula={selectedFormula}
+                                molecule={molecule ?? null}
                                 showLonePairs={showLonePairs}
                                 showPiBonds={showPiBonds}
                                 animateResonance={animateResonance}

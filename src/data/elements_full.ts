@@ -6,9 +6,9 @@ type Cat = Element['category']
 type Ph = Element['phase']
 const S: Ph = 'solid', G: Ph = 'gas', L: Ph = 'liquid'
 const TM: Cat = 'transition-metal', PT: Cat = 'post-transition', ML: Cat = 'metalloid'
-const NM: Cat = 'nonmetal', HG: Cat = 'halogen', NG: Cat = 'noble-gas'
+const HG: Cat = 'halogen', NG: Cat = 'noble-gas'
 const LN: Cat = 'lanthanide', AC: Cat = 'actinide'
-const AK: Cat = 'alkali-metal', AE: Cat = 'alkaline-earth'
+const AE: Cat = 'alkaline-earth'
 
 // [Z, sym, name, namePt, mass, cat, phase, EN, density, mp, bp, color, group, period]
 type R = [number,string,string,string,number,Cat,Ph,number|null,number|null,number|null,number|null,string,number,number]

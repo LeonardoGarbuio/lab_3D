@@ -41,7 +41,7 @@ export default function InteractiveBurette({
     const ph = burettePh
 
     // Animação + drip funcional
-    useFrame((state, delta) => {
+    useFrame((state, _delta) => {
         const t = state.clock.elapsedTime
 
         if (outlineRef.current) {
@@ -58,7 +58,23 @@ export default function InteractiveBurette({
 
             // Throttle: atualizar store ~10x/s
             if (t - lastDripRef.current > 0.1) {
-                buretteDrip(targetId, 0.1)
+                // Find object directly below
+                const state = useLabStore.getState()
+                let target = targetId // default
+                let minDist = 0.5 // maximum distance to be considered "under"
+
+                for (const obj of state.objects) {
+                    if (obj.id === id) continue
+                    const dx = obj.position[0] - position[0]
+                    const dz = obj.position[2] - position[2]
+                    const dist = Math.sqrt(dx * dx + dz * dz)
+                    if (dist < minDist && obj.position[1] < position[1]) {
+                        minDist = dist
+                        target = obj.id
+                    }
+                }
+
+                buretteDrip(target, 0.1)
                 lastDripRef.current = t
             }
         }

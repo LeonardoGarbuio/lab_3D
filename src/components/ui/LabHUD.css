@@ -560,10 +560,27 @@
 
 .analysis-table .hot {
     color: #ff6b6b;
-    font-weight: bold;
+    font-size: 13px;
 }
 
-.analysis-table .formula-cell {
+.hologram-btn {
+    background: rgba(0, 255, 204, 0.1);
+    border: 1px solid rgba(0, 255, 204, 0.3);
+    color: #00ffcc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-top: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+.hologram-btn:hover {
+    background: rgba(0, 255, 204, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+}
+
+.analysis-table td.formula-cell {
     font-family: 'Courier New', monospace;
     color: #4ecdc4;
 }

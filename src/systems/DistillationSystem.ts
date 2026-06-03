@@ -230,7 +230,7 @@ export function calculateCondensationTemperature(
 export function willCondense(
     vaporTemperature: number,
     condenserTemperature: number,
-    componentBoilingPoint: number
+    _componentBoilingPoint: number
 ): boolean {
     return condenserTemperature < vaporTemperature - 10
 }

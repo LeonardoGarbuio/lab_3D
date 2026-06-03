@@ -30,7 +30,7 @@ export default function InteractiveErlenmeyer({
     const outlineRef = useRef<Mesh>(null)
     const [isHovered, setIsHovered] = useState(false)
 
-    const { selectedId, pouringFromId, selectObject, startPouring, pourInto, cancelPouring } = useLabStore()
+    const { selectedId, pouringFromId, selectObject, startPouring, pourInto, cancelPouring, setHoveredObject } = useLabStore()
     const isSelected = selectedId === id
     const isPouringSource = pouringFromId === id
     const isPouringTarget = pouringFromId !== null && pouringFromId !== id
@@ -84,8 +84,8 @@ export default function InteractiveErlenmeyer({
                 visible={false}
                 onClick={handleClick}
                 onDoubleClick={handleDoubleClick}
-                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
-                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+                onPointerEnter={() => { setIsHovered(true); setHoveredObject(id); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); setHoveredObject(null); document.body.style.cursor = 'default' }}
             >
                 <cylinderGeometry args={[baseRadius * 1.2, baseRadius * 1.2, (bodyHeight + neckHeight) * 1.1, 16]} />
                 <meshBasicMaterial transparent opacity={0} />

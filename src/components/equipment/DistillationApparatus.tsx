@@ -10,7 +10,6 @@ import {
     createInitialDistillationState,
     updateDistillation,
     DISTILLATION_MIXTURES,
-    generateDistillationCurve
 } from '../../systems/DistillationSystem'
 
 interface DistillationApparatusProps {

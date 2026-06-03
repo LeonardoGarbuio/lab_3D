@@ -18,8 +18,9 @@
   background: linear-gradient(145deg, rgba(5,5,20,0.97), rgba(8,12,28,0.98));
   border: 1px solid rgba(255,180,0,0.2);
   border-radius: 12px;
-  width: min(580px, 94vw);
-  max-height: 92vh;
+  width: 95vw;
+  height: 92vh;
+  max-width: 1500px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -60,18 +61,55 @@
 }
 .organic-panel .panel-close:hover { background: rgba(255,80,80,0.25); transform: scale(1.1); }
 
-.organic-panel .panel-body {
-  padding: 20px 24px; display: flex; flex-direction: column; gap: 18px;
-  overflow-y: auto; flex: 1;
+.organic-panel .panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.organic-panel .panel-body::-webkit-scrollbar { width: 4px; }
-.organic-panel .panel-body::-webkit-scrollbar-thumb { background: rgba(255,180,0,0.2); border-radius: 2px; }
 
-.organic-panel .config-section {
+.organic-panel .panel-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.organic-panel .panel-sidebar {
+  width: 360px;
+  border-right: 1px solid rgba(255,180,0,0.1);
+  overflow-y: auto;
+  flex-shrink: 0;
+  background: rgba(15,15,5,0.6);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.organic-panel .panel-sidebar::-webkit-scrollbar { width: 4px; }
+.organic-panel .panel-sidebar::-webkit-scrollbar-track { background: transparent; }
+.organic-panel .panel-sidebar::-webkit-scrollbar-thumb { background: rgba(255,180,0,0.2); border-radius: 2px; }
+
+/* Main Viewport */
+.organic-panel .panel-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(30,30,10,0.5), rgba(15,15,5,0.8));
+}
+.organic-panel .panel-main::-webkit-scrollbar { width: 4px; }
+.organic-panel .panel-main::-webkit-scrollbar-track { background: transparent; }
+.organic-panel .panel-main::-webkit-scrollbar-thumb { background: rgba(255,180,0,0.2); border-radius: 2px; }
+
+.organic-panel .config-section,
+.organic-panel .main-section {
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px; padding: 16px;
 }
-.organic-panel .config-section h3 {
+.organic-panel .config-section h3,
+.organic-panel .main-section h3 {
   margin: 0 0 12px 0; font-size: 0.82rem; text-transform: uppercase;
   letter-spacing: 1.5px; color: rgba(255,180,0,0.7); font-weight: 500;
 }
@@ -222,4 +260,16 @@
 .organic-panel .power-btn.running {
   background: linear-gradient(135deg, rgba(255,60,60,0.2), rgba(255,60,60,0.05));
   border-color: rgba(255,60,60,0.4); color: #ff6b6b;
+}
+
+@media (max-width: 900px) {
+  .organic-panel .panel-content {
+    flex-direction: column;
+  }
+  .organic-panel .panel-sidebar {
+    width: 100%;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,180,0,0.1);
+  }
 }

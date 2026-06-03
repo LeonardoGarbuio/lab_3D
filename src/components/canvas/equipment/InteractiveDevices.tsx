@@ -18,7 +18,6 @@ function InteractiveDeviceWrapper({
     children, name, onClick, position, rotation, scale = 1
 }: { children: React.ReactNode, name: string, onClick: () => void } & DeviceProps) {
     const [hovered, setHovered] = useState(false)
-    const { isSoundEnabled } = useLabStore()
 
     // Efeito de flutuar levemente o tooltip
     const htmlRef = useRef<HTMLDivElement>(null)
@@ -53,7 +52,7 @@ function InteractiveDeviceWrapper({
                     setHovered(true)
                     document.body.style.cursor = 'pointer'
                 }}
-                onPointerOut={(e) => {
+                onPointerOut={(_e) => {
                     setHovered(false)
                     document.body.style.cursor = 'auto'
                 }}

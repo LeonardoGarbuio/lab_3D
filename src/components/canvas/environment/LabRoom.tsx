@@ -19,7 +19,6 @@ export default function LabRoom({ children }: LabRoomProps) {
     const roomWidth = 26
     const roomDepth = 18
     const roomHeight = 4
-    const tileSize = 1
 
     return (
         <group ref={groupRef}>

@@ -10,7 +10,6 @@ import {
     createInitialElectrolysisState,
     updateElectrolysis,
     predictElectrolysisProducts,
-    calculateCurrent,
     ELECTROLYTES,
     getProductColor
 } from '../../systems/ElectrolysisSystem'

@@ -98,17 +98,21 @@ export default function ElectrolysisPanel() {
     return (
         <div className="electrolysis-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeElectrolysisPanel() }}>
             <div className="electrolysis-panel" onClick={e => e.stopPropagation()}>
-                {/* Top Bar — estilo Microscópio Quântico */}
+                {/* Top Bar */}
                 <div className="panel-topbar">
                     <div className="panel-title-group">
                         <span className="panel-icon">⚡</span>
                         <h2>CÉLULA ELETROLÍTICA</h2>
                         <span className="panel-badge">ELETROQUÍMICA</span>
                     </div>
-                    <button className="panel-close" onClick={closeElectrolysisPanel}>✕</button>
+                    <div className="panel-controls">
+                        <button className="panel-close" onClick={closeElectrolysisPanel}>✕</button>
+                    </div>
                 </div>
 
-                <div className="panel-body">
+                <div className="panel-content">
+                    {/* SIDEBAR - Controles */}
+                    <div className="panel-sidebar">
                     {/* Electrolyte from Beakers */}
                     <div className="config-section">
                         <h3>🧪 Eletrólito {hasBeakerElectrolytes ? '(dos Béqueres)' : ''}</h3>
@@ -135,22 +139,6 @@ export default function ElectrolysisPanel() {
                             <div className="no-beakers-msg">
                                 <p>⚠️ Nenhum béquer com eletrólito disponível.</p>
                                 <p>Adicione NaCl, H₂SO₄, CuSO₄, NaOH, KI, ZnSO₄ ou AgNO₃ a um béquer usando o painel de reagentes.</p>
-                                <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: 8 }}>
-                                    Enquanto isso, selecione um eletrólito de referência abaixo:
-                                </p>
-                                <div className="electrolyte-grid" style={{ marginTop: 8 }}>
-                                    {Object.entries(ELECTROLYTES).map(([id, elec]) => (
-                                        <button
-                                            key={id}
-                                            className={`electrolyte-btn ${electrolysisElectrolyteId === id ? 'active' : ''}`}
-                                            onClick={() => { if (!electrolysisRunning) setElectrolysisElectrolyteId(id) }}
-                                            disabled={electrolysisRunning}
-                                        >
-                                            <span className="formula">{elec.formula}</span>
-                                            <span className="name">{elec.name}</span>
-                                        </button>
-                                    ))}
-                                </div>
                             </div>
                         )}
                     </div>
@@ -176,6 +164,22 @@ export default function ElectrolysisPanel() {
                         </div>
                     </div>
 
+                    {/* Power Button */}
+                    <div className="power-section">
+                        <div className={`status-dot ${electrolysisRunning ? 'on' : ''}`} />
+                        <button
+                            className={`power-btn ${electrolysisRunning ? 'running' : ''}`}
+                            onClick={handlePower}
+                        >
+                            {electrolysisRunning ? '⏹ Desligar' : '▶ Ligar'}
+                        </button>
+                        <div className={`status-dot ${electrolysisRunning ? 'on' : ''}`} />
+                    </div>
+
+                    </div> {/* End Sidebar */}
+
+                    {/* MAIN VIEWPORT - Gráficos e Monitores */}
+                    <div className="panel-main">
                     {/* Predicted Reaction */}
                     {products && (
                         <div className="config-section">
@@ -223,32 +227,8 @@ export default function ElectrolysisPanel() {
                         </div>
                     </div>
 
-                    {/* Power Button */}
-                    <div className="power-section">
-                        <div className={`status-dot ${electrolysisRunning ? 'on' : ''}`} />
-                        <button
-                            className={`power-btn ${electrolysisRunning ? 'running' : ''}`}
-                            onClick={handlePower}
-                        >
-                            {electrolysisRunning ? '⏹ Desligar' : '▶ Ligar'}
-                        </button>
-                        <div className={`status-dot ${electrolysisRunning ? 'on' : ''}`} />
-                    </div>
 
-                    {/* Concentration when running */}
-                    {electrolysisRunning && liveData.concentration > 0 && (
-                        <div className="config-section">
-                            <h3>📉 Concentração do Eletrólito</h3>
-                            <div className="monitor-grid">
-                                <div className="monitor-card" style={{ gridColumn: 'span 3' }}>
-                                    <div className="monitor-value" style={{ color: liveData.concentration < 0.01 ? '#ff6b6b' : '#00ff88' }}>
-                                        {liveData.concentration.toFixed(6)} M
-                                    </div>
-                                    <div className="monitor-label">Concentração Residual</div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    </div> {/* End Main Viewport */}
                 </div>
             </div>
         </div>

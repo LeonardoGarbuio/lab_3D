@@ -11,7 +11,7 @@ import type { Experiment } from '../data/experiments'
 // ═══════════════════════════════════════════════════════════════════════
 export interface LabObject {
     id: string
-    type: 'beaker' | 'test-tube' | 'erlenmeyer' | 'flask' | 'graduated-cylinder' | 'burette'
+    type: 'beaker' | 'test-tube' | 'erlenmeyer' | 'flask' | 'graduated-cylinder' | 'burette' | 'cylinder' | 'separating_funnel'
     position: [number, number, number]
     formula: string | null
     mols: number
@@ -73,6 +73,7 @@ interface LabState {
     selectedId: string | null
     pouringFromId: string | null
     draggingId: string | null
+    hoveredObjectId: string | null
     lastReaction: string | null
     analysisTarget: string | null
     reactionLog: ReactionLog[]
@@ -88,6 +89,7 @@ interface LabState {
     isNotebookOpen: boolean
     isQuantumMicroscopeOpen: boolean
     activeQuantumFormula: string | null
+    isQuantumZoomOpen: boolean
     isAtomicModelsOpen: boolean
     isPeriodicPropertiesOpen: boolean
     isNuclearPhysicsOpen: boolean
@@ -135,6 +137,7 @@ interface LabState {
 
     // Ações de UI
     selectObject: (id: string | null) => void
+    setHoveredObject: (id: string | null) => void
     openPeriodicTable: () => void
     closePeriodicTable: () => void
     openReagentPanel: () => void
@@ -145,6 +148,8 @@ interface LabState {
     closeNotebook: () => void
     openQuantumMicroscope: (formula?: string) => void
     closeQuantumMicroscope: () => void
+    openQuantumZoom: (formula?: string) => void
+    closeQuantumZoom: () => void
     isIntermolecularOpen: boolean
     openIntermolecular: () => void
     closeIntermolecular: () => void
@@ -249,48 +254,24 @@ interface LabState {
 const createInitialObjects = (): LabObject[] => {
     const objects: LabObject[] = []
     // 5 beakers na bancada central, bem espaçados
-    const positions: [number, number, number][] = [
-        [-0.8, 1.05, 0.35],   // Esquerda
-        [0.2, 1.05, 0.35],    // Centro-esquerda
-        [0.8, 1.05, 0.35],    // Centro
-        [1.4, 1.05, 0.35],    // Centro-direita
-        [2.0, 1.05, 0.35],    // Direita
-    ]
-    positions.forEach((pos, i) => {
+    for (let i = 0; i < 5; i++) {
         objects.push({
             id: `beaker-${i + 1}`,
             type: 'beaker',
-            position: pos,
-            formula: null,
-            mols: 0,
-            fillLevel: 0,
-            color: '#4ecdc4',
-            isBroken: false,
-            temperature: 25,
-            isHeating: false,
-            isShaking: false,
-            activeEffect: 'none',
-            effectColor: '#ffffff',
-            effectIntensity: 1,
-            ph: 7,
-            concentration: 0,
-            volume: 0,
-            phase: 'liquid',
-            boilingPoint: 100,
-            freezingPoint: 0,
-            isBoiling: false,
-            isFreezing: false,
-            density: 1.0,
-            isSealed: false,
-            pressure: 1.0,
-            enthalpy: 0,
+            position: [-2.5 + i * 1.2, 1.05, 0.5],
+            formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
+            isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+            activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+            ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+            boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+            density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
         })
-    })
+    }
     // Erlenmeyer — sob a bureta na bancada central
     objects.push({
         id: 'erlenmeyer-1',
         type: 'erlenmeyer' as any,
-        position: [-0.2, 1.02, -0.2],
+        position: [-1.0, 1.15, -0.5], // Embaixo da bureta
         formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
         isBroken: false, temperature: 25, isHeating: false, isShaking: false,
         activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
@@ -302,8 +283,8 @@ const createInitialObjects = (): LabObject[] => {
     objects.push({
         id: 'pipette-1',
         type: 'pipette' as any,
-        position: [-0.8, 1.35, 4.35],
-        formula: null, mols: 0, fillLevel: 0, color: '#87CEEB',
+        position: [-1.7, 1.55, 0.0],
+        formula: null, mols: 0, fillLevel: 0, color: '#ffffff',
         isBroken: false, temperature: 25, isHeating: false, isShaking: false,
         activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
         ph: 7, concentration: 0, volume: 0, phase: 'liquid',
@@ -314,14 +295,55 @@ const createInitialObjects = (): LabObject[] => {
     objects.push({
         id: 'roundflask-1',
         type: 'roundflask' as any,
-        position: [0.5, 1.12, 4.35],
-        formula: null, mols: 0, fillLevel: 0, color: '#ffe066',
+        position: [-2.5, 1.25, -0.5], // No tripé
+        formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
         isBroken: false, temperature: 25, isHeating: false, isShaking: false,
         activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
         ph: 7, concentration: 0, volume: 0, phase: 'liquid',
         boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
         density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
     })
+
+    // Proveta Graduada
+    objects.push({
+        id: 'cylinder-1',
+        type: 'cylinder' as any,
+        position: [2.8, 1.5, -0.5],
+        formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
+        isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+        activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+        ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+        boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+        density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
+    })
+
+    // Funil de Separação
+    objects.push({
+        id: 'separating_funnel-1',
+        type: 'separating_funnel' as any,
+        position: [0.2, 1.7, -0.5],
+        formula: null, mols: 0, fillLevel: 0, color: '#4ecdc4',
+        isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+        activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+        ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+        boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+        density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
+    })
+
+    // 5 Tubos de Ensaio
+    for (let i = 0; i < 5; i++) {
+        objects.push({
+            id: `test-tube-${i + 1}`,
+            type: 'test-tube',
+            position: [1.0 + i * 0.3, 1.57, -0.5], // alinhado aos furos do rack
+            formula: null, mols: 0, fillLevel: 0, color: '#ff6b6b',
+            isBroken: false, temperature: 25, isHeating: false, isShaking: false,
+            activeEffect: 'none', effectColor: '#ffffff', effectIntensity: 1,
+            ph: 7, concentration: 0, volume: 0, phase: 'liquid',
+            boilingPoint: 100, freezingPoint: 0, isBoiling: false, isFreezing: false,
+            density: 1.0, isSealed: false, pressure: 1.0, enthalpy: 0,
+        })
+    }
     return objects
 }
 
@@ -330,6 +352,7 @@ export const useLabStore = create<LabState>((set, get) => ({
     selectedId: null,
     pouringFromId: null,
     draggingId: null,
+    hoveredObjectId: null,
     lastReaction: null,
     analysisTarget: null,
     reactionLog: [],
@@ -341,6 +364,7 @@ export const useLabStore = create<LabState>((set, get) => ({
     isNotebookOpen: false,
     isQuantumMicroscopeOpen: false,
     activeQuantumFormula: null,
+    isQuantumZoomOpen: false,
     isAtomicModelsOpen: false,
     isPeriodicPropertiesOpen: false,
     isNuclearPhysicsOpen: false,
@@ -385,6 +409,7 @@ export const useLabStore = create<LabState>((set, get) => ({
 
     // UI
     selectObject: (id) => set({ selectedId: id }),
+    setHoveredObject: (id) => set({ hoveredObjectId: id }),
     openPeriodicTable: () => set({ isPeriodicTableOpen: true }),
     closePeriodicTable: () => set({ isPeriodicTableOpen: false }),
     openReagentPanel: () => set({ isReagentPanelOpen: true }),
@@ -395,6 +420,8 @@ export const useLabStore = create<LabState>((set, get) => ({
     closeNotebook: () => set({ isNotebookOpen: false }),
     openQuantumMicroscope: (formula) => set({ isQuantumMicroscopeOpen: true, activeQuantumFormula: formula || null }),
     closeQuantumMicroscope: () => set({ isQuantumMicroscopeOpen: false, activeQuantumFormula: null }),
+    openQuantumZoom: (formula) => set({ isQuantumZoomOpen: true, activeQuantumFormula: formula || null }),
+    closeQuantumZoom: () => set({ isQuantumZoomOpen: false }),
     openIntermolecular: () => set({ isIntermolecularOpen: true }),
     closeIntermolecular: () => set({ isIntermolecularOpen: false }),
     openSolidState: () => set({ isSolidStateOpen: true }),
@@ -726,7 +753,7 @@ export const useLabStore = create<LabState>((set, get) => ({
                     effectColor,
                     effectIntensity: 1,
                     temperature: finalTemp,
-                    customName: newFormula.includes('+') ? 'Mistura' : (effect !== 'none' ? (newFormula || undefined) : o.customName),
+                    customName: (newFormula ?? '').includes('+') ? 'Mistura' : (effect !== 'none' ? (newFormula || undefined) : o.customName),
                     element: undefined
                 }
                 return o

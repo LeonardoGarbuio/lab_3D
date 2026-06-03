@@ -62,10 +62,14 @@ export default function OrganicPanel() {
                         <h2>SÍNTESE ORGÂNICA</h2>
                         <span className="panel-badge">QUÍMICA ORGÂNICA</span>
                     </div>
-                    <button className="panel-close" onClick={closeOrganicPanel}>✕</button>
+                    <div className="panel-controls">
+                        <button className="panel-close" onClick={closeOrganicPanel}>✕</button>
+                    </div>
                 </div>
 
-                <div className="panel-body">
+                <div className="panel-content">
+                    {/* SIDEBAR - Controles */}
+                    <div className="panel-sidebar">
                     {/* Reaction selector */}
                     <div className="config-section">
                         <h3>🧪 Selecionar Reação</h3>
@@ -87,9 +91,32 @@ export default function OrganicPanel() {
                         </div>
                     </div>
 
+
+
+                    {/* Controls */}
+                    <div className="power-section">
+                        <button
+                            className={`control-btn ${organicStirring ? 'active-stir' : ''}`}
+                            onClick={() => setOrganicStirring(!organicStirring)}
+                            disabled={!organicIsActive}
+                        >
+                            🌀 {organicStirring ? 'Parar Agitação' : 'Agitar'}
+                        </button>
+                        <button
+                            className={`power-btn ${organicIsActive ? 'running' : ''}`}
+                            onClick={() => setOrganicIsActive(!organicIsActive)}
+                        >
+                            {organicIsActive ? '⏹ Parar' : '▶ Iniciar'}
+                        </button>
+                    </div>
+
+                    </div> {/* End Sidebar */}
+
+                    {/* MAIN VIEWPORT - Gráficos e Monitores */}
+                    <div className="panel-main">
                     {/* Reaction info */}
                     {reaction && (
-                        <div className="config-section">
+                        <div className="main-section">
                             <h3>📋 Detalhes</h3>
                             <div className="rxn-details">
                                 <p className="description">{reaction.description}</p>
@@ -138,7 +165,7 @@ export default function OrganicPanel() {
                     )}
 
                     {/* Progress */}
-                    <div className="config-section">
+                    <div className="main-section">
                         <h3>📊 Progresso</h3>
                         <div className="progress-container">
                             <div className="progress-bar">
@@ -171,22 +198,8 @@ export default function OrganicPanel() {
                         </div>
                     </div>
 
-                    {/* Controls */}
-                    <div className="power-section">
-                        <button
-                            className={`control-btn ${organicStirring ? 'active-stir' : ''}`}
-                            onClick={() => setOrganicStirring(!organicStirring)}
-                            disabled={!organicIsActive}
-                        >
-                            🌀 {organicStirring ? 'Parar Agitação' : 'Agitar'}
-                        </button>
-                        <button
-                            className={`power-btn ${organicIsActive ? 'running' : ''}`}
-                            onClick={() => setOrganicIsActive(!organicIsActive)}
-                        >
-                            {organicIsActive ? '⏹ Parar Reação' : '▶ Iniciar Reação'}
-                        </button>
-                    </div>
+
+                    </div> {/* End Main Viewport */}
                 </div>
             </div>
         </div>

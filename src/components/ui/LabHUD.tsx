@@ -9,6 +9,7 @@ import ExperimentPanel from './ExperimentPanel'
 import ExperimentGuide from './ExperimentGuide'
 import Notebook from './Notebook'
 import QuantumMicroscope from './QuantumMicroscope'
+import QuantumZoomHUD from './QuantumZoomHUD'
 import AtomicModels from './AtomicModels'
 import ElectronConfig from './ElectronConfig'
 import PeriodicProperties from './PeriodicProperties'
@@ -21,6 +22,7 @@ import DistillationPanel from './DistillationPanel'
 import SpectrometerPanel from './SpectrometerPanel'
 import CrystallizerPanel from './CrystallizerPanel'
 import OrganicPanel from './OrganicPanel'
+import StoichiometricHUD from './StoichiometricHUD'
 import './LabHUD.css'
 
 export default function LabHUD() {
@@ -30,8 +32,7 @@ export default function LabHUD() {
     const {
         selectedId, pouringFromId, lastReaction, analysisTarget, objects, reactionLog,
         currentExperiment, completedExperiments, experimentScore, isSoundEnabled, isFPSLocked,
-        cancelPouring, resetLab, startAnalysis, stopAnalysis, breakObject,
-        openPeriodicTable, openReagentPanel, openExperimentPanel, openNotebook,
+        resetLab, startAnalysis, stopAnalysis, breakObject,
         startHeating, stopHeating, startFreezing, shakeObject, coolDown, emptyObject,
         completeExperiment, quitExperiment, toggleSound,
     } = store
@@ -135,17 +136,11 @@ export default function LabHUD() {
                     </div>
                 )}
 
-                {/* POURING */}
-                {pouringFromId && (
-                    <div className="hud-panel hud-pouring">
-                        <h3>🫗 Despejar</h3>
-                        <p>Clique em outro béquer</p>
-                        <button onClick={cancelPouring}>Cancelar</button>
-                    </div>
-                )}
+                {/* POURING & STOICHIOMETRIC HUD */}
+                <StoichiometricHUD />
 
                 {/* FEEDBACK */}
-                {lastReaction && (
+                {lastReaction && !pouringFromId && (
                     <div className="hud-panel hud-reaction">
                         <p>{lastReaction}</p>
                     </div>
@@ -159,7 +154,16 @@ export default function LabHUD() {
                         <div className="analysis-content">
                             <div className="analysis-header">
                                 <div className="substance-color" style={{ backgroundColor: analysisObject.color }} />
-                                <div><h4>{analysisObject.customName || analysisObject.formula}</h4></div>
+                                <div>
+                                    <h4>{analysisObject.customName || analysisObject.formula}</h4>
+                                    <button 
+                                        className="hologram-btn" 
+                                        onClick={() => store.openQuantumMicroscope(analysisObject.formula || undefined)}
+                                        title="Projetar Holograma 3D (PubChem)"
+                                    >
+                                        🌐 Ver 3D Holograma
+                                    </button>
+                                </div>
                             </div>
                             <table className="analysis-table"><tbody>
                                 {/* Informações do elemento puro */}
@@ -229,9 +233,11 @@ export default function LabHUD() {
                 )}
 
                 {/* INSTRUÇÕES */}
-                <div className="hud-panel hud-instructions mini">
-                    <p>🖱️ Clique = Selecionar | 🔄 Duplo clique = Despejar</p>
-                </div>
+                {!pouringFromId && (
+                    <div className="hud-panel hud-instructions mini">
+                        <p>🖱️ Clique = Selecionar | 🔄 Duplo clique = Despejar</p>
+                    </div>
+                )}
             </div>
 
             {/* GUIA DE EXPERIMENTO ATIVO */}
@@ -268,6 +274,10 @@ export default function LabHUD() {
             <ExperimentPanel isOpen={store.isExperimentPanelOpen} onClose={store.closeExperimentPanel} onStartExperiment={store.startExperiment} />
             <Notebook isOpen={store.isNotebookOpen} onClose={store.closeNotebook} />
             <QuantumMicroscope isOpen={store.isQuantumMicroscopeOpen} onClose={store.closeQuantumMicroscope} initialFormula={store.activeQuantumFormula || 'H2O'} />
+
+            {/* Fase 3 */}
+            <QuantumZoomHUD />
+
             <AtomicModels isOpen={store.isAtomicModelsOpen} onClose={store.closeAtomicModels} />
             <ElectronConfig isOpen={store.isElectronConfigOpen} onClose={store.closeElectronConfig} />
             <PeriodicProperties isOpen={store.isPeriodicPropertiesOpen} onClose={store.closePeriodicProperties} />

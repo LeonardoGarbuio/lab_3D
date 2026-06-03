@@ -31,7 +31,7 @@ export default function Condenser({
 
     useFrame((state) => {
         if (waterRef.current && isActive) {
-            const mat = waterRef.current.material as THREE.meshStandardMaterial
+            const mat = waterRef.current.material as THREE.MeshStandardMaterial
             mat.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.1
         }
     })

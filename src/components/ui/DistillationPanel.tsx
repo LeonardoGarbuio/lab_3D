@@ -79,17 +79,21 @@ export default function DistillationPanel() {
     return (
         <div className="distillation-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeDistillationPanel() }}>
             <div className="distillation-panel" onClick={e => e.stopPropagation()}>
-                {/* Top Bar — estilo Microscópio Quântico */}
+                {/* Top Bar */}
                 <div className="panel-topbar">
                     <div className="panel-title-group">
                         <span className="panel-icon">🌡️</span>
                         <h2>DESTILAÇÃO FRACIONADA</h2>
                         <span className="panel-badge">SEPARAÇÃO</span>
                     </div>
-                    <button className="panel-close" onClick={closeDistillationPanel}>✕</button>
+                    <div className="panel-controls">
+                        <button className="panel-close" onClick={closeDistillationPanel}>✕</button>
+                    </div>
                 </div>
 
-                <div className="panel-body">
+                <div className="panel-content">
+                    {/* SIDEBAR - Controles */}
+                    <div className="panel-sidebar">
                     {/* Mixture Selector */}
                     <div className="config-section">
                         <h3>🧪 Mistura {hasBeakerMixtures ? '(dos Béqueres)' : ''}</h3>
@@ -115,23 +119,7 @@ export default function DistillationPanel() {
                         ) : (
                             <div className="no-beakers-msg">
                                 <p>⚠️ Nenhum béquer com mistura destilável disponível.</p>
-                                <p>Adicione Petróleo, Etanol+Água, etc. a um béquer.</p>
-                                <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: 8 }}>
-                                    Enquanto isso, selecione uma mistura de referência abaixo:
-                                </p>
-                                <div className="mixture-grid" style={{ marginTop: 8 }}>
-                                    {Object.entries(DISTILLATION_MIXTURES).map(([id, mix]) => (
-                                        <button
-                                            key={id}
-                                            className={`mixture-btn ${distillationMixtureId === id ? 'active' : ''}`}
-                                            onClick={() => { if (!distillationHeating) setDistillationMixtureId(id) }}
-                                            disabled={distillationHeating}
-                                        >
-                                            <span className="formula">{mix.name}</span>
-                                            <span className="name">{mix.components.length} comp.</span>
-                                        </button>
-                                    ))}
-                                </div>
+                                <p>Adicione Petróleo, Etanol+Água, etc. a um béquer na mesa.</p>
                             </div>
                         )}
                     </div>
@@ -146,6 +134,22 @@ export default function DistillationPanel() {
                         </div>
                     </div>
 
+                    {/* Power Button */}
+                    <div className="power-section">
+                        <div className={`status-dot ${distillationHeating ? 'on' : ''}`} />
+                        <button
+                            className={`power-btn ${distillationHeating ? 'running' : ''}`}
+                            onClick={handlePower}
+                        >
+                            {distillationHeating ? '🧊 Desligar Aquecimento' : '🔥 Aquecer'}
+                        </button>
+                        <div className={`status-dot ${distillationHeating ? 'on' : ''}`} />
+                    </div>
+
+                    </div> {/* End Sidebar */}
+
+                    {/* MAIN VIEWPORT - Gráficos e Monitores */}
+                    <div className="panel-main">
                     {/* Monitors */}
                     <div className="config-section">
                         <h3>📊 Estado do Sistema</h3>
@@ -212,17 +216,8 @@ export default function DistillationPanel() {
                         </div>
                     )}
 
-                    {/* Power Button */}
-                    <div className="power-section">
-                        <div className={`status-dot ${distillationHeating ? 'on' : ''}`} />
-                        <button
-                            className={`power-btn ${distillationHeating ? 'running' : ''}`}
-                            onClick={handlePower}
-                        >
-                            {distillationHeating ? '🧊 Desligar Aquecimento' : '🔥 Aquecer'}
-                        </button>
-                        <div className={`status-dot ${distillationHeating ? 'on' : ''}`} />
-                    </div>
+
+                    </div> {/* End Main Viewport */}
                 </div>
             </div>
         </div>

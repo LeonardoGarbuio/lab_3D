@@ -45,7 +45,7 @@ export default function InteractiveBeaker({
 
     const [isHovered, setIsHovered] = useState(false)
 
-    const { selectedId, pouringFromId, selectObject, startPouring, pourInto, cancelPouring } = useLabStore()
+    const { selectedId, pouringFromId, selectObject, startPouring, pourInto, cancelPouring, setHoveredObject } = useLabStore()
 
     const isSelected = selectedId === id
     const isPouringSource = pouringFromId === id
@@ -156,8 +156,8 @@ export default function InteractiveBeaker({
                 visible={false}
                 onClick={handleClick}
                 onDoubleClick={handleDoubleClick}
-                onPointerEnter={() => { setIsHovered(true); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
-                onPointerLeave={() => { setIsHovered(false); document.body.style.cursor = 'default' }}
+                onPointerEnter={() => { setIsHovered(true); setHoveredObject(id); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
+                onPointerLeave={() => { setIsHovered(false); setHoveredObject(null); document.body.style.cursor = 'default' }}
             >
                 <cylinderGeometry args={[glassRadius * 1.5, glassRadius * 1.5, glassHeight * 1.5, 16]} />
                 <meshBasicMaterial transparent opacity={0} />

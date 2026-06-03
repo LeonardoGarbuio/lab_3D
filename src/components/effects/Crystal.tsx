@@ -85,7 +85,7 @@ export function Crystal({
             {/* Cristal principal */}
             <mesh ref={meshRef} castShadow>
                 {renderGeometry()}
-                <meshStandardMaterial
+                <meshPhysicalMaterial
                     color={type.color}
                     transparent
                     opacity={0.8}

@@ -476,6 +476,7 @@ export function createDefaultSafetyState(): LabSafetyState {
         handlingAcid: false,
         handlingBase: false,
         handlingFlammable: false,
+        handlingToxic: false,
     }
 }
 

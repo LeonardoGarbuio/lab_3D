@@ -79,20 +79,6 @@ export default function TestTubeRack({
                 <meshStandardMaterial color="#5d4a3a" roughness={0.8} />
             </mesh>
 
-            {/* Tubos de ensaio */}
-            {tubes.map((tube, index) => (
-                <TestTube
-                    key={index}
-                    position={[
-                        -rackWidth / 2 + holeSpacing * (index + 1),
-                        rackHeight + 0.4,
-                        0
-                    ]}
-                    liquidColor={tube.color}
-                    liquidLevel={tube.level}
-                    scale={0.5}
-                />
-            ))}
         </group>
     )
 }

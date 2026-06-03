@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react'
 import {
-    SafetyWarning,
-    HazardLevel,
+    type SafetyWarning,
+    type HazardLevel,
     getHazardColor,
     sortWarningsByPriority
 } from '../../systems/SafetySystem'
