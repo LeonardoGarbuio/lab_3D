@@ -1,5 +1,3 @@
-// src/workers/physics.worker.ts
-// ═══════════════════════════════════════════════════════════════════════
 // 🧠 CÉREBRO — Web Worker de Física
 // Roda num thread separado do browser, isolado da Main Thread.
 // Recebe comandos via postMessage, executa a simulação, e devolve
@@ -61,6 +59,14 @@ function startLoop(): void {
 
         // Executar simulação
         engine.update()
+
+        // INTEGRAÇÃO: Verificar reações ativas durante o frame
+        const state = engine.getThermodynamicState ? engine.getThermodynamicState() : { tempCelsius: 25 }
+        if (state.tempCelsius >= 350) {
+            if (typeof (engine as any).processChemicalTransformations === 'function') {
+                (engine as any).processChemicalTransformations();
+            }
+        }
 
         // Enviar posições para a Main Thread
         const buffer = engine.getPositionBuffer()
