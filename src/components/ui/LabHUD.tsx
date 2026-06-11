@@ -1,7 +1,7 @@
 // src/components/ui/LabHUD.tsx
 // Interface COMPLETA do laboratório com TODAS as funcionalidades
 import { useLabStore } from '../../stores/useLabStore'
-import { COMMON_SUBSTANCES } from '../../systems/ChemistryEngine'
+import { ALL_SUBSTANCES } from '../../systems/ChemistryEngine'
 import { getPhaseAtTemperature, getPhaseNamePt, getPhaseColor } from '../../data/elements'
 import PeriodicTable from './PeriodicTable'
 import ReagentPanel from './ReagentPanel'
@@ -23,7 +23,27 @@ import SpectrometerPanel from './SpectrometerPanel'
 import CrystallizerPanel from './CrystallizerPanel'
 import OrganicPanel from './OrganicPanel'
 import StoichiometricHUD from './StoichiometricHUD'
+import React from 'react'
+import CabinetPanel from './CabinetPanel'
 import './LabHUD.css'
+
+function formatFormulaHTML(formula: string): React.ReactNode {
+    if (!formula) return ''
+    // Split on letters/brackets vs digits to render digits as <sub> safely in React
+    const parts = formula.split(/(?<=[A-Za-z\]\)])(\d+)/g)
+    if (parts.length === 1) return formula
+    
+    return (
+        <>
+            {parts.map((part, i) => {
+                if (i % 2 !== 0 && part.match(/^\d+$/)) {
+                    return <sub key={i}>{part}</sub>
+                }
+                return part
+            })}
+        </>
+    )
+}
 
 export default function LabHUD() {
     const store = useLabStore()
@@ -33,7 +53,7 @@ export default function LabHUD() {
         selectedId, pouringFromId, lastReaction, analysisTarget, objects, reactionLog,
         currentExperiment, completedExperiments, experimentScore, isSoundEnabled, isFPSLocked,
         resetLab, startAnalysis, stopAnalysis, breakObject,
-        startHeating, stopHeating, startFreezing, shakeObject, coolDown, emptyObject,
+        startHeating, stopHeating, startShocking, stopShocking, startFreezing, shakeObject, coolDown, emptyObject,
         completeExperiment, quitExperiment, toggleSound,
     } = store
 
@@ -42,7 +62,7 @@ export default function LabHUD() {
     const getSubstanceInfo = () => {
         if (!selectedObject?.formula) return null
         if (selectedObject.element) return { name: selectedObject.element.namePt, formula: selectedObject.element.symbol, molarMass: selectedObject.element.atomicMass }
-        const known = COMMON_SUBSTANCES[selectedObject.formula]
+        const known = ALL_SUBSTANCES[selectedObject.formula]
         if (known) return { name: known.name, formula: known.formula, molarMass: known.molarMass, ph: known.ph }
         return { name: selectedObject.customName || selectedObject.formula, formula: selectedObject.formula, molarMass: null }
     }
@@ -55,6 +75,22 @@ export default function LabHUD() {
         if (selectedId) {
             if (isSoundEnabled) playSound('break')
             breakObject(selectedId)
+        }
+    }
+
+    const getGlasswareName = (type: string) => {
+        switch (type) {
+            case 'beaker': return 'Béquer'
+            case 'test-tube': return 'Tubo de Ensaio'
+            case 'erlenmeyer': return 'Erlenmeyer'
+            case 'roundflask': return 'Balão Redondo'
+            case 'flask': return 'Balão de Vidro'
+            case 'graduated-cylinder':
+            case 'cylinder': return 'Proveta'
+            case 'burette': return 'Bureta'
+            case 'separating_funnel': return 'Funil de Separação'
+            case 'pipette': return 'Pipeta'
+            default: return 'Recipiente'
         }
     }
 
@@ -73,6 +109,7 @@ export default function LabHUD() {
                 {/* CONTROLES GERAIS */}
                 <div className="hud-panel hud-menu">
                     <div className="controls-row">
+                        <button className="icon-btn" onClick={store.openCabinet} title="Armário de Vidrarias">🗄️</button>
                         <button className={`icon-btn ${isSoundEnabled ? 'active' : ''}`} onClick={toggleSound} title="Som">
                             {isSoundEnabled ? '🔊' : '🔇'}
                         </button>
@@ -84,7 +121,7 @@ export default function LabHUD() {
                 {selectedObject && (
                     <div className="hud-panel hud-selected">
                         <h3>
-                            Béquer {selectedObject.id.split('-')[1]}
+                            {getGlasswareName(selectedObject.type).toUpperCase()} {selectedObject.id.split('-')[1]}
                             {selectedObject.isHeating && <span className="temp-badge">🔥 {selectedObject.temperature}°C</span>}
                         </h3>
 
@@ -96,9 +133,9 @@ export default function LabHUD() {
                                     <>
                                         <div className="substance-row">
                                             <div className="substance-preview" style={{ backgroundColor: selectedObject.color }} />
-                                            <div>
-                                                <span className="substance-name">{substance.name}</span>
-                                                <span className="substance-formula">{substance.formula}</span>
+                                            <div className="substance-identity">
+                                                <h2 className="substance-formula-display">{formatFormulaHTML(substance.formula)}</h2>
+                                                <div className="substance-name-display">{substance.name}</div>
                                             </div>
                                         </div>
                                         <div className="mols-info">
@@ -123,6 +160,7 @@ export default function LabHUD() {
                                         <>
                                             <button onClick={() => startAnalysis(selectedId!)} title="Analisar">🔬</button>
                                             <button onClick={() => { if (isSoundEnabled) playSound('heat'); selectedObject.isHeating ? stopHeating(selectedId!) : startHeating(selectedId!) }} className={selectedObject.isHeating ? 'active hot' : ''} title="Aquecer">🔥</button>
+                                            <button onClick={() => { selectedObject.isShocking ? stopShocking(selectedId!) : startShocking(selectedId!) }} className={selectedObject.isShocking ? 'active spark' : ''} title="Descarga Elétrica">⚡</button>
                                             <button onClick={() => startFreezing(selectedId!)} className={selectedObject.temperature < 25 ? 'active cold' : ''} title="Congelar">🧊</button>
                                             <button onClick={() => { if (isSoundEnabled) playSound('bubbles'); shakeObject(selectedId!) }} title="Agitar">🌀</button>
                                             <button onClick={() => coolDown(selectedId!)} title="Temp. Ambiente (25°C)">🌡️</button>
@@ -195,7 +233,7 @@ export default function LabHUD() {
                                 })()}
                                 {/* Informações de substâncias compostas */}
                                 {!analysisElement && analysisObject.formula && (() => {
-                                    const sub = COMMON_SUBSTANCES[analysisObject.formula]
+                                    const sub = ALL_SUBSTANCES[analysisObject.formula]
                                     if (sub) {
                                         return (
                                             <>
@@ -289,6 +327,7 @@ export default function LabHUD() {
             <SpectrometerPanel />
             <CrystallizerPanel />
             <OrganicPanel />
+            <CabinetPanel />
         </>
     )
 }

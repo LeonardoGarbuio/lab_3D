@@ -33,7 +33,7 @@ export interface Substance {
 }
 
 
-export const COMMON_SUBSTANCES: Record<string, Substance> = {
+const BASE_SUBSTANCES: Record<string, Substance> = {
     // ÁCIDOS
     'HCl': { formula: 'HCl', name: 'Ácido Clorídrico', molarMass: 36.46, color: '#e8e8e8', phase: 'aqueous', ph: 1, category: 'acid', isCorrosive: true, corrosionStrength: 7, isToxic: true },
     'H2SO4': { formula: 'H2SO4', name: 'Ácido Sulfúrico', molarMass: 98.08, color: '#f0f0e8', phase: 'liquid', ph: 0.5, category: 'acid', isCorrosive: true, corrosionStrength: 9, isToxic: true, incompatibleWith: ['H2O'] },
@@ -62,6 +62,7 @@ export const COMMON_SUBSTANCES: Record<string, Substance> = {
     'CaCl2': { formula: 'CaCl2', name: 'Cloreto de Cálcio', molarMass: 110.98, color: '#fff8dc', phase: 'solid', category: 'salt', flameColor: '#ff6600' },
     'SrCl2': { formula: 'SrCl2', name: 'Cloreto de Estrôncio', molarMass: 158.53, color: '#ffe4e1', phase: 'solid', category: 'salt', flameColor: '#dc143c' },
     'LiCl': { formula: 'LiCl', name: 'Cloreto de Lítio', molarMass: 42.39, color: '#fff5ee', phase: 'solid', category: 'salt', flameColor: '#ff0000' },
+    'CuS': { formula: 'CuS', name: 'Sulfeto de Cobre', molarMass: 95.61, color: '#1a1a1a', phase: 'solid', category: 'salt' },
     'Pb(NO3)2': { formula: 'Pb(NO3)2', name: 'Nitrato de Chumbo', molarMass: 331.2, color: '#f5f5f5', phase: 'aqueous', ph: 5, category: 'salt', isToxic: true },
     'KI': { formula: 'KI', name: 'Iodeto de Potássio', molarMass: 166.0, color: '#f5f5f5', phase: 'aqueous', ph: 7, category: 'salt' },
 
@@ -93,6 +94,11 @@ export const COMMON_SUBSTANCES: Record<string, Substance> = {
     // ORGÂNICOS
     'C6H12O6': { formula: 'C6H12O6', name: 'Glicose', molarMass: 180.16, color: '#fffaf0', phase: 'solid', category: 'organic' },
     'C12H22O11': { formula: 'C12H22O11', name: 'Sacarose', molarMass: 342.3, color: '#fffaf0', phase: 'solid', category: 'organic' },
+
+    // ESPECIAIS / FICÇÃO
+    'UF6': { formula: 'UF6', name: 'Hexafluoreto de Urânio', molarMass: 352.02, color: '#e0e0e0', phase: 'gas', category: 'gas', isToxic: true, isCorrosive: true },
+    'U235': { formula: 'U235', name: 'Urânio-235 Enriquecido', molarMass: 235.04, color: '#00ff00', phase: 'solid', category: 'metal', isToxic: true },
+    'Kryptonite': { formula: 'KrPt', name: 'Kriptonita', molarMass: 450.0, color: '#00ff00', phase: 'solid', category: 'salt', isToxic: true },
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -247,6 +253,32 @@ export const REACTIONS: ChemicalReaction[] = [
         productColor: '#4169e1',
         exothermic: false,
     },
+    
+    // REAÇÕES ESPECIAIS (URÂNIO E KRIPTONITA)
+    {
+        id: 'uranium-enrichment',
+        reactants: ['UF6', 'H2'], // Representação simplificada para o jogo
+        products: ['U235', 'HF'],
+        equation: 'UF₆ + H₂ → U²³⁵ + HF (Simplificado)',
+        description: 'Enriquecimento: O UF6 gasoso é reduzido/centrifugado gerando Urânio Enriquecido brilhante.',
+        type: 'decomposition',
+        effect: 'glow',
+        effectColor: '#00ff00',
+        productColor: '#00ff00',
+        exothermic: true,
+    },
+    {
+        id: 'kryptonite-synthesis',
+        reactants: ['CaCO3', 'CuSO4'], // Reação sci-fi completamente fictícia
+        products: ['Kryptonite', 'H2O'],
+        equation: 'CaCO₃ + CuSO₄ + Radiação → KrPt (Kriptonita)',
+        description: 'Síntese Sci-Fi: Calcário e Sulfato de Cobre fundem-se em um cristal alienígena verde brilhante!',
+        type: 'synthesis',
+        effect: 'precipitate',
+        effectColor: '#39ff14',
+        productColor: '#00ff00',
+        exothermic: true,
+    },
     {
         id: 'fecl3-naoh',
         reactants: ['FeCl3', 'NaOH'],
@@ -381,10 +413,56 @@ export const REACTIONS: ChemicalReaction[] = [
 import { EXPANDED_REACTIONS, EXPANDED_SUBSTANCES } from './ExpandedReactions'
 
 // Mesclar substâncias
-export const ALL_SUBSTANCES = { ...COMMON_SUBSTANCES, ...EXPANDED_SUBSTANCES }
+import { MolecularCalculator } from '../physics/MolecularCalculator'
+import { NamingEngine } from '../physics/NamingEngine'
+
+export const ALL_SUBSTANCES = new Proxy({}, {
+    get: (_target, prop: string) => {
+        // Fix circular dependency: check objects dynamically
+        if (BASE_SUBSTANCES[prop]) return BASE_SUBSTANCES[prop];
+        if (EXPANDED_SUBSTANCES && EXPANDED_SUBSTANCES[prop]) return EXPANDED_SUBSTANCES[prop];
+        
+        // Procedural generation for unknown formulas
+        if (typeof prop === 'string' && prop.match(/^[A-Z]/)) {
+            const mass = MolecularCalculator.molarMass(prop);
+            if (mass > 0) {
+                let phase = 'solid';
+                if (mass < 40) phase = 'gas';
+                else if (mass < 100) phase = 'liquid';
+                
+                return {
+                    formula: prop,
+                    name: NamingEngine.generateName(prop), // <--- AGORA USA O MOTOR DE NOMENCLATURA
+                    molarMass: mass,
+                    color: '#cccccc',
+                    phase: phase,
+                    category: 'solid'
+                };
+            }
+        }
+        return undefined;
+    }
+}) as Record<string, Substance>;
 
 // Mesclar todas as reações
-export const ALL_REACTIONS = [...REACTIONS, ...EXPANDED_REACTIONS]
+export const ALL_REACTIONS = new Proxy([], {
+    get: (_target, prop) => {
+        if (prop === 'length') return REACTIONS.length + (EXPANDED_REACTIONS?.length || 0);
+        if (typeof prop === 'string' && !isNaN(Number(prop))) {
+            const index = Number(prop);
+            if (index < REACTIONS.length) return REACTIONS[index];
+            return EXPANDED_REACTIONS[index - REACTIONS.length];
+        }
+        if (prop === Symbol.iterator) {
+            return function* () {
+                yield* REACTIONS;
+                if (EXPANDED_REACTIONS) yield* EXPANDED_REACTIONS;
+            };
+        }
+        // Fallback for array methods
+        return [...REACTIONS, ...(EXPANDED_REACTIONS || [])][prop as any];
+    }
+}) as ChemicalReaction[];
 
 // ═══════════════════════════════════════════════════════════════════════
 // FUNÇÕES — AGORA COM TERMODINÂMICA REAL
@@ -392,6 +470,100 @@ export const ALL_REACTIONS = [...REACTIONS, ...EXPANDED_REACTIONS]
 
 import { ReactionEvaluator } from '../physics/ReactionEvaluator'
 import type { ReactionResult } from '../physics/ReactionEvaluator'
+
+export interface MixtureResult {
+    formulas: string[];
+    effect: string;
+    effectColor: string;
+    color: string;
+    deltaH: number;
+    description: string;
+    exothermic: boolean;
+}
+
+/**
+ * Resolve uma mistura de N substâncias iterativamente.
+ * Ex: ['Ti', 'H2SO4', 'Br2'] -> Encontra a reação mais favorável, reage, e repete.
+ */
+export function resolveMixture(formulas: string[], tempCelsius: number = 25, isShocking: boolean = false): MixtureResult {
+    let currentFormulas = [...formulas];
+    let totalDeltaH = 0;
+    let finalEffect = 'none';
+    let finalEffectColor = '#ffffff';
+    let descriptions: string[] = [];
+    let hasReacted = false;
+
+    // Loop de Equilíbrio (máx 10 iterações para evitar loop infinito)
+    let iterations = 0;
+    while (iterations < 10) {
+        let bestReaction: ReactionResult | null = null;
+        let r1Index = -1;
+        let r2Index = -1;
+
+        // Tentar todas as combinações (pares)
+        for (let i = 0; i < currentFormulas.length; i++) {
+            for (let j = i; j < currentFormulas.length; j++) { // j=i permite decomposição de substância única
+                const r1 = currentFormulas[i];
+                const r2 = currentFormulas[j];
+
+                // Pular reações de solvente inerte se não for estritamente necessário
+                // O avaliador já diz se é viável
+                const result = ReactionEvaluator.evaluate(r1, r2, tempCelsius, isShocking);
+                
+                if (result && result.viable) {
+                    if (!bestReaction || (result.deltaG !== null && bestReaction.deltaG !== null && result.deltaG < bestReaction.deltaG)) {
+                        bestReaction = result;
+                        r1Index = i;
+                        r2Index = j;
+                    }
+                }
+            }
+        }
+
+        if (!bestReaction) break; // Nenhuma reação espontânea restante!
+
+        hasReacted = true;
+        totalDeltaH += bestReaction.deltaH || 0;
+        finalEffect = bestReaction.effectType === 'none' ? 'glow' : bestReaction.effectType;
+        finalEffectColor = bestReaction.effectColor;
+        descriptions.push(bestReaction.description);
+
+        // Remover reagentes consumidos e adicionar produtos
+        if (r1Index === r2Index) {
+            currentFormulas.splice(r1Index, 1);
+        } else {
+            // Remover o maior índice primeiro para não afetar o array
+            currentFormulas.splice(Math.max(r1Index, r2Index), 1);
+            currentFormulas.splice(Math.min(r1Index, r2Index), 1);
+        }
+
+        bestReaction.products.forEach(p => {
+            currentFormulas.push(p.formula);
+        });
+
+        iterations++;
+    }
+
+    // Misturar cores dos produtos finais
+    let finalColor = '#ffffff';
+    if (currentFormulas.length > 0) {
+        finalColor = ALL_SUBSTANCES[currentFormulas[0]]?.color || '#cccccc';
+        for (let i = 1; i < currentFormulas.length; i++) {
+            const subColor = ALL_SUBSTANCES[currentFormulas[i]]?.color || '#cccccc';
+            finalColor = mixColors(finalColor, subColor);
+        }
+    }
+
+    return {
+        formulas: currentFormulas,
+        effect: finalEffect,
+        effectColor: finalEffectColor,
+        color: finalColor,
+        deltaH: totalDeltaH,
+        description: hasReacted ? descriptions.join(' | ') : 'Mistura sem reação',
+        exothermic: totalDeltaH < 0
+    };
+}
 
 /**
  * Encontra e avalia uma reação entre duas substâncias.

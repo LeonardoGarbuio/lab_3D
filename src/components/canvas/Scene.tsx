@@ -195,9 +195,7 @@ function LabObjects() {
               key={obj.id}
               id={obj.id}
               position={obj.position}
-              formula={obj.formula}
-              fillLevel={obj.fillLevel}
-              color={obj.color}
+              components={[{ id: obj.formula || 'unknown', amount: obj.fillLevel, color: obj.color }]}
               scale={1.5}
             />
           )

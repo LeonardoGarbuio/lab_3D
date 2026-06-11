@@ -63,6 +63,8 @@ export const EXPANDED_SUBSTANCES: Record<string, Substance> = {
     'C6H6': { formula: 'C6H6', name: 'Benzeno', molarMass: 78.11, color: '#fffacd', phase: 'liquid', category: 'organic', isFlammable: true, isToxic: true },
     'C3H8O3': { formula: 'C3H8O3', name: 'Glicerina', molarMass: 92.09, color: '#f0f8ff', phase: 'liquid', category: 'organic' },
     'C6H10O5': { formula: 'C6H10O5', name: 'Amido', molarMass: 162.14, color: '#ffffff', phase: 'solid', category: 'organic' },
+    'C': { formula: 'C', name: 'Carbono', molarMass: 12.01, color: '#333333', phase: 'solid', category: 'organic', isFlammable: true },
+    'CH4': { formula: 'CH4', name: 'Metano', molarMass: 16.04, color: '#f5f5f5', phase: 'gas', category: 'gas', isFlammable: true },
 }
 
 
@@ -426,6 +428,19 @@ export const EXPANDED_REACTIONS: ChemicalReaction[] = [
         productColor: '#e8e8e8',
         exothermic: true,
         requiredTemp: { min: 460, max: 5000 },
+    },
+    {
+        id: 'c-o2',
+        reactants: ['C', 'O2'],
+        products: ['CO2'],
+        equation: 'C + O₂ → CO₂',
+        description: 'Combustão do Carbono: Produção de Dióxido de Carbono',
+        type: 'combustion',
+        effect: 'fire',
+        effectColor: '#ff6600',
+        productColor: '#e8e8e8',
+        exothermic: true,
+        requiredTemp: { min: 400, max: 5000 },
     },
 
     // ═══════════════════════════════════════════════════════════════════

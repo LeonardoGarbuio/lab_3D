@@ -22,6 +22,36 @@ export default function QuantumZoomHUD() {
 
   if (!isQuantumZoomOpen) return null
 
+  // Extract primary element from formula
+  const match = activeQuantumFormula?.match(/^[A-Z][a-z]?/)
+  const symbol = match ? match[0] : 'H'
+
+  const atomicNumbers: Record<string, number> = {
+      'H': 1, 'He': 2, 'Li': 3, 'Be': 4, 'B': 5, 'C': 6, 'N': 7, 'O': 8, 'F': 9, 'Ne': 10,
+      'Na': 11, 'Mg': 12, 'Al': 13, 'Si': 14, 'P': 15, 'S': 16, 'Cl': 17, 'Ar': 18,
+      'K': 19, 'Ca': 20, 'Fe': 26, 'Cu': 29, 'Zn': 30, 'Ag': 47, 'Au': 79, 'Hg': 80, 'Pb': 82, 'U': 92
+  }
+  
+  const Z = atomicNumbers[symbol] || 1
+  const neutrons = Math.round(Z * 1.2) // approximation
+  
+  const getElectronShells = (z: number) => {
+    const shells = []
+    let remaining = z
+    const maxShells = [2, 8, 18, 32, 32, 18, 8]
+    for (let max of maxShells) {
+      if (remaining <= 0) break
+      const fill = Math.min(remaining, max)
+      shells.push(fill)
+      remaining -= fill
+    }
+    return shells
+  }
+  
+  const shells = getElectronShells(Z)
+  const shellLabels = ['K', 'L', 'M', 'N', 'O', 'P', 'Q']
+  const shellDistribution = shells.map((count, i) => `${shellLabels[i]}=${count}`).join(', ')
+
   const handleQuantumLeap = () => {
     // Disparar evento para o componente 3D
     window.dispatchEvent(new Event('trigger-quantum-leap'))
@@ -55,12 +85,18 @@ export default function QuantumZoomHUD() {
 
       <div className="qz-hud-content">
         <div className="qz-hud-panel left-panel">
-          <h3>Dados do Átomo</h3>
-          <p><strong>Alvo:</strong> {activeQuantumFormula || 'Desconhecido'}</p>
-          <p><strong>Nuvem de Probabilidade:</strong> Ativada</p>
+          <h3>Dados do Átomo Alvo ({symbol})</h3>
+          <p><strong>Número Atômico (Z):</strong> {Z} Prótons</p>
+          <p><strong>Nêutrons:</strong> ~{neutrons}</p>
+          <p><strong>Total de Elétrons:</strong> {Z}</p>
+          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(0,255,255,0.1)', borderRadius: '4px', borderLeft: '3px solid #00ffff' }}>
+            <p style={{ margin: 0 }}><strong>Distribuição de Bohr:</strong></p>
+            <p style={{ margin: '0.2rem 0 0 0', fontFamily: 'monospace', color: '#00ffff' }}>[{shellDistribution}]</p>
+          </div>
+          <p style={{ marginTop: '1rem' }}><strong>Nuvem de Probabilidade:</strong> Ativada</p>
           <p><strong>Escala:</strong> ~10⁻¹⁰ metros</p>
           <p className="qz-hud-desc">
-            Você está visualizando a densidade de probabilidade de encontrar um elétron (Equação de Schrödinger).
+            Você está visualizando a densidade de probabilidade de encontrar um elétron usando a aproximação de Schrödinger e o modelo em camadas de Bohr.
           </p>
         </div>
 

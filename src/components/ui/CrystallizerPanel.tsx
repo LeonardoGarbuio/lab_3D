@@ -3,6 +3,9 @@
 import { useLabStore } from '../../stores/useLabStore'
 import { CRYSTAL_SUBSTANCES, getSolubilityForSubstance } from '../../systems/CrystallizationSystem'
 import { useState, useEffect, useRef } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
+import { Crystal } from '../effects/Crystal'
 import './CrystallizerPanel.css'
 
 export default function CrystallizerPanel() {
@@ -18,11 +21,20 @@ export default function CrystallizerPanel() {
         objects,
     } = useLabStore()
 
-    const [liveData, setLiveData] = useState({
+    const [liveData, setLiveData] = useState<{
+        temperature: number;
+        saturation: number;
+        crystalsFormed: number;
+        concentration: number;
+        crystallizationRate: number;
+        crystals: any[];
+    }>({
         temperature: 25,
         saturation: 0,
         crystalsFormed: 0,
         concentration: 0,
+        crystallizationRate: 0,
+        crystals: [],
     })
 
     const intervalRef = useRef<number | null>(null)
@@ -37,6 +49,8 @@ export default function CrystallizerPanel() {
                         saturation: data.saturation || 0,
                         crystalsFormed: data.crystalsFormed || 0,
                         concentration: data.concentration || 0,
+                        crystallizationRate: data.crystallizationRate || 0,
+                        crystals: data.crystals || [],
                     })
                 }
             }, 300)
@@ -183,6 +197,44 @@ export default function CrystallizerPanel() {
                                             '⏸️ Parado — aqueça e resfrie para cristalizar'}
                         </div>
                     </div>
+
+                    {/* Simulação 3D (Holograma) */}
+                    <div className="config-section hologram-section" style={{ flex: 1, minHeight: '300px', display: 'flex', flexDirection: 'column' }}>
+                        <h3>🌐 Visão Microscópica (Holograma)</h3>
+                        <div className="hologram-viewport" style={{ flex: 1, background: '#050a10', borderRadius: '8px', overflow: 'hidden', border: '1px solid #112233', position: 'relative' }}>
+                            {crystallizerSubstanceId && liveData.crystals.length > 0 ? (
+                                <Canvas camera={{ position: [0, 0.1, 0.25], fov: 45 }}>
+                                    <color attach="background" args={['#050a10']} />
+                                    <ambientLight intensity={0.5} />
+                                    <pointLight position={[1, 1, 1]} intensity={2} />
+                                    <pointLight position={[-1, -1, -1]} intensity={1} color="#0088ff" />
+                                    <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} enablePan={false} maxDistance={0.5} minDistance={0.05} />
+                                    
+                                    <group position={[0, 0, 0]}>
+                                        {/* Grid de fundo */}
+                                        <gridHelper args={[0.4, 20, '#113355', '#0a1a2a']} position={[0, -0.05, 0]} />
+                                        
+                                        {liveData.crystals.map((crystal) => (
+                                            <Crystal
+                                                key={crystal.id}
+                                                type={crystal.type}
+                                                position={[crystal.position[0] * 1.5, crystal.position[1], crystal.position[2] * 1.5]}
+                                                rotation={crystal.rotation}
+                                                scale={crystal.scale * 1.5} // Maior no painel para melhor visualização
+                                                growthRate={liveData.crystallizationRate || 0}
+                                                isGrowing={(liveData.crystallizationRate ?? 0) > 0}
+                                            />
+                                        ))}
+                                    </group>
+                                </Canvas>
+                            ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#445566', fontStyle: 'italic' }}>
+                                    {crystallizerSubstanceId ? 'Aguardando saturação para formar cristais...' : 'Selecione um béquer na lateral'}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     </div> {/* End Main Viewport */}
                 </div>
             </div>

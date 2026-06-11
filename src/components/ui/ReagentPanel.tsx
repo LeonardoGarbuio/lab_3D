@@ -10,14 +10,18 @@ interface ReagentPanelProps {
     onClose: () => void
 }
 
+import { MolecularCalculator } from '../../physics/MolecularCalculator'
+
 // Categorias de reagentes
 const REAGENT_CATEGORIES = {
     'Ácidos': ['HCl', 'H2SO4', 'HNO3', 'CH3COOH'],
     'Bases': ['NaOH', 'KOH', 'NH4OH', 'NaHCO3'],
     'Sais': ['NaCl', 'CuSO4', 'AgNO3'],
+    'Sólidos': ['Fe', 'Cu', 'Zn', 'Mg', 'CaCO3'], // Removed C, added to Elementos
     'Solventes': ['H2O', 'C2H5OH', 'CH3OH'],
-    'Gases': ['O2', 'CO2', 'H2'],
+    'Gases': ['O2', 'CO2', 'H2', 'CH4'],
     'Indicadores': ['phenolphthalein', 'methyl_orange'],
+    'Elementos': MolecularCalculator.getAllElements().map(e => e.symbol),
 }
 
 export default function ReagentPanel({ isOpen, onClose }: ReagentPanelProps) {

@@ -11,66 +11,6 @@ import type { GeneratedMolecule } from '../../physics/VSEPRCalculator'
 import './QuantumMicroscope.css'
 
 // ═══════════════════════════════════════════════════════════════════════
-// SCENE 3D DO HOLOGRAMA
-// ═══════════════════════════════════════════════════════════════════════
-
-function HologramScene({ 
-    formula, 
-    molecule,
-    showLonePairs, 
-    showPiBonds, 
-    animateResonance, 
-    showFormalCharges 
-}: { 
-    formula: string
-    molecule: VSEPRMolecule | GeneratedMolecule | null
-    showLonePairs: boolean
-    showPiBonds: boolean
-    animateResonance: boolean
-    showFormalCharges: boolean
-}) {
-    return (
-        <>
-            {/* Iluminação dramática */}
-            <ambientLight intensity={0.15} />
-            <pointLight position={[3, 4, 3]} intensity={0.6} color="#ffffff" />
-            <pointLight position={[-3, 2, -3]} intensity={0.3} color="#00f7ff" />
-            <pointLight position={[0, -3, 0]} intensity={0.2} color="#004488" />
-
-            {/* Fundo escuro */}
-            <color attach="background" args={['#050510']} />
-            <fog attach="fog" args={['#050510', 8, 20]} />
-
-            {/* MOLÉCULA HOLOGRÁFICA */}
-            <MoleculeViewer
-                formula={formula}
-                moleculeData={molecule}
-                position={[0, 0, 0]}
-                scale={1.8}
-                rotating={true}
-                hologram={true}
-                showLonePairs={showLonePairs}
-                showLabels={true}
-                showPiBonds={showPiBonds}
-                animateResonance={animateResonance}
-                showFormalCharges={showFormalCharges}
-            />
-
-            {/* Controles de câmera */}
-            <PerspectiveCamera makeDefault position={[3.5, 2, 3.5]} fov={45} />
-            <OrbitControls
-                makeDefault
-                enablePan={false}
-                minDistance={2}
-                maxDistance={10}
-                autoRotate={false}
-                target={[0, 0, 0]}
-            />
-        </>
-    )
-}
-
-// ═══════════════════════════════════════════════════════════════════════
 // PAINEL DE INFORMAÇÕES VSEPR
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -353,7 +293,7 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
     }, [isOpen, initialFormula])
 
     // Hook que gerencia dados estáticos vs procedurais (Worker)
-    const { molecule, isLoading, error } = useVSEPR(selectedFormula)
+    const { molecules, isLoading, error } = useVSEPR(selectedFormula)
 
     if (!isOpen) return null
 
@@ -397,7 +337,7 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                         >
                             π
                         </button>
-                        {VSEPR_MOLECULES[selectedFormula]?.resonance && (
+                        {molecules.length === 1 && VSEPR_MOLECULES[molecules[0].formula]?.resonance && (
                             <button
                                 className={`qm-toggle ${animateResonance ? 'active' : ''}`}
                                 onClick={() => setAnimateResonance(!animateResonance)}
@@ -451,23 +391,63 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                                 alpha: false,
                             }}
                         >
-                            <HologramScene
-                                formula={selectedFormula}
-                                molecule={molecule ?? null}
-                                showLonePairs={showLonePairs}
-                                showPiBonds={showPiBonds}
-                                animateResonance={animateResonance}
-                                showFormalCharges={showFormalCharges}
+                            {/* Iluminação dramática */}
+                            <ambientLight intensity={0.15} />
+                            <pointLight position={[3, 4, 3]} intensity={0.6} color="#ffffff" />
+                            <pointLight position={[-3, 2, -3]} intensity={0.3} color="#00f7ff" />
+                            <pointLight position={[0, -3, 0]} intensity={0.2} color="#004488" />
+
+                            {/* Fundo escuro */}
+                            <color attach="background" args={['#050510']} />
+                            <fog attach="fog" args={['#050510', 8, 20]} />
+
+                            {/* Renderização de Múltiplas Moléculas (Mistura) */}
+                            {molecules.map((mol, idx) => {
+                                const spacing = 3.5;
+                                const startX = -((molecules.length - 1) * spacing) / 2;
+                                return (
+                                    <MoleculeViewer
+                                        key={`${mol.formula}-${idx}`}
+                                        formula={mol.formula}
+                                        moleculeData={mol}
+                                        position={[startX + idx * spacing, 0, 0]}
+                                        scale={molecules.length > 1 ? 1.4 : 1.8}
+                                        rotating={true}
+                                        hologram={true}
+                                        showLonePairs={showLonePairs}
+                                        showLabels={true}
+                                        showPiBonds={showPiBonds}
+                                        animateResonance={animateResonance}
+                                        showFormalCharges={showFormalCharges}
+                                    />
+                                )
+                            })}
+
+                            {/* Controles de câmera */}
+                            <PerspectiveCamera makeDefault position={[3.5, 2, 3.5]} fov={45} />
+                            <OrbitControls
+                                makeDefault
+                                enablePan={false}
+                                minDistance={2}
+                                maxDistance={10}
+                                autoRotate={false}
+                                target={[0, 0, 0]}
                             />
                         </Canvas>
 
                         {/* Indicador de molécula */}
-                        {molecule && (
+                        {molecules.length === 1 && (
                             <div className="qm-molecule-indicator">
-                                <span className="indicator-formula">{molecule.formula}</span>
+                                <span className="indicator-formula">{molecules[0].formula}</span>
                                 <span className="indicator-geo">
-                                    {GEOMETRY_INFO[molecule.geometry]?.icon || '🔮'} {GEOMETRY_INFO[molecule.geometry]?.namePt || molecule.geometry}
+                                    {GEOMETRY_INFO[molecules[0].geometry]?.icon || '🔮'} {GEOMETRY_INFO[molecules[0].geometry]?.namePt || molecules[0].geometry}
                                 </span>
+                            </div>
+                        )}
+                        {molecules.length > 1 && (
+                            <div className="qm-molecule-indicator">
+                                <span className="indicator-formula">Mistura Física</span>
+                                <span className="indicator-geo">⚽ {molecules.length} Componentes</span>
                             </div>
                         )}
 
@@ -488,35 +468,56 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
                             <div className="vsepr-info-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                                 <div style={{ textAlign: 'center' }}>
                                     <h3 style={{ color: '#00f7ff' }}>Calculando Geometria...</h3>
-                                    <p style={{ color: '#888' }}>O motor termodinâmico está processando a estrutura de {selectedFormula}.</p>
+                                    <p style={{ color: '#888' }}>O motor termodinâmico está processando a estrutura da amostra.</p>
                                 </div>
                             </div>
                         ) : error ? (
                             <div className="vsepr-info-panel">
-                                <h3 style={{ color: '#ff4444' }}>Erro na Análise</h3>
+                                <h3 style={{ color: '#ff4444' }}>Aviso na Análise</h3>
                                 <p style={{ color: '#ffaaaa' }}>{error}</p>
                             </div>
-                        ) : molecule && activeView === 'vsepr' ? (
-                            <VSEPRInfoPanel molecule={molecule} />
-                        ) : molecule && activeView === 'hybridization' ? (
-                            <HybridizationPanel molecule={molecule} />
+                        ) : molecules.length === 1 && activeView === 'vsepr' ? (
+                            <VSEPRInfoPanel molecule={molecules[0]} />
+                        ) : molecules.length === 1 && activeView === 'hybridization' ? (
+                            <HybridizationPanel molecule={molecules[0]} />
+                        ) : molecules.length > 1 ? (
+                            <div className="vsepr-info-panel">
+                                <h3 style={{ color: '#00f7ff' }}>Análise de Mistura Física</h3>
+                                <p style={{ color: '#888', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                                    O microscópio detectou múltiplos componentes flutuando independentemente na amostra.
+                                </p>
+                                <div className="vsepr-atoms-table">
+                                    <h4>Componentes Identificados</h4>
+                                    <div className="atoms-list" style={{ marginTop: '0.5rem' }}>
+                                        {molecules.map((m, i) => {
+                                            const namePt = 'namePt' in m ? (m as VSEPRMolecule).namePt : m.name;
+                                            return (
+                                                <div key={i} className="atom-entry" style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                                                    <div>
+                                                        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.2rem' }}>{m.formula}</span>
+                                                        <span style={{ color: '#00f7ff', marginLeft: '0.8rem', fontSize: '0.9rem' }}>{namePt}</span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
                         ) : null}
                     </div>
                 </div>
 
                 {/* Quick select na base */}
                 <div className="qm-quickbar">
-                    {['H2O', 'CO2', 'CH4', 'NH3', 'BF3', 'SF6', 'PCl5', 'XeF4', 'ClF3', 'SF4', 'IF7'].map(f => {
-                        const mol = VSEPR_MOLECULES[f]
-                        if (!mol) return null
+                    {['H2O', 'CO2', 'CH4', 'NH3', 'BF3', 'SF6', 'PCl5', 'XeF4', 'C60', 'C60+C60'].map(f => {
                         return (
                             <button
                                 key={f}
                                 className={`quick-btn ${selectedFormula === f ? 'active' : ''}`}
                                 onClick={() => setSelectedFormula(f)}
-                                title={mol.namePt}
+                                title={f}
                             >
-                                {mol.formula}
+                                {f}
                             </button>
                         )
                     })}
@@ -525,3 +526,4 @@ export default function QuantumMicroscope({ isOpen, onClose, initialFormula = 'H
         </div>
     )
 }
+

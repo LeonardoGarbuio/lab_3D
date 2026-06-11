@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react'
 import type { Group } from 'three'
 import { Html } from '@react-three/drei'
-import TestTube from './TestTube'
 
 interface TestTubeRackProps {
     position: [number, number, number]
@@ -14,14 +13,7 @@ interface TestTubeRackProps {
 }
 
 export default function TestTubeRack({
-    position,
-    tubes = [
-        { color: '#ff6b6b', level: 0.7 },
-        { color: '#4ecdc4', level: 0.5 },
-        { color: '#ffe66d', level: 0.8 },
-        { color: '#95e1d3', level: 0.3 },
-        { color: '#f38181', level: 0.6 },
-    ]
+    position
 }: TestTubeRackProps) {
     const groupRef = useRef<Group>(null)
     const [hovered, setHovered] = useState(false)
@@ -29,7 +21,6 @@ export default function TestTubeRack({
     const rackWidth = 1.8
     const rackDepth = 0.4
     const rackHeight = 0.15
-    const holeSpacing = rackWidth / (tubes.length + 1)
 
     return (
         <group ref={groupRef} position={position}>

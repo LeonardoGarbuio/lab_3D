@@ -15,12 +15,12 @@ export default function LandingPage({ onStart }: LandingPageProps) {
     }, [])
 
     const features = [
-        { icon: '⚛️', title: 'Tabela Periódica', desc: '50+ elementos interativos' },
-        { icon: '🧪', title: 'Reagentes', desc: 'Ácidos, bases, sais e mais' },
-        { icon: '⚗️', title: 'Reações', desc: '15+ reações químicas reais' },
-        { icon: '📚', title: 'Experimentos', desc: 'Guias passo-a-passo' },
-        { icon: '🔥', title: 'Aquecimento', desc: 'Simule temperatura até 100°C' },
-        { icon: '🧬', title: 'Moléculas 3D', desc: 'Visualize estruturas' },
+        { icon: '⚛️', title: 'Tabela Periódica', desc: 'Monte moléculas elemento por elemento' },
+        { icon: '🔥', title: 'Termodinâmica', desc: 'Simule aquecimento e resfriamento extremos' },
+        { icon: '⚗️', title: 'Reações Químicas', desc: 'Sínteses, combustões e precipitados reais' },
+        { icon: '🔬', title: 'Microscópio Quântico', desc: 'Visualize estruturas atômicas VSEPR 3D' },
+        { icon: '💎', title: 'Cristalização', desc: 'Controle de saturação e hologramas' },
+        { icon: '🧪', title: 'Laboratório Físico', desc: 'Béqueres e cristalizadores interativos' },
     ]
 
     return (

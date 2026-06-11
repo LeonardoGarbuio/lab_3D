@@ -10,18 +10,14 @@ import { useLabStore } from '../../../stores/useLabStore'
 interface SeparatingFunnelProps {
     id: string
     position: [number, number, number]
-    formula: string | null
-    fillLevel: number
-    color: string
+    components: { id: string, amount: number, color: string }[]
     scale?: number
 }
 
 export default function SeparatingFunnel({
     id,
     position,
-    formula,
-    fillLevel,
-    color,
+    components,
     scale = 1,
 }: SeparatingFunnelProps) {
     const groupRef = useRef<Group>(null)
@@ -30,7 +26,7 @@ export default function SeparatingFunnel({
     const [isHovered, setIsHovered] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
 
-    const { selectedId, pouringFromId, selectObject, startPouring, pourInto, cancelPouring, setHoveredObject, objects } = useLabStore()
+    const { selectedId, pouringFromId, selectObject, pourInto, cancelPouring, setHoveredObject } = useLabStore()
 
     const isSelected = selectedId === id
     const isPouringSource = pouringFromId === id
@@ -43,10 +39,23 @@ export default function SeparatingFunnel({
 
     // Fake phases based on fill level for now
     // In a real scenario, we'd use useLabStore to compute immiscible phases
+    const fillLevel = components.reduce((acc, comp) => acc + comp.amount, 0)
     const upperLevel = fillLevel > 0.5 ? (fillLevel - 0.5) : 0
     const lowerLevel = fillLevel > 0.5 ? 0.5 : fillLevel
     const upperLiquidColor = '#ffe066'
-    const lowerLiquidColor = color || '#4ecdc4'
+    const lowerLiquidColor = components.length > 0 ? components[0].color : '#4ecdc4'
+
+    const handlePour = () => {
+        if (pouringFromId && pouringFromId !== id) {
+            pourInto(id)
+            return
+        }
+        if (isPouringSource) {
+            cancelPouring()
+            return
+        }
+        selectObject(isSelected ? null : id)
+    }
 
     useFrame((state) => {
         const t = state.clock.elapsedTime
@@ -60,44 +69,9 @@ export default function SeparatingFunnel({
         
         // Simulação básica de drenagem se estiver aberto
         if (isOpen && fillLevel > 0) {
-            const state = useLabStore.getState()
-            
-            // Find object directly below
-            let target = null
-            let minDist = 0.5
-
-            for (const obj of state.objects) {
-                if (obj.id === id) continue
-                const dx = obj.position[0] - position[0]
-                const dz = obj.position[2] - position[2]
-                const dist = Math.sqrt(dx * dx + dz * dz)
-                if (dist < minDist && obj.position[1] < position[1]) {
-                    minDist = dist
-                    target = obj.id
-                }
-            }
-
-            if (target) {
-                // Here we would mutate the target if we had a separatingFunnelDrip in store
-                // For now, let's reuse buretteDrip or similar to transfer liquid
-                // Actually since it's an object in `objects`, we can just transfer directly if we had a transfer method
-                // Let's call a generic transfer
-            }
+            // Logic for pouring
         }
     })
-
-    const handleClick = (e: any) => {
-        e.stopPropagation()
-        if (pouringFromId && pouringFromId !== id) {
-            pourInto(id)
-            return
-        }
-        if (isPouringSource) {
-            cancelPouring()
-            return
-        }
-        selectObject(isSelected ? null : id)
-    }
 
     const toggleValve = (e: any) => {
         e.stopPropagation()
@@ -114,8 +88,8 @@ export default function SeparatingFunnel({
             <mesh
                 visible={false}
                 position={[0, 0, 0]}
-                onClick={handleClick}
-                onPointerEnter={(e) => { setIsHovered(true); setHoveredObject(id); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
+                onClick={() => handlePour()}
+                onPointerEnter={() => { setIsHovered(true); setHoveredObject(id); document.body.style.cursor = isPouringTarget ? 'copy' : 'pointer' }}
                 onPointerLeave={() => { setIsHovered(false); setHoveredObject(null); document.body.style.cursor = 'default' }}
             >
                 <cylinderGeometry args={[bulbRadius * 1.5, bulbRadius * 1.5, 0.6 * scale, 16]} />

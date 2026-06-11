@@ -160,6 +160,8 @@ export function CrystallizationDish({
                 saturation: simState.saturation,
                 crystalsFormed: simState.crystalsFormed,
                 concentration: simState.concentration,
+                crystallizationRate: simState.crystallizationRate,
+                crystals: crystals, // Exportar instâncias 3D para o painel Holográfico
             }
         }
     })

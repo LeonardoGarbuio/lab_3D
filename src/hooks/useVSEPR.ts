@@ -4,50 +4,54 @@ import { VSEPR_MOLECULES, type VSEPRMolecule } from '../data/vseprData'
 import { WorkerClient } from '../workers/WorkerClient'
 import type { GeneratedMolecule } from '../physics/VSEPRCalculator'
 
+export type AnyMolecule = VSEPRMolecule | GeneratedMolecule
+
 export function useVSEPR(formula: string | null) {
-    const [molecule, setMolecule] = useState<VSEPRMolecule | GeneratedMolecule | null>(null)
+    const [molecules, setMolecules] = useState<AnyMolecule[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (!formula) {
-            setMolecule(null)
-            return
-        }
-
-        // 1. Tentar os dados estáticos primeiro (rápido, inclui ressonância)
-        if (VSEPR_MOLECULES[formula]) {
-            setMolecule(VSEPR_MOLECULES[formula])
+        if (!formula || formula === 'Mistura') {
+            setMolecules([])
             setIsLoading(false)
-            setError(null)
+            setError(formula === 'Mistura' ? 'Selecione uma amostra válida' : null)
             return
         }
 
-        // Se a fórmula tem um "+", não tem como ser uma molécula
-        if (formula.includes('+') || formula === 'Mistura') {
-            setMolecule(null)
-            setIsLoading(false)
-            setError('Mistura: Não é uma molécula pura')
-            return
-        }
-
-        // 2. Não encontrou? Tenta o Worker (Procedural)
+        const subFormulas = formula.split('+').map(s => s.trim()).filter(Boolean)
+        
         setIsLoading(true)
         setError(null)
-        
-        WorkerClient.calculateVSEPR(formula)
-            .then((result) => {
-                if (result) {
-                    setMolecule(result)
-                } else {
-                    setMolecule(null)
+
+        const resolveSubFormula = async (sub: string): Promise<AnyMolecule | null> => {
+            if (VSEPR_MOLECULES[sub]) {
+                return VSEPR_MOLECULES[sub]
+            }
+            try {
+                return await WorkerClient.calculateVSEPR(sub)
+            } catch (err) {
+                console.error(err)
+                return null
+            }
+        }
+
+        Promise.all(subFormulas.map(resolveSubFormula))
+            .then(results => {
+                const validMolecules = results.filter((r): r is AnyMolecule => r !== null)
+                if (validMolecules.length === 0) {
+                    setMolecules([])
                     setError('Não foi possível gerar a estrutura')
+                } else if (validMolecules.length < subFormulas.length) {
+                    setMolecules(validMolecules)
+                    setError('Aviso: Algumas partes da mistura não puderam ser analisadas')
+                } else {
+                    setMolecules(validMolecules)
                 }
             })
-            .catch((err) => {
-                console.error(err)
-                setMolecule(null)
-                setError('Erro ao calcular VSEPR')
+            .catch(() => {
+                setMolecules([])
+                setError('Erro ao calcular VSEPR da mistura')
             })
             .finally(() => {
                 setIsLoading(false)
@@ -55,5 +59,5 @@ export function useVSEPR(formula: string | null) {
 
     }, [formula])
 
-    return { molecule, isLoading, error }
+    return { molecules, isLoading, error }
 }

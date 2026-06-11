@@ -15,6 +15,7 @@
 
 import { MolecularCalculator } from './MolecularCalculator'
 import type { FormulaCoeff } from './MolecularCalculator'
+import { ProceduralMoleculeBuilder } from './ProceduralMoleculeBuilder'
 
 // ─── Tipos de Resultado ──────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ export type ReactionType =
     | 'effervescence'
     | 'redox'
 
-export type VisualEffect = 'none' | 'bubbles' | 'smoke' | 'precipitate' | 'explosion' | 'glow' | 'fire' | 'boiling'
+export type VisualEffect = 'none' | 'bubbles' | 'smoke' | 'precipitate' | 'explosion' | 'glow' | 'fire' | 'boiling' | 'spark'
 
 // ─── Base de Reações Conhecidas (Balanceadas) ────────────────────────
 // Em vez do antigo JSON hardcoded, cada reação agora inclui coeficientes
@@ -63,6 +64,7 @@ interface KnownReaction {
     productColor: string
     minTemp?: number                  // °C mínima
     maxTemp?: number                  // °C máxima
+    requiresShock?: boolean           // Se precisa de descarga elétrica (alta energia, quebra estabilidade termodinâmica)
 }
 
 const KNOWN_REACTIONS: KnownReaction[] = [
@@ -156,8 +158,90 @@ const KNOWN_REACTIONS: KnownReaction[] = [
         type: 'combustion', effectType: 'fire', effectColor: '#ff6600', productColor: '#e8e8e8',
         minTemp: 580,
     },
+    {
+        id: 'c-o2',
+        reactants: [{ formula: 'C', coeff: 1 }, { formula: 'O2', coeff: 1 }],
+        products: [{ formula: 'CO2', coeff: 1 }],
+        equation: 'C + O₂ → CO₂',
+        description: 'Combustão do Carbono: Produção de CO₂',
+        type: 'combustion', effectType: 'fire', effectColor: '#ff6600', productColor: '#e8e8e8',
+        minTemp: 400,
+    },
+    {
+        id: 's-o2',
+        reactants: [{ formula: 'S', coeff: 1 }, { formula: 'O2', coeff: 1 }],
+        products: [{ formula: 'SO2', coeff: 1 }],
+        equation: 'S + O₂ → SO₂',
+        description: 'Combustão do Enxofre: forma Dióxido de Enxofre (gás tóxico com chama azul!).',
+        type: 'combustion', effectType: 'fire', effectColor: '#2255ff', productColor: '#eeeeee',
+        minTemp: 250,
+    },
+    {
+        id: 'so2-o2',
+        reactants: [{ formula: 'SO2', coeff: 2 }, { formula: 'O2', coeff: 1 }],
+        products: [{ formula: 'SO3', coeff: 2 }],
+        equation: '2SO₂ + O₂ → 2SO₃',
+        description: 'Oxidação severa formando Trióxido de Enxofre.',
+        type: 'combustion', effectType: 'glow', effectColor: '#ff9900', productColor: '#ffffff',
+        minTemp: 450,
+    },
 
-    // ═══ SÍNTESES ═══
+
+    // ═══ SÍNTESES ESPECIAIS ═══
+    {
+        id: 'cu-s',
+        reactants: [{ formula: 'Cu', coeff: 1 }, { formula: 'S', coeff: 1 }],
+        products: [{ formula: 'CuS', coeff: 1 }],
+        equation: 'Cu + S → CuS',
+        description: 'Síntese do Sulfeto de Cobre (precipitado negro).',
+        type: 'synthesis', effectType: 'glow', effectColor: '#ff4400', productColor: '#1a1a1a',
+        minTemp: 400
+    },
+    {
+        id: 'cus-o2',
+        reactants: [{ formula: 'CuS', coeff: 1 }, { formula: 'O2', coeff: 2 }],
+        products: [{ formula: 'CuSO4', coeff: 1 }],
+        equation: 'CuS + 2O₂ → CuSO₄',
+        description: 'Ustulação do sulfeto formando Sulfato de Cobre (azul).',
+        type: 'combustion', effectType: 'fire', effectColor: '#0066cc', productColor: '#1e90ff',
+        minTemp: 600
+    },
+    {
+        id: 'xe-f2',
+        reactants: [{ formula: 'Xe', coeff: 1 }, { formula: 'F2', coeff: 1 }],
+        products: [{ formula: 'XeF2', coeff: 1 }],
+        equation: 'Xe + F₂ ⚡ → XeF₂',
+        description: 'Primeira etapa: Difluoreto de Xenônio',
+        type: 'synthesis', effectType: 'glow', effectColor: '#00ffff', productColor: '#ffffff',
+        requiresShock: true
+    },
+    {
+        id: 'xef2-f2',
+        reactants: [{ formula: 'XeF2', coeff: 1 }, { formula: 'F2', coeff: 1 }],
+        products: [{ formula: 'XeF4', coeff: 1 }],
+        equation: 'XeF₂ + F₂ ⚡ → XeF₄',
+        description: 'Segunda etapa: Tetrafluoreto de Xenônio',
+        type: 'synthesis', effectType: 'glow', effectColor: '#00ffff', productColor: '#ffffff',
+        requiresShock: true
+    },
+    {
+        id: 'c-60-fullerene',
+        reactants: [{ formula: 'C', coeff: 60 }],
+        products: [{ formula: 'C60', coeff: 1 }],
+        equation: '60C ⚡ → C₆₀',
+        description: 'Vaporização de grafite formando Buckminsterfulereno!',
+        type: 'synthesis', effectType: 'spark', effectColor: '#ff00ff', productColor: '#333333',
+        requiresShock: true
+    },
+    {
+        id: 'o2-o3-discharge',
+        reactants: [{ formula: 'O2', coeff: 3 }],
+        products: [{ formula: 'O3', coeff: 2 }],
+        equation: '3O₂ ⚡ → 2O₃',
+        description: 'Síntese de Ozônio via descarga elétrica (Endotérmica)',
+        type: 'synthesis', effectType: 'spark', effectColor: '#87cefa', productColor: '#b0e0e6',
+        requiresShock: true
+    },
     {
         id: 'na-cl2',
         reactants: [{ formula: 'Na', coeff: 2 }, { formula: 'Cl2', coeff: 1 }],
@@ -234,13 +318,37 @@ export class ReactionEvaluator {
      * @param formula1   Fórmula do reagente 1
      * @param formula2   Fórmula do reagente 2 (ou igual ao 1 para decomposição)
      * @param tempCelsius Temperatura do sistema em °C
+     * @param isShocking Se está recebendo descarga elétrica
      * @returns ReactionResult com todos os dados termodinâmicos
      */
-    static evaluate(formula1: string, formula2: string, tempCelsius: number = 25): ReactionResult | null {
+    static evaluate(formula1: string, formula2: string, tempCelsius: number = 25, isShocking: boolean = false): ReactionResult | null {
         const tempK = tempCelsius + 273.15
 
         // 1. Procurar na base de reações conhecidas
-        const known = this.findKnownReaction(formula1, formula2)
+        let known = this.findKnownReaction(formula1, formula2)
+        
+        // 1.5. Motor Procedural (Se não tiver na lista rígida, tenta prever pela Regra do Octeto)
+        if (!known) {
+            const predictedProducts = ProceduralMoleculeBuilder.predictReaction(formula1, formula2)
+            if (predictedProducts && predictedProducts.length > 0) {
+                const balanced = ProceduralMoleculeBuilder.balanceEquation([formula1, formula2], predictedProducts)
+                if (balanced) {
+                    known = {
+                        id: `procedural-${formula1}-${formula2}`,
+                        reactants: balanced.reactants,
+                        products: balanced.products,
+                        equation: this.buildEquationString(balanced.reactants, balanced.products),
+                        description: 'Reação descoberta proceduralmente via Regra do Octeto.',
+                        type: 'synthesis', // Simplificação
+                        effectType: 'glow',
+                        effectColor: '#ffffff',
+                        productColor: '#cccccc',
+                        minTemp: 25 // Assumir ambiente para procedurais inicialmente
+                    }
+                }
+            }
+        }
+
         if (!known) return null
 
         // 2. Verificar temperatura mínima
@@ -263,6 +371,25 @@ export class ReactionEvaluator {
             }
         }
 
+        if (known.requiresShock && !isShocking) {
+            return {
+                viable: false,
+                reason: 'activation-barrier',
+                reactants: known.reactants,
+                products: known.products,
+                equation: known.equation,
+                description: `⚡ Requer descarga elétrica para ocorrer`,
+                deltaH: MolecularCalculator.calculateDeltaH(known.reactants, known.products),
+                deltaG: MolecularCalculator.calculateGibbsFreeEnergy(known.reactants, known.products, tempK),
+                deltaS: MolecularCalculator.calculateDeltaS(known.reactants, known.products),
+                type: known.type,
+                effectType: 'none',
+                effectColor: known.effectColor,
+                productColor: known.productColor,
+                exothermic: false,
+            }
+        }
+
         // 3. Calcular termodinâmica real
         const deltaH = MolecularCalculator.calculateDeltaH(known.reactants, known.products)
         const deltaG = MolecularCalculator.calculateGibbsFreeEnergy(known.reactants, known.products, tempK)
@@ -271,7 +398,11 @@ export class ReactionEvaluator {
 
         // 4. Verificar espontaneidade via ΔG
         // Se temos dados termodinâmicos, usar ΔG. Senão, considerar viável (reação conhecida).
-        const spontaneous = deltaG !== null ? deltaG < 0 : true
+        // Se a reação exige choque E estamos aplicando choque, ela contorna a barreira termodinâmica.
+        let spontaneous = deltaG !== null ? deltaG < 0 : true
+        if (known.requiresShock && isShocking) {
+            spontaneous = true;
+        }
 
         if (!spontaneous) {
             return {
@@ -324,6 +455,14 @@ export class ReactionEvaluator {
             }
             return false
         }) || null
+    }
+
+    /**
+     * Monta a string da equação balanceada.
+     */
+    private static buildEquationString(reactants: FormulaCoeff[], products: FormulaCoeff[]): string {
+        const formatTerm = (t: FormulaCoeff) => `${t.coeff > 1 ? t.coeff : ''}${t.formula}`;
+        return `${reactants.map(formatTerm).join(' + ')} → ${products.map(formatTerm).join(' + ')}`;
     }
 
     /**

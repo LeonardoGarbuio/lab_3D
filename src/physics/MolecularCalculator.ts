@@ -5,6 +5,8 @@
 // funções de polaridade, classificação de ligações e conversões mol/massa.
 // ═══════════════════════════════════════════════════════════════════════
 
+import { ELEMENTS } from '../data/elements';
+
 export interface ElementData {
     symbol: string
     name: string
@@ -13,23 +15,34 @@ export interface ElementData {
     electronegativity: number // escala de Pauling
     valenceElectrons: number  // elétrons da camada de valência
     color: string             // cor de renderização (hex)
+    category: string          // categoria (metal, não-metal, etc)
+}
+
+function getValence(group: number): number {
+    if (group === 1 || group === 2) return group;
+    if (group >= 13 && group <= 18) {
+        // Hélio é do grupo 18 mas tem 2 elétrons
+        return group === 18 ? 8 : group - 10;
+    }
+    return 2; // metais de transição geralmente usam 2
 }
 
 /**
- * Tabela Periódica mínima — somente os elementos usados no lab
+ * Tabela Periódica completa gerada dinamicamente a partir dos dados do jogo
  */
-const PERIODIC_TABLE: Record<string, ElementData> = {
-    H:  { symbol: 'H',  name: 'Hidrogênio', atomicNumber: 1,  atomicMass: 1.008,  electronegativity: 2.20, valenceElectrons: 1, color: '#ffffff' },
-    C:  { symbol: 'C',  name: 'Carbono',    atomicNumber: 6,  atomicMass: 12.011, electronegativity: 2.55, valenceElectrons: 4, color: '#909090' },
-    N:  { symbol: 'N',  name: 'Nitrogênio', atomicNumber: 7,  atomicMass: 14.007, electronegativity: 3.04, valenceElectrons: 5, color: '#3050f8' },
-    O:  { symbol: 'O',  name: 'Oxigênio',   atomicNumber: 8,  atomicMass: 15.999, electronegativity: 3.44, valenceElectrons: 6, color: '#ff0d0d' },
-    F:  { symbol: 'F',  name: 'Flúor',      atomicNumber: 9,  atomicMass: 18.998, electronegativity: 3.98, valenceElectrons: 7, color: '#90e050' },
-    Na: { symbol: 'Na', name: 'Sódio',      atomicNumber: 11, atomicMass: 22.990, electronegativity: 0.93, valenceElectrons: 1, color: '#ab5cf2' },
-    Cl: { symbol: 'Cl', name: 'Cloro',      atomicNumber: 17, atomicMass: 35.453, electronegativity: 3.16, valenceElectrons: 7, color: '#1ff01f' },
-    K:  { symbol: 'K',  name: 'Potássio',   atomicNumber: 19, atomicMass: 39.098, electronegativity: 0.82, valenceElectrons: 1, color: '#8f40d4' },
-    S:  { symbol: 'S',  name: 'Enxofre',    atomicNumber: 16, atomicMass: 32.065, electronegativity: 2.58, valenceElectrons: 6, color: '#ffff30' },
-    P:  { symbol: 'P',  name: 'Fósforo',    atomicNumber: 15, atomicMass: 30.974, electronegativity: 2.19, valenceElectrons: 5, color: '#ff8000' },
-}
+const PERIODIC_TABLE: Record<string, ElementData> = {};
+ELEMENTS.forEach(e => {
+    PERIODIC_TABLE[e.symbol] = {
+        symbol: e.symbol,
+        name: e.namePt || e.name,
+        atomicNumber: e.atomicNumber,
+        atomicMass: e.atomicMass,
+        electronegativity: e.electronegativity || 0,
+        valenceElectrons: e.symbol === 'He' ? 2 : getValence(e.group),
+        color: e.color,
+        category: e.category
+    };
+});
 
 export type BondType = 'nonpolar-covalent' | 'polar-covalent' | 'ionic'
 
@@ -137,12 +150,12 @@ export class MolecularCalculator {
         let hReactants = 0
 
         for (const p of products) {
-            const d = THERMODYNAMIC_DATA[p.formula]
+            const d = THERMODYNAMIC_DATA[p.formula] || this.estimateThermo(p.formula)
             if (!d) return null
             hProducts += d.deltaHf * p.coeff
         }
         for (const r of reactants) {
-            const d = THERMODYNAMIC_DATA[r.formula]
+            const d = THERMODYNAMIC_DATA[r.formula] || this.estimateThermo(r.formula)
             if (!d) return null
             hReactants += d.deltaHf * r.coeff
         }
@@ -162,12 +175,12 @@ export class MolecularCalculator {
         let sReactants = 0
 
         for (const p of products) {
-            const d = THERMODYNAMIC_DATA[p.formula]
+            const d = THERMODYNAMIC_DATA[p.formula] || this.estimateThermo(p.formula)
             if (!d) return null
             sProducts += d.entropy * p.coeff
         }
         for (const r of reactants) {
-            const d = THERMODYNAMIC_DATA[r.formula]
+            const d = THERMODYNAMIC_DATA[r.formula] || this.estimateThermo(r.formula)
             if (!d) return null
             sReactants += d.entropy * r.coeff
         }
@@ -218,7 +231,7 @@ export class MolecularCalculator {
      * @returns true se a barreira cinética é ultrapassada
      */
     static canOvercomeActivationEnergy(formula: string, tempKelvin: number): boolean {
-        const d = THERMODYNAMIC_DATA[formula]
+        const d = THERMODYNAMIC_DATA[formula] || this.estimateThermo(formula)
         if (!d || d.activationEnergy === undefined) return true // sem dados → sem barreira
 
         // Boltzmann simplificado: E_thermal ≈ R·T (kJ/mol)
@@ -227,6 +240,58 @@ export class MolecularCalculator {
         // A reação acontece se a energia térmica for uma fração razoável da Ea
         // (fator de Arrhenius simplificado — ~5% da Ea é suficiente estatisticamente)
         return thermalEnergy > d.activationEnergy * 0.05
+    }
+
+    /**
+     * Motor de Estimativa (Heurística Termodinâmica Universal)
+     * Aproxima entalpia e entropia de moléculas não tabeladas.
+     */
+    static estimateThermo(formula: string): ThermodynamicEntry | null {
+        // Elementos puros assumimos estado padrão
+        if (formula.match(/^[A-Z][a-z]?\d*$/)) {
+            return { formula, deltaHf: 0, entropy: 100, activationEnergy: 50 };
+        }
+
+        // Para compostos, estimar entalpia de formação baseada na diferença de eletronegatividade (ligações polares/iônicas liberam mais energia)
+        let estimatedHf = -200; // Valor base moderadamente exotérmico
+        let estimatedEntropy = 100;
+
+        const regex = /([A-Z][a-z]?)(\d*)/g;
+        let match;
+        const elements: {el: string, count: number}[] = [];
+        
+        while ((match = regex.exec(formula)) !== null) {
+            elements.push({ el: match[1], count: parseInt(match[2] || '1', 10) });
+        }
+
+        if (elements.length >= 2) {
+            const el1 = PERIODIC_TABLE[elements[0].el];
+            const el2 = PERIODIC_TABLE[elements[1].el];
+            if (el1 && el2) {
+                const diffEN = Math.abs(el1.electronegativity - el2.electronegativity);
+                // Ligações muito iônicas (alta EN) formam retículos cristalinos muito estáveis (ΔHf muito negativo)
+                estimatedHf = -100 - (diffEN * 150); 
+                
+                // Gases têm entropia maior
+                if (diffEN < 0.5 && this.molarMass(formula) < 50) {
+                    estimatedEntropy = 200;
+                    estimatedHf = -50; // Compostos covalentes leves não são tão estáveis
+                } else if (diffEN > 1.5) {
+                    estimatedEntropy = 60; // Sólidos cristalinos
+                }
+            }
+        }
+
+        // Sulfatos e Nitratos geralmente são bastante negativos
+        if (formula.includes('SO4') || formula.includes('PO4')) estimatedHf -= 500;
+        if (formula.includes('NO3')) estimatedHf -= 100;
+
+        return {
+            formula,
+            deltaHf: estimatedHf,
+            entropy: estimatedEntropy,
+            activationEnergy: 80
+        };
     }
 }
 
@@ -255,6 +320,7 @@ const THERMODYNAMIC_DATA: Record<string, ThermodynamicEntry> = {
     // ─── Elementos no Estado Padrão (ΔHf = 0 por definição) ──────────
     'H2':   { formula: 'H2',   deltaHf: 0,       entropy: 130.7 },
     'O2':   { formula: 'O2',   deltaHf: 0,       entropy: 205.1 },
+    'O3':   { formula: 'O3',   deltaHf: 142.7,   entropy: 238.9 }, // Requer descarga elétrica/UV
     'N2':   { formula: 'N2',   deltaHf: 0,       entropy: 191.6 },
     'C':    { formula: 'C',    deltaHf: 0,       entropy: 5.7 },
     'Fe':   { formula: 'Fe',   deltaHf: 0,       entropy: 27.3 },

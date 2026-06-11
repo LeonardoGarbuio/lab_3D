@@ -19,6 +19,7 @@ export type VSEPRGeometry =
     | 'square-pyramidal'         // ~90° — 5 BP, 1 LP
     | 'octahedral'               // 90° — 6 BP, 0 LP
     | 'pentagonal-bipyramidal'   // 72°/90° — 7 BP, 0 LP
+    | 'macromolecule'            // Estrutura complexa sem átomo central
 
 export type Hybridization = 'sp' | 'sp2' | 'sp3' | 'sp3d' | 'sp3d2' | 'sp3d3'
 
@@ -828,7 +829,73 @@ export const VSEPR_MOLECULES: Record<string, VSEPRMolecule> = {
         dipoleMoment: false,
         octetExpansion: true,
     },
-}
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// GERAÇÃO PROCEDURAL DE MACROMOLÉCULAS ESPECIAIS (Ex: C60)
+// ═══════════════════════════════════════════════════════════════════════
+
+(() => {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const pts: [number, number, number][] = [];
+    
+    function addPermutations(base: [number, number, number], permutations: number[][]) {
+        for (const p of permutations) {
+            for (let i = 0; i < 2; i++) {
+                const s1 = i === 0 ? 1 : -1;
+                for (let j = 0; j < 2; j++) {
+                    const s2 = j === 0 ? 1 : -1;
+                    for (let k = 0; k < 2; k++) {
+                        const s3 = k === 0 ? 1 : -1;
+                        const v = [
+                            base[p[0]] * s1,
+                            base[p[1]] * s2,
+                            base[p[2]] * s3
+                        ];
+                        if (!pts.find(existing => Math.abs(existing[0]-v[0])<0.01 && Math.abs(existing[1]-v[1])<0.01 && Math.abs(existing[2]-v[2])<0.01)) {
+                            pts.push(v as [number, number, number]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    addPermutations([0, 1, 3*phi], [[0,1,2], [1,2,0], [2,0,1]]);
+    addPermutations([2, 1+2*phi, phi], [[0,1,2], [1,2,0], [2,0,1]]);
+    addPermutations([1, 2+phi, 2*phi], [[0,1,2], [1,2,0], [2,0,1]]);
+
+    const scale = 0.35;
+    const atoms: MoleculeAtom[] = pts.map(p => ({
+        symbol: 'C',
+        position: [p[0]*scale, p[1]*scale, p[2]*scale],
+        color: '#444444',
+        radius: 0.17
+    }));
+
+    const bonds: MoleculeBond[] = [];
+    const distTarget = 2 * scale;
+    
+    for (let i=0; i<atoms.length; i++) {
+        for (let j=i+1; j<atoms.length; j++) {
+            const p1 = atoms[i].position;
+            const p2 = atoms[j].position;
+            const dist = Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2) + Math.pow(p1[2]-p2[2], 2));
+            if (dist > distTarget * 0.9 && dist < distTarget * 1.1) {
+                bonds.push({ from: i, to: j, type: 'single' });
+            }
+        }
+    }
+
+    VSEPR_MOLECULES['C60'] = {
+        formula: 'C₆₀', name: 'Buckminsterfullerene', namePt: 'Buckminsterfulereno',
+        geometry: 'macromolecule', hybridization: 'sp2', bondAngle: '~108°/120°',
+        bondingPairs: 90, lonePairs: 0,
+        atoms, bonds, electronPairs: [],
+        description: 'Macromolécula (Icosaedro Truncado). Os 60 carbonos estão organizados em 20 hexágonos e 12 pentágonos, formando uma esfera geodésica perfeita.',
+        dipoleMoment: false
+    };
+})();
 
 // ═══════════════════════════════════════════════════════════════════════
 // UTILITÁRIOS
@@ -867,6 +934,7 @@ export const GEOMETRY_INFO: Record<VSEPRGeometry, { namePt: string; electronDoma
     'square-pyramidal':        { namePt: 'Pirâmide de Base Quadrada',   electronDomains: 6, icon: '⊿' },
     'octahedral':              { namePt: 'Octaédrica',                  electronDomains: 6, icon: '⬡' },
     'pentagonal-bipyramidal':  { namePt: 'Bipirâmide Pentagonal',       electronDomains: 7, icon: '⬟' },
+    'macromolecule':           { namePt: 'Macromolécula Complexa',      electronDomains: 0, icon: '⚽' },
 }
 
 // ═══════════════════════════════════════════════════════════════════════

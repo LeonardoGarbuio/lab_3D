@@ -80,7 +80,38 @@ const _BASE_ELEMENTS: Element[] = [
 
     // Período 7 (principais)
     { atomicNumber: 87, symbol: 'Fr', name: 'Francium', namePt: 'Frâncio', atomicMass: 223, category: 'alkali-metal', phase: 'solid', electronegativity: 0.70, density: 1.87, meltingPoint: 27, boilingPoint: 677, color: '#420066', group: 1, period: 7 },
-    { atomicNumber: 92, symbol: 'U', name: 'Uranium', namePt: 'Urânio', atomicMass: 238.03, category: 'actinide', phase: 'solid', electronegativity: 1.38, density: 19.05, meltingPoint: 1135, boilingPoint: 4131, color: '#008fff', group: 3, period: 7 },
+    {
+        atomicNumber: 92,
+        symbol: 'U',
+        name: 'Uranium',
+        namePt: 'Urânio',
+        atomicMass: 238.02891,
+        category: 'actinide',
+        group: 3,
+        period: 7,
+        electronegativity: 1.38,
+        meltingPoint: 1132,
+        boilingPoint: 4131,
+        phase: 'solid',
+        density: 19.1,
+        color: '#00ff00'
+    },
+    {
+        atomicNumber: 999, // Ficcional
+        symbol: 'KrPt',
+        name: 'Kryptonite',
+        namePt: 'Kriptonita',
+        atomicMass: 450.0,
+        category: 'post-transition', // Workaround typescript category error
+        group: 0,
+        period: 8,
+        electronegativity: 0,
+        meltingPoint: 5000,
+        boilingPoint: 10000,
+        phase: 'solid',
+        density: 25.0,
+        color: '#00ff00'
+    }
 ]
 
 // Importar elementos faltantes (39-118)

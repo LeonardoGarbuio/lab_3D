@@ -392,7 +392,8 @@ export default function MoleculeViewer({
     const [resonanceIdx, setResonanceIdx] = useState(0)
 
     // Buscar molécula nos dados VSEPR ou usar o hook procedural
-    const { molecule: fetchedMolecule } = useVSEPR(!moleculeData ? formula : null)
+    const { molecules: fetchedMolecules } = useVSEPR(!moleculeData ? formula : null)
+    const fetchedMolecule = fetchedMolecules && fetchedMolecules.length > 0 ? fetchedMolecules[0] : null
     const molecule = moleculeData || fetchedMolecule
 
     const hasResonance = molecule && 'resonance' in molecule && molecule.resonance && molecule.resonance.length > 0
